@@ -1,0 +1,335 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-01T10:53:25.613263+00:00",
+  "title": "Design System: Customs Leader",
+  "extensions": {
+    "colorMeta": {
+      "ink": {
+        "role": "neutral",
+        "displayName": "Ink",
+        "tonalRamp": [
+          "oklch(15.00% 0.00721 229.22)",
+          "oklch(26.43% 0.00721 229.22)",
+          "oklch(37.86% 0.00721 229.22)",
+          "oklch(49.29% 0.00721 229.22)",
+          "oklch(60.71% 0.00721 229.22)",
+          "oklch(72.14% 0.00721 229.22)",
+          "oklch(83.57% 0.00721 229.22)",
+          "oklch(95.00% 0.00721 229.22)"
+        ]
+      },
+      "paper": {
+        "role": "neutral",
+        "displayName": "Paper",
+        "tonalRamp": [
+          "oklch(15.00% 0.00804 114.22)",
+          "oklch(26.43% 0.00804 114.22)",
+          "oklch(37.86% 0.00804 114.22)",
+          "oklch(49.29% 0.00804 114.22)",
+          "oklch(60.71% 0.00804 114.22)",
+          "oklch(72.14% 0.00804 114.22)",
+          "oklch(83.57% 0.00804 114.22)",
+          "oklch(95.00% 0.00804 114.22)"
+        ]
+      },
+      "text": {
+        "role": "neutral",
+        "displayName": "Text",
+        "tonalRamp": [
+          "oklch(15.00% 0.00802 114.22)",
+          "oklch(26.43% 0.00802 114.22)",
+          "oklch(37.86% 0.00802 114.22)",
+          "oklch(49.29% 0.00802 114.22)",
+          "oklch(60.71% 0.00802 114.22)",
+          "oklch(72.14% 0.00802 114.22)",
+          "oklch(83.57% 0.00802 114.22)",
+          "oklch(95.00% 0.00802 114.22)"
+        ]
+      },
+      "muted": {
+        "role": "neutral",
+        "displayName": "Muted",
+        "tonalRamp": [
+          "oklch(15.00% 0.00786 196.99)",
+          "oklch(26.43% 0.00786 196.99)",
+          "oklch(37.86% 0.00786 196.99)",
+          "oklch(49.29% 0.00786 196.99)",
+          "oklch(60.71% 0.00786 196.99)",
+          "oklch(72.14% 0.00786 196.99)",
+          "oklch(83.57% 0.00786 196.99)",
+          "oklch(95.00% 0.00786 196.99)"
+        ]
+      },
+      "orange": {
+        "role": "primary",
+        "displayName": "Orange",
+        "tonalRamp": [
+          "oklch(15.00% 0.17918 41.89)",
+          "oklch(26.43% 0.17918 41.89)",
+          "oklch(37.86% 0.17918 41.89)",
+          "oklch(49.29% 0.17918 41.89)",
+          "oklch(60.71% 0.17918 41.89)",
+          "oklch(72.14% 0.17918 41.89)",
+          "oklch(83.57% 0.17918 41.89)",
+          "oklch(95.00% 0.17918 41.89)"
+        ]
+      },
+      "line": {
+        "role": "neutral",
+        "displayName": "Line",
+        "tonalRamp": [
+          "oklch(15.00% 0.00990 216.74)",
+          "oklch(26.43% 0.00990 216.74)",
+          "oklch(37.86% 0.00990 216.74)",
+          "oklch(49.29% 0.00990 216.74)",
+          "oklch(60.71% 0.00990 216.74)",
+          "oklch(72.14% 0.00990 216.74)",
+          "oklch(83.57% 0.00990 216.74)",
+          "oklch(95.00% 0.00990 216.74)"
+        ]
+      },
+      "light-muted": {
+        "role": "neutral",
+        "displayName": "Light Muted",
+        "tonalRamp": [
+          "oklch(15.00% 0.01220 196.79)",
+          "oklch(26.43% 0.01220 196.79)",
+          "oklch(37.86% 0.01220 196.79)",
+          "oklch(49.29% 0.01220 196.79)",
+          "oklch(60.71% 0.01220 196.79)",
+          "oklch(72.14% 0.01220 196.79)",
+          "oklch(83.57% 0.01220 196.79)",
+          "oklch(95.00% 0.01220 196.79)"
+        ]
+      },
+      "light-line": {
+        "role": "neutral",
+        "displayName": "Light Line",
+        "tonalRamp": [
+          "oklch(15.00% 0.00872 145.50)",
+          "oklch(26.43% 0.00872 145.50)",
+          "oklch(37.86% 0.00872 145.50)",
+          "oklch(49.29% 0.00872 145.50)",
+          "oklch(60.71% 0.00872 145.50)",
+          "oklch(72.14% 0.00872 145.50)",
+          "oklch(83.57% 0.00872 145.50)",
+          "oklch(95.00% 0.00872 145.50)"
+        ]
+      },
+      "orange-hover": {
+        "role": "primary",
+        "displayName": "Orange Hover",
+        "tonalRamp": [
+          "oklch(15.00% 0.14676 43.28)",
+          "oklch(26.43% 0.14676 43.28)",
+          "oklch(37.86% 0.14676 43.28)",
+          "oklch(49.29% 0.14676 43.28)",
+          "oklch(60.71% 0.14676 43.28)",
+          "oklch(72.14% 0.14676 43.28)",
+          "oklch(83.57% 0.14676 43.28)",
+          "oklch(95.00% 0.14676 43.28)"
+        ]
+      },
+      "field-border": {
+        "role": "neutral",
+        "displayName": "Field Border",
+        "tonalRamp": [
+          "oklch(15.00% 0.01212 161.97)",
+          "oklch(26.43% 0.01212 161.97)",
+          "oklch(37.86% 0.01212 161.97)",
+          "oklch(49.29% 0.01212 161.97)",
+          "oklch(60.71% 0.01212 161.97)",
+          "oklch(72.14% 0.01212 161.97)",
+          "oklch(83.57% 0.01212 161.97)",
+          "oklch(95.00% 0.01212 161.97)"
+        ]
+      },
+      "field-focus": {
+        "role": "neutral",
+        "displayName": "Field Focus",
+        "tonalRamp": [
+          "oklch(15.00% 0.17083 40.46)",
+          "oklch(26.43% 0.17083 40.46)",
+          "oklch(37.86% 0.17083 40.46)",
+          "oklch(49.29% 0.17083 40.46)",
+          "oklch(60.71% 0.17083 40.46)",
+          "oklch(72.14% 0.17083 40.46)",
+          "oklch(83.57% 0.17083 40.46)",
+          "oklch(95.00% 0.17083 40.46)"
+        ]
+      },
+      "field-focus-bg": {
+        "role": "neutral",
+        "displayName": "Field Focus Bg",
+        "tonalRamp": [
+          "oklch(15.00% 0.00668 115.70)",
+          "oklch(26.43% 0.00668 115.70)",
+          "oklch(37.86% 0.00668 115.70)",
+          "oklch(49.29% 0.00668 115.70)",
+          "oklch(60.71% 0.00668 115.70)",
+          "oklch(72.14% 0.00668 115.70)",
+          "oklch(83.57% 0.00668 115.70)",
+          "oklch(95.00% 0.00668 115.70)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Golos Display",
+        "purpose": "Original hero heading."
+      },
+      "body": {
+        "displayName": "Golos Body",
+        "purpose": "Explanatory copy; contextual sizes vary."
+      }
+    },
+    "shadows": [
+      {
+        "name": "dialog",
+        "value": "0 20px 80px #0007",
+        "purpose": "Modal elevation."
+      },
+      {
+        "name": "toast",
+        "value": "0 8px 35px #0004",
+        "purpose": "Temporary status overlay."
+      }
+    ],
+    "motion": [
+      {
+        "name": "ease",
+        "value": "cubic-bezier(.16,1,.3,1)",
+        "purpose": "Shared transition easing."
+      },
+      {
+        "name": "control",
+        "value": ".2s",
+        "purpose": "Button and input changes."
+      },
+      {
+        "name": "panel-in",
+        "value": ".4s",
+        "purpose": "Journey copy entrance."
+      },
+      {
+        "name": "heading-reveal",
+        "value": ".7s",
+        "purpose": "Once-only intersection reveal."
+      },
+      {
+        "name": "reduced-motion",
+        "value": "animation:none; transition:none",
+        "purpose": "OS preference and manual state; removes sticky hero extension and continuous scene loop."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "wide-min",
+        "value": "1600px"
+      },
+      {
+        "name": "compact-max",
+        "value": "1200px"
+      },
+      {
+        "name": "tablet-max",
+        "value": "900px"
+      },
+      {
+        "name": "mobile-max",
+        "value": "650px"
+      },
+      {
+        "name": "pinned-hero-min",
+        "value": "651px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Firm action with inline route arrow.",
+      "html": "<button class=\"ds-primary\">Получить расчёт<svg width=\"19\" height=\"19\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" aria-hidden=\"true\"><path d=\"M7 17 17 7M7 7h10v10\"/></svg></button>",
+      "css": ".ds-primary{font-family:Golos,Arial,sans-serif;font-size:13px;font-weight:600;line-height:1.35;display:flex;align-items:center;justify-content:space-between;gap:15px;padding:17px 20px;border-radius:3px;min-height:52px;cursor:pointer;transition:background .2s,transform .2s var(--ease,cubic-bezier(.16,1,.3,1));background:var(--orange,#ff783f);color:var(--ink,#171b1d);border:0;}.ds-primary:hover{background:#ff9162}.ds-primary:active{transform:translateY(1px)}.ds-primary:focus-visible{outline:2px solid var(--orange,#ff783f);outline-offset:5px}"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Firm action with inline route arrow.",
+      "html": "<button class=\"ds-secondary\">Получить расчёт<svg width=\"19\" height=\"19\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" aria-hidden=\"true\"><path d=\"M7 17 17 7M7 7h10v10\"/></svg></button>",
+      "css": ".ds-secondary{font-family:Golos,Arial,sans-serif;font-size:13px;font-weight:600;line-height:1.35;display:flex;align-items:center;justify-content:space-between;gap:15px;padding:17px 20px;border-radius:3px;min-height:52px;cursor:pointer;transition:background .2s,transform .2s var(--ease,cubic-bezier(.16,1,.3,1));background:transparent;color:var(--ink,#171b1d);border:1px solid #747c78;}.ds-secondary:active{transform:translateY(1px)}.ds-secondary:focus-visible{outline:2px solid var(--orange,#ff783f);outline-offset:5px}"
+    },
+    {
+      "name": "Labelled Field",
+      "kind": "input",
+      "refersTo": "field",
+      "description": "Native labelled contact input.",
+      "html": "<label class=\"ds-label\" for=\"ds-phone\">Телефон*</label><input class=\"ds-field\" id=\"ds-phone\" type=\"tel\" autocomplete=\"tel\" required placeholder=\"+7 (___) ___-__-__\">",
+      "css": ".ds-label{display:block;font:500 12px Golos,Arial,sans-serif;margin-bottom:8px;color:var(--ink,#171b1d)}.ds-field{font:13px Golos,Arial,sans-serif;width:90%;border:1px solid #b7c0bb;border-radius:3px;padding:12px 13px;min-height:43px;background:transparent;color:#192024;transition:border-color .2s}.ds-field:focus{border-color:#d55723;background:#f6f7f2}.ds-field:focus-visible{outline:2px solid var(--orange,#ff783f);outline-offset:5px}"
+    },
+    {
+      "name": "Compact Form Surface",
+      "kind": "card",
+      "refersTo": "form-surface",
+      "description": "Pale inquiry container.",
+      "html": "<section class=\"ds-form\"><p class=\"ds-title\">Получите стоимость<br>и сроки доставки</p><p class=\"ds-copy\">В предложении подготовим маршрут, срок, стоимость и состав платежей</p></section>",
+      "css": ".ds-form{background:var(--paper,#edeee8);color:var(--ink,#171b1d);border-radius:5px;padding:28px;font-family:Golos,Arial,sans-serif}.ds-title{font-size:29px;line-height:1.12;letter-spacing:-.035em;margin:0 0 15px}.ds-copy{font-size:12px;line-height:1.65;color:#52605e;margin:0}"
+    },
+    {
+      "name": "Header Callback",
+      "kind": "nav",
+      "refersTo": "button-secondary",
+      "description": "Outlined header callback action.",
+      "html": "<button class=\"ds-callback\">Обратный звонок<svg width=\"19\" height=\"19\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" aria-hidden=\"true\"><path d=\"M7 17 17 7M7 7h10v10\"/></svg></button>",
+      "css": ".ds-callback{font:12px Golos,Arial,sans-serif;border:1px solid #687172;background:var(--ink,#171b1d);color:var(--paper,#edeee8);border-radius:4px;padding:12px 14px;display:flex;gap:15px;align-items:center;cursor:pointer}.ds-callback:hover{color:var(--orange,#ff783f)}.ds-callback:focus-visible{outline:2px solid var(--orange,#ff783f);outline-offset:5px}"
+    },
+    {
+      "name": "Client Tag",
+      "kind": "chip",
+      "refersTo": "form-surface",
+      "description": "Compact client identification within a case illustration.",
+      "html": "<span class=\"ds-client\">Клиент</span>",
+      "css": ".ds-client{display:inline-block;font:10px Golos,Arial,sans-serif;background:#e7ece6;color:#27332e;padding:8px 11px;border-radius:2px}"
+    },
+    {
+      "name": "Native Disclosure",
+      "kind": "custom",
+      "refersTo": "form-surface",
+      "description": "Keyboard-operable details and summary.",
+      "html": "<details class=\"ds-details\"><summary>Что входит в расчёт</summary><p>Перевозка, таможенное оформление и платежи готовим в одном предложении.</p></details>",
+      "css": ".ds-details{font:12px Golos,Arial,sans-serif;color:var(--ink,#171b1d)}.ds-details summary{cursor:pointer;text-decoration:underline;text-underline-offset:4px}.ds-details p{padding:13px;background:#dde1d9;border-radius:4px;line-height:1.65}.ds-details summary:focus-visible{outline:2px solid var(--orange,#ff783f);outline-offset:5px}"
+    }
+  ],
+  "narrative": {
+    "northStar": "Graphite photography studio",
+    "overview": "A graphite studio gives industrial geometry room to read: silver metal, pale warm type and a safety-orange route. Firm rectangular controls and restrained rounding keep the inquiry interface practical alongside the cinematic illustration.\n\nThis is a code-led React and Three.js system. Procedural models are explicitly illustrations; original Russian content and facts retain authority over the visual story. Local Golos fonts and vector geographic data supply the shipped assets; there are no shipping rasters.",
+    "keyCharacteristics": [
+      "Graphite and pale-paper sections with safety-orange actions.",
+      "Self-hosted Cyrillic typography and generous editorial spacing.",
+      "Procedural transport illustrations, with an empty-platform opening and closing.",
+      "Native controls and readable content independent of WebGL."
+    ],
+    "rules": [
+      {
+        "name": "The Route Rule",
+        "body": "Orange marks action and transport continuity rather than filling every surface.",
+        "section": "colors"
+      }
+    ],
+    "dos": [
+      "Do retain the original Russian facts and content order.",
+      "Do use orange for actions, route geometry and meaningful selected states.",
+      "Do keep forms and text usable when WebGL or animation is unavailable.",
+      "Do preserve native field labels, keyboard focus and honest demo submission feedback."
+    ],
+    "donts": [
+      "Don't introduce documentary claims through illustrative geometry.",
+      "Don't replace the missing founder photo with an invented employee portrait.",
+      "Don't claim CRM success when no endpoint is connected.",
+      "Don't add decorative shadows to ordinary content sections."
+    ]
+  }
+}

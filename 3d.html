@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#171b1d" />
+    <meta name="robots" content="noindex" />
+    <title>Настройки — КАСТОМС ЛИДЕР</title>
+    <link rel="icon" type="image/svg+xml" href="%BASE_URL%favicon.svg" />
+  </head>
+  <body>
+    <main class="scenes-page">
+      <a class="back" href="%BASE_URL%">← На сайт</a>
+      <h1>Настройки сайта</h1>
+      <p class="lead">Включает или выключает все WebGL-сцены: первый экран, этапы доставки, глобус и финальный блок. Вместо выключенных сцен показываются фотографии. Код 3D остаётся в проекте.</p>
+      <fieldset>
+        <legend>3D-сцены в этом браузере</legend>
+        <label><input type="radio" name="mode" value="default" /><span><strong>Как задано на сайте</strong><small data-default></small></span></label>
+        <label><input type="radio" name="mode" value="3d" /><span><strong>3D включено</strong><small>Сцены WebGL с анимацией прокрутки</small></span></label>
+        <label><input type="radio" name="mode" value="images" /><span><strong>3D выключено, картинки</strong><small>Фотографии вместо всех сцен, без WebGL</small></span></label>
+      </fieldset>
+      <p class="status" role="status" aria-live="polite"></p>
+      <fieldset class="tweaks">
+        <legend>Панели настройки изображений</legend>
+        <label class="check"><input type="checkbox" data-tweak="tweaks-cases" /><span><strong>Фото кейсов</strong><small>Размер, пропорции и кадр картинок в трёх кейсах</small></span></label>
+        <label class="check"><input type="checkbox" data-tweak="tweaks-stills" /><span><strong>Картинки первого экрана и финального блока</strong><small>Размер и пропорции картинок, которые заменяют 3D (видны, когда 3D выключено)</small></span></label>
+        <p class="hint">Панель «Изображения» появляется в правом верхнем углу сайта и работает только в режиме разработки (npm run dev). На опубликованном сайте её нет.</p>
+      </fieldset>
+      <a class="open" href="%BASE_URL%">Открыть сайт в выбранном режиме →</a>
+      <section class="note">
+        <h2>Чтобы выключить 3D для всех посетителей</h2>
+        <p>Этот переключатель действует только в текущем браузере. Для всех посетителей поменяйте одну строку в <code>src/siteConfig.js</code>:</p>
+        <pre><code>export const SCENES_MODE='images';</code></pre>
+        <p>Значение <code>'3d'</code> снова включает сцены.</p>
+      </section>
+    </main>
+    <script type="module" src="/src/scenesPage.js"></script>
+  </body>
+</html>

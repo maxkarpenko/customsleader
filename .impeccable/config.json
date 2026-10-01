@@ -1,0 +1,14 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "design-system-font",
+        "value": "menlo",
+        "createdAt": "2026-10-01T16:13:00.367Z",
+        "reason": "The settings page uses the system monospace face only for inline code and a code sample; the main type system remains the documented Golos."
+      }
+    ]
+  }
+}
