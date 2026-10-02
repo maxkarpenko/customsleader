@@ -12,7 +12,15 @@ npm run build
 
 ## Публикация
 
-Workflow `.github/workflows/deploy.yml` собирает сайт и публикует его в GitHub Pages после отправки изменений в ветку `main`. Vite автоматически задаёт путь проектной страницы на GitHub; источник Pages в настройках репозитория должен быть выбран как **GitHub Actions**.
+Сайт публикуется одним файлом `docs/index.html`: в него встроены код, стили, шрифты, изображения и 3D-сцены, поэтому он работает и на GitHub Pages, и при открытии с диска. После изменений пересоберите его и закоммитьте:
+
+```sh
+npm run build:single
+```
+
+В GitHub: Settings → Pages → **Deploy from a branch** → `main` / `/docs`. Страница настроек `3d.html` в этот файл не входит, она работает только в режиме разработки и в обычной сборке `npm run build`.
+
+Workflow `.github/workflows/deploy.yml` (сборка через GitHub Actions) оставлен для ручного запуска; чтобы вернуться к нему, выберите в Pages источник **GitHub Actions**.
 
 ## Содержание
 

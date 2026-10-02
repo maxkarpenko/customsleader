@@ -1,3 +1,4 @@
+import landUrl from './assets/media/land.geojson?url';
 import * as THREE from 'three';
 
 const GREEN = 0x2faf6b;
@@ -138,7 +139,7 @@ export class IndustrialScene {
     const lineMat=new THREE.LineBasicMaterial({color:0x506364,transparent:true,opacity:.32});
     for(let lat=-60;lat<=60;lat+=30){let pts=[];for(let lon=-180;lon<=180;lon+=3)pts.push(xyz(lon,lat,4.012));this.globe.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts),lineMat));}
     for(let lon=-180;lon<180;lon+=30){let pts=[];for(let lat=-90;lat<=90;lat+=3)pts.push(xyz(lon,lat,4.012));this.globe.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts),lineMat));}
-    fetch(`${import.meta.env.BASE_URL}land.geojson`).then(r=>r.json()).then(data=>{
+    fetch(landUrl).then(r=>r.json()).then(data=>{
       if(this.disposed)return;
       const mat=new THREE.LineBasicMaterial({color:0xb3bcb4,transparent:true,opacity:.75});
       data.features.forEach(f=>{const polys=f.geometry.type==='MultiPolygon'?f.geometry.coordinates:[f.geometry.coordinates];polys.forEach(poly=>poly.forEach(ring=>this.globe.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(ring.map(([lon,lat])=>xyz(lon,lat,4.025))),mat))))});this.dirty=true;this.draw();

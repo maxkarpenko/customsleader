@@ -4,6 +4,12 @@ import content from './content.json';
 import {SCENES_MODE,SCENES_KEY,TWEAKS_CASES_KEY,TWEAKS_STILLS_KEY} from './siteConfig.js';
 import heroImageOne from '../hero/port-heavy-haul-front.webp';
 import heroImageTwo from '../hero/port-heavy-haul-side.webp';
+import bottlingLine from './assets/media/bottling-line.webp';
+import hvacTruck from './assets/media/hvac-truck.webp';
+import miningComplex from './assets/media/mining-complex.webp';
+import routeConvoy from './assets/media/route-convoy.webp';
+import routeRain from './assets/media/route-rain.webp';
+import logoOnDark from './assets/media/logo-on-dark.webp';
 
 const {sections:S,services,cases,tabs,faq}=content;
 const MotionContext=createContext(false);
@@ -12,7 +18,6 @@ const Text=({value})=><>{clean(value)}</>;
 const entries=(n,tag)=>S[n].entries.filter(e=>e.tag===tag).map(e=>e.text);
 const sourceTitle=n=>S[n].H2;
 const shortCTA='Получить стоимость и сроки';
-const assetUrl=path=>`${import.meta.env.BASE_URL}${path.replace(/^\/+/, '')}`;
 const selection=['Перевозка и таможня','Только перевозка','Таможенное оформление','Нужна консультация'];
 const scrollToRequest=()=>(document.querySelector('#request .form-detailed')||document.getElementById('request'))?.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth',block:'start'});
 
@@ -20,15 +25,15 @@ const scrollToRequest=()=>(document.querySelector('#request .form-detailed')||do
 const ScenesContext=createContext(SCENES_MODE);
 const scenesMode=(()=>{try{const v=localStorage.getItem(SCENES_KEY);if(v==='3d'||v==='images')return v;}catch{}return SCENES_MODE;})();
 const STILLS={
-  hero:{src:'/scenes/route-convoy',w:1600,h:1073,alt:'Колонна грузовиков с оборудованием на горной дороге'},
-  container:{src:'/scenes/route-rain',w:1600,h:1073,alt:'Тягач с промышленной линией на открытом полуприцепе'},
-  winter:{src:'/scenes/route-convoy',w:1600,h:1073,alt:'Колонна грузовиков с оборудованием на горной дороге'},
-  hvac:{src:'/cases/hvac-truck',w:1600,h:893,alt:'Тягач с климатическим оборудованием в упаковочной плёнке'},
-  turbine:{src:'/cases/mining-complex',w:1280,h:851,alt:'Горнопроходческий комплекс в цехе завода'},
-  end:{src:'/cases/bottling-line',w:1600,h:1073,alt:'Тягач с оборудованием на трассе через тайгу'},
+  hero:{src:routeConvoy,w:1600,h:1073,alt:'Колонна грузовиков с оборудованием на горной дороге'},
+  container:{src:routeRain,w:1600,h:1073,alt:'Тягач с промышленной линией на открытом полуприцепе'},
+  winter:{src:routeConvoy,w:1600,h:1073,alt:'Колонна грузовиков с оборудованием на горной дороге'},
+  hvac:{src:hvacTruck,w:1600,h:893,alt:'Тягач с климатическим оборудованием в упаковочной плёнке'},
+  turbine:{src:miningComplex,w:1280,h:851,alt:'Горнопроходческий комплекс в цехе завода'},
+  end:{src:bottlingLine,w:1600,h:1073,alt:'Тягач с оборудованием на трассе через тайгу'},
 };
 function Picture({src,w,h,alt,eager=false}){
-  return <picture><source srcSet={assetUrl(`${src}.webp`)} type="image/webp"/><img src={assetUrl(`${src}.jpg`)} alt={alt} width={w} height={h} loading={eager?'eager':'lazy'} decoding="async"/></picture>;
+  return <picture><img src={src} alt={alt} width={w} height={h} loading={eager?'eager':'lazy'} decoding="async"/></picture>;
 }
 function Scene(props){
   const mode=useContext(ScenesContext);
@@ -91,9 +96,9 @@ function HeroCarousel(){
 // shipped framing; in dev the tweak panel overrides it live (kept in localStorage) and copies the
 // values to paste back here. Which groups get a panel is switched on /3d.html.
 const CASE_PHOTOS=[
-  {src:'/cases/bottling-line',w:1600,h:1073,alt:'Тягач с линией розлива воды в открытом контейнере на трассе через тайгу'},
-  {src:'/cases/mining-complex',w:1280,h:851,alt:'Горнопроходческий комплекс в цехе завода перед отгрузкой'},
-  {src:'/cases/hvac-truck',w:1600,h:893,alt:'Тягач с климатическим оборудованием в упаковочной плёнке на трассе'},
+  {src:bottlingLine,w:1600,h:1073,alt:'Тягач с линией розлива воды в открытом контейнере на трассе через тайгу'},
+  {src:miningComplex,w:1280,h:851,alt:'Горнопроходческий комплекс в цехе завода перед отгрузкой'},
+  {src:hvacTruck,w:1600,h:893,alt:'Тягач с климатическим оборудованием в упаковочной плёнке на трассе'},
 ];
 const FRAME={width:100,height:375,ratio:'3/2',fit:'cover',zoom:1,posX:50,posY:50,offsetX:0,offsetY:0};
 const IMAGE_FRAMES={case0:{...FRAME},case1:{...FRAME},case2:{...FRAME},hero:{...FRAME,ratio:'auto',height:360},end:{...FRAME,ratio:'auto',height:420}};
@@ -231,7 +236,7 @@ export default function App(){
     <a className="skip-link" href="#main">Перейти к содержимому</a>
     <div className="reading-progress" aria-hidden="true" ref={progressBar}/>
     <header className="header wrap">
-      <a href="#" className="wordmark" aria-label="КАСТОМС ЛИДЕР — в начало"><img className="header-logo" src={assetUrl('/brand/logo-on-dark.webp')} alt="КАСТОМС ЛИДЕР" width="960" height="113"/></a>
+      <a href="#" className="wordmark" aria-label="КАСТОМС ЛИДЕР — в начало"><img className="header-logo" src={logoOnDark} alt="КАСТОМС ЛИДЕР" width="960" height="113"/></a>
 
       <p className="header-description">Международная и внутренняя логистика. Промышленного оборудования и негабарита</p>
 
@@ -278,7 +283,7 @@ export default function App(){
 
       <section className="section contact" data-reveal><div className="wrap contact-layout"><h2><Text value={sourceTitle(12)}/></h2><div className="contact-actions"><div className="messengers"><button onClick={()=>notify('Ссылка на WhatsApp будет добавлена позже.')}><MessageCircle/>Написать в WhatsApp<ArrowUpRight size={18}/></button><button onClick={()=>notify('Ссылка на Telegram будет добавлена позже.')}><Send/>Написать в Telegram<ArrowUpRight size={18}/></button></div><p>Или позвоните по номеру:</p><a className="contact-phone" href="tel:88003501098">8 (800) 350-10-98</a><a className="contact-email" href="mailto:info@customsleader.ru">info@customsleader.ru</a></div></div></section>
     </main>
-    <footer className="footer wrap"><div className="footer-top"><a href="#" className="wordmark" aria-label="КАСТОМС ЛИДЕР — в начало"><img src={assetUrl('/brand/logo-on-dark.webp')} alt="КАСТОМС ЛИДЕР" width="960" height="113" loading="lazy"/></a><p>Международная и внутренняя логистика. Промышленного оборудования и негабарита</p><p>Адрес: Иваново,<br/>ул. Степанова, 5,<br/>оф. 307А</p><div className="footer-social"><button aria-label="WhatsApp" onClick={()=>notify('Ссылка на WhatsApp будет добавлена позже.')}><MessageCircle size={19}/></button><button aria-label="Telegram" onClick={()=>notify('Ссылка на Telegram будет добавлена позже.')}><Send size={19}/></button></div><div className="footer-contacts"><a href="tel:88003501098">8 (800) 350-10-98</a><a href="mailto:info@customsleader.ru">info@customsleader.ru</a><button onClick={()=>setModal('callback')}>Заказать звонок <ArrowUpRight size={16}/></button></div></div><div className="footer-bottom"><p>ООО «КАСТОМС ЛИДЕР» ИНН: 3702195282</p><p>Вся информация, размещённая на сайте, носит ознакомительный характер и может отличаться от действительности</p><div><button onClick={()=>setLegal('privacy')}>Политика конфиденциальности</button><button onClick={()=>setLegal('offer')}>Публичная оферта</button></div></div></footer>
+    <footer className="footer wrap"><div className="footer-top"><a href="#" className="wordmark" aria-label="КАСТОМС ЛИДЕР — в начало"><img src={logoOnDark} alt="КАСТОМС ЛИДЕР" width="960" height="113" loading="lazy"/></a><p>Международная и внутренняя логистика. Промышленного оборудования и негабарита</p><p>Адрес: Иваново,<br/>ул. Степанова, 5,<br/>оф. 307А</p><div className="footer-social"><button aria-label="WhatsApp" onClick={()=>notify('Ссылка на WhatsApp будет добавлена позже.')}><MessageCircle size={19}/></button><button aria-label="Telegram" onClick={()=>notify('Ссылка на Telegram будет добавлена позже.')}><Send size={19}/></button></div><div className="footer-contacts"><a href="tel:88003501098">8 (800) 350-10-98</a><a href="mailto:info@customsleader.ru">info@customsleader.ru</a><button onClick={()=>setModal('callback')}>Заказать звонок <ArrowUpRight size={16}/></button></div></div><div className="footer-bottom"><p>ООО «КАСТОМС ЛИДЕР» ИНН: 3702195282</p><p>Вся информация, размещённая на сайте, носит ознакомительный характер и может отличаться от действительности</p><div><button onClick={()=>setLegal('privacy')}>Политика конфиденциальности</button><button onClick={()=>setLegal('offer')}>Публичная оферта</button></div></div></footer>
     <button className="motion-toggle" onClick={()=>setReduced(!reduced)} aria-label={reduced?'Включить анимацию':'Остановить анимацию'} title={reduced?'Включить анимацию':'Остановить анимацию'}>{reduced?<Play size={16}/>:<Pause size={16}/>}</button>
     <CookieNotice/>
     {notice&&<div className="toast" role="status">{notice}<button aria-label="Закрыть уведомление" onClick={()=>setNotice('')}><X size={17}/></button></div>}

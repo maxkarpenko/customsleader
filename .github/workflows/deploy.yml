@@ -1,8 +1,8 @@
 name: Deploy to GitHub Pages
 
+# Manual only: the live site is the self-contained docs/index.html served from the branch.
+# To return to Actions deploys, set Pages → Source to "GitHub Actions" and restore the push trigger.
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
 
 permissions:
