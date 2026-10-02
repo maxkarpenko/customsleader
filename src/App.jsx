@@ -1,7 +1,7 @@
 import React, {useEffect, useId, useRef, useState, createContext, useContext} from 'react';
 import {ArrowUpRight, ArrowRight, ArrowDown, ArrowLeft, Check, Plus, Minus, X, Phone, ShieldCheck, PackageCheck, Route, Truck, FileCheck2, Globe2, Pause, Play, MessageCircle, Mail, UserRound, CircleCheck, Info, LoaderCircle, Send, Layers3, Settings2, SlidersHorizontal, RotateCcw, Copy} from 'lucide-react';
 import content from './content.json';
-import {SCENES_MODE,SCENES_KEY,TWEAKS_CASES_KEY,TWEAKS_STILLS_KEY} from './siteConfig.js';
+import {SCENES_MODE,SCENES_KEY,TWEAKS_CASES_KEY,TWEAKS_STILLS_KEY,TWEAKS_FOUNDER_KEY} from './siteConfig.js';
 import heroImageOne from '../hero/port-heavy-haul-front.webp';
 import heroImageTwo from '../hero/port-heavy-haul-side.webp';
 import bottlingLine from './assets/media/bottling-line.webp';
@@ -10,6 +10,7 @@ import miningComplex from './assets/media/mining-complex.webp';
 import routeConvoy from './assets/media/route-convoy.webp';
 import routeRain from './assets/media/route-rain.webp';
 import logoOnDark from './assets/media/logo-on-dark.webp';
+import founderPhoto from './assets/media/founder.webp';
 
 const {sections:S,services,cases,tabs,faq}=content;
 const MotionContext=createContext(false);
@@ -101,13 +102,13 @@ const CASE_PHOTOS=[
   {src:hvacTruck,w:1600,h:893,alt:'Тягач с климатическим оборудованием в упаковочной плёнке на трассе'},
 ];
 const FRAME={width:100,height:375,ratio:'3/2',fit:'cover',zoom:1,posX:50,posY:50,offsetX:0,offsetY:0};
-const IMAGE_FRAMES={case0:{...FRAME},case1:{...FRAME},case2:{...FRAME},hero:{...FRAME,ratio:'auto',height:360},end:{...FRAME,ratio:'auto',height:420}};
-const FRAME_LABELS={case0:'Кейс 1',case1:'Кейс 2',case2:'Кейс 3',hero:'Первый экран',end:'Финальный блок'};
+const IMAGE_FRAMES={case0:{...FRAME},case1:{...FRAME},case2:{...FRAME},hero:{...FRAME,ratio:'auto',height:360},end:{...FRAME,ratio:'auto',height:420},founder:{...FRAME,ratio:'4/5',posY:25}};
+const FRAME_LABELS={case0:'Кейс 1',case1:'Кейс 2',case2:'Кейс 3',hero:'Первый экран',end:'Финальный блок',founder:'Фото основателя'};
 const FRAMES_KEY='image-frames';
 const tweakOn=key=>{try{return localStorage.getItem(key)!=='0';}catch{return true;}};
-const TWEAK_GROUPS=import.meta.env.DEV?{cases:tweakOn(TWEAKS_CASES_KEY),stills:tweakOn(TWEAKS_STILLS_KEY)}:{cases:false,stills:false};
+const TWEAK_GROUPS=import.meta.env.DEV?{cases:tweakOn(TWEAKS_CASES_KEY),stills:tweakOn(TWEAKS_STILLS_KEY),founder:tweakOn(TWEAKS_FOUNDER_KEY)}:{cases:false,stills:false,founder:false};
 const FramesContext=createContext({frames:IMAGE_FRAMES,setFrame:()=>{}});
-const RATIOS=[['auto','По высоте'],['original','Исходные'],['16/9','16:9'],['3/2','3:2'],['4/3','4:3'],['1/1','1:1'],['21/9','21:9']];
+const RATIOS=[['auto','По высоте'],['original','Исходные'],['16/9','16:9'],['3/2','3:2'],['4/3','4:3'],['1/1','1:1'],['21/9','21:9'],['4/5','4:5'],['3/4','3:4'],['2/3','2:3']];
 function useImageFrames(){
   const [frames,setFrames]=useState(()=>{if(!import.meta.env.DEV)return IMAGE_FRAMES;try{const saved=JSON.parse(localStorage.getItem(FRAMES_KEY)||'{}');return Object.fromEntries(Object.entries(IMAGE_FRAMES).map(([k,f])=>[k,{...f,...(saved[k]||{})}]));}catch{return IMAGE_FRAMES;}});
   useEffect(()=>{if(!import.meta.env.DEV)return;try{localStorage.setItem(FRAMES_KEY,JSON.stringify(frames));}catch{}},[frames]);
@@ -120,9 +121,10 @@ function FramedPicture({id,photo,className,eager=false,children}){
   const style={'--photo-w':`${t.width}%`,'--photo-h':ratio==='auto'?`${t.height}px`:'auto','--photo-ratio':ratio,'--photo-fit':t.fit,'--photo-zoom':t.zoom,'--photo-x':`${t.posX}%`,'--photo-y':`${t.posY}%`,'--photo-dx':`${t.offsetX}px`,'--photo-dy':`${t.offsetY}px`};
   return <figure className={className} style={style}><Picture {...photo} eager={eager}/>{children}</figure>;
 }
+const FOUNDER_PHOTO={src:founderPhoto,w:910,h:1280,alt:'Эдуард Хасанов, основатель КАСТОМС ЛИДЕР'};
 function CasePhoto({i,children}){return <FramedPicture id={`case${i}`} photo={CASE_PHOTOS[i]} className="case-photo">{children}</FramedPicture>;}
 function ImageTweaks(){
-  const targets=[...(TWEAK_GROUPS.cases?['case0','case1','case2']:[]),...(TWEAK_GROUPS.stills?['hero','end']:[])];
+  const targets=[...(TWEAK_GROUPS.cases?['case0','case1','case2']:[]),...(TWEAK_GROUPS.stills?['hero','end']:[]),...(TWEAK_GROUPS.founder?['founder']:[])];
   const {frames,setFrame}=useContext(FramesContext);
   const [open,setOpen]=useState(false),[copied,setCopied]=useState(false),[pick,setPick]=useState(targets[0]);
   if(!targets.length)return null;
@@ -275,7 +277,7 @@ export default function App(){
 
       <section className="section insurance" data-reveal><div className="wrap insurance-layout"><div><h2><Text value={sourceTitle(8)}/></h2><Bullets items={['Понимаете, на какую сумму защищён груз. Проверим страховую сумму и лимиты применительно к вашей поставке','Знаете об ограничениях до отправки. Покажем, какие риски покрываются, а какие расходы могут остаться на вашей стороне','Получаете подтверждение защиты документами. До договора предоставим действующий полис и подтверждение оплаты']}/></div><div className="insurance-art" aria-hidden="true"><ShieldCheck size={156} strokeWidth={.7}/><div className="orbit orbit-a"/><div className="orbit orbit-b"/><div className="orbit orbit-c"/></div></div></section>
 
-      <section className="section founder light" data-reveal><div className="wrap"><h2><Text value={sourceTitle(9)}/></h2><div className="founder-layout"><div className="founder-placeholder"><UserRound size={110} strokeWidth={.7}/><span>Фото основателя</span></div><div className="founder-copy"><h3>Хасанов Эдуард Ряфхатович</h3><p><Text value={entries(9,'P')[0]}/></p><ul className="founder-facts"><li><strong>13 лет</strong><span>в таможенных органах</span></li><li><strong>9 лет</strong><span>развивал таможенное и логистическое направление других компаний</span></li><li><strong>8 лет</strong><span>строит собственную компанию</span></li><li><FileCheck2 size={29}/><span>Юридическое образование</span></li></ul></div></div></div></section>
+      <section className="section founder light" data-reveal><div className="wrap"><h2><Text value={sourceTitle(9)}/></h2><div className="founder-layout"><div className="founder-media"><FramedPicture id="founder" photo={FOUNDER_PHOTO} className="founder-photo"/></div><div className="founder-copy"><h3>Хасанов Эдуард Ряфхатович</h3><p><Text value={entries(9,'P')[0]}/></p><ul className="founder-facts"><li><strong>13 лет</strong><span>в таможенных органах</span></li><li><strong>9 лет</strong><span>развивал таможенное и логистическое направление других компаний</span></li><li><strong>8 лет</strong><span>строит собственную компанию</span></li><li><FileCheck2 size={29}/><span>Юридическое образование</span></li></ul></div></div></div></section>
 
       <section className="section faq light" data-reveal><div className="wrap faq-layout"><h2><Text value={sourceTitle(10)}/></h2><div className="faq-list">{faq.map((f,i)=><details key={f.question}><summary><h3>{f.question}</h3><Plus className="faq-plus" size={21}/></summary><p>{f.answer}</p></details>)}</div></div></section>
 

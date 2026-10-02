@@ -5,3 +5,4 @@ export const SCENES_KEY='scenes-mode';
 // Dev-only image tweak panels, switched on /3d.html ('0' hides a group; anything else shows it).
 export const TWEAKS_CASES_KEY='tweaks-cases';
 export const TWEAKS_STILLS_KEY='tweaks-stills';
+export const TWEAKS_FOUNDER_KEY='tweaks-founder';

@@ -1,8 +1,9 @@
 name: Deploy to GitHub Pages
 
-# Manual only: the live site is the self-contained docs/index.html served from the branch.
-# To return to Actions deploys, set Pages → Source to "GitHub Actions" and restore the push trigger.
+# Pages → Source: GitHub Actions. Deploys the self-contained single-file build (docs/index.html).
 on:
+  push:
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -25,10 +26,10 @@ jobs:
           cache: npm
       - uses: actions/configure-pages@v5
       - run: npm ci
-      - run: npm run build
+      - run: npm run build:single
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: dist
+          path: docs
   deploy:
     environment:
       name: github-pages
