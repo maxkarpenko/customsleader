@@ -6,3 +6,10 @@ export const SCENES_KEY='scenes-mode';
 export const TWEAKS_CASES_KEY='tweaks-cases';
 export const TWEAKS_STILLS_KEY='tweaks-stills';
 export const TWEAKS_FOUNDER_KEY='tweaks-founder';
+// Cookie notice. Bump COOKIE_CONSENT_VERSION when the cookie policy changes so visitors are asked again.
+// Analytics loads only after "Принять все": set YANDEX_METRIKA_ID to the counter number (e.g. 12345678)
+// and GOOGLE_ANALYTICS_ID to the GA4 measurement ID (e.g. 'G-XXXXXXXXXX'). null keeps a service off.
+export const COOKIE_CONSENT_KEY='cookie-consent';
+export const COOKIE_CONSENT_VERSION='2026-10-05';
+export const YANDEX_METRIKA_ID=null;
+export const GOOGLE_ANALYTICS_ID=null;

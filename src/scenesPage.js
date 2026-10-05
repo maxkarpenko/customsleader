@@ -25,3 +25,4 @@ document.querySelectorAll('input[data-tweak]').forEach(box=>{
   try{box.checked=localStorage.getItem(key)!=='0';}catch{box.checked=true;}
   box.addEventListener('change',()=>{try{box.checked?localStorage.removeItem(key):localStorage.setItem(key,'0');}catch{}});
 });
+
