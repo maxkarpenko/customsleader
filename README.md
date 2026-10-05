@@ -14,7 +14,7 @@ npm run build
 
 Сайт публикуется одним файлом `docs/index.html`: в него встроены код, стили, шрифты, изображения и 3D-сцены, поэтому он работает и на GitHub Pages, и при открытии с диска. Собрать его локально: `npm run build:single`.
 
-Workflow `.github/workflows/deploy.yml` при пуше в `main` сам собирает этот файл и публикует его в GitHub Pages (Settings → Pages → Source: **GitHub Actions**). Закоммиченная копия в `docs/` позволяет при необходимости переключиться на **Deploy from a branch** → `main` / `/docs`. Страница настроек `3d.html` в однофайловую сборку не входит: она работает в режиме разработки и в обычной сборке `npm run build`.
+Workflow `.github/workflows/deploy.yml` при пуше в `main` сам собирает этот файл и публикует его в GitHub Pages (Settings → Pages → Source: **GitHub Actions**). Папка `docs/` в Git не хранится (см. `.gitignore`): её собирает workflow, а локально — `npm run build:single`. Страница настроек `3d.html` в однофайловую сборку не входит: она работает в режиме разработки и в обычной сборке `npm run build`.
 
 ## Содержание
 
