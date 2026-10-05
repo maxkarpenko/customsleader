@@ -158,3 +158,4 @@
 .cookie-notice .cookie-secondary{padding:10px 12px;border:1px solid var(--steel-250);border-radius:3px;text-decoration:none;color:var(--ink)}
 .cookie-notice .cookie-policy-link{display:inline;padding:0;font:inherit;color:inherit}
 @media(max-width:650px){.cookie-notice{flex-wrap:wrap}.cookie-actions{width:100%;justify-content:flex-end}}
+.footer-address a{color:inherit;text-decoration:underline;text-decoration-color:var(--steel-600);text-underline-offset:4px;transition:color .2s,text-decoration-color .2s}.footer-address a:hover{color:var(--steel-150);text-decoration-color:currentColor}
