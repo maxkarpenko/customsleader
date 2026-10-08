@@ -1,7 +1,7 @@
 import React, {useEffect, useId, useLayoutEffect, useRef, useState, createContext, useContext} from 'react';
 import {ArrowUpRight, ArrowRight, ArrowDown, ArrowUp, Sun, Moon, ArrowLeft, Check, Plus, Minus, X, Phone, ShieldCheck, PackageCheck, Route, Truck, FileCheck2, Globe2, MessageCircle, MessageSquare, Mail, UserRound, CircleCheck, Info, LoaderCircle, Send, Layers3, Settings2, SlidersHorizontal, RotateCcw, Copy} from 'lucide-react';
 import content from './content.json';
-import {SCENES_MODE,SCENES_KEY,TWEAKS_CASES_KEY,TWEAKS_STILLS_KEY,TWEAKS_FOUNDER_KEY,THEME_KEY,THEME_SWITCHER,COOKIE_CONSENT_KEY,COOKIE_CONSENT_VERSION,YANDEX_METRIKA_ID,GOOGLE_ANALYTICS_ID} from './siteConfig.js';
+import {SCENES_MODE,SCENES_KEY,TWEAKS_CASES_KEY,TWEAKS_STILLS_KEY,TWEAKS_FOUNDER_KEY,THEME_KEY,THEME_SWITCHER,MOTION_THEME,MOTION_KEY,MOTION_SWITCHER,COOKIE_CONSENT_KEY,COOKIE_CONSENT_VERSION,YANDEX_METRIKA_ID,GOOGLE_ANALYTICS_ID} from './siteConfig.js';
 import privacyPolicy from './legal/privacy-policy.md?raw';
 import personalDataPolicy from './legal/personal-data-policy.md?raw';
 import consentText from './legal/consent.md?raw';
@@ -342,6 +342,62 @@ function applyTheme(id){
   root.dataset.theme=id;root.dataset.tone=THEMES[id].tone;
 }
 
+// Scroll reveal. Below the first screen, headings, text, media and grid items are tagged data-rv="kind"
+// with a stagger index (--rv-i) and get .rv-in as they enter the viewport; .rv-done drops the reveal
+// transitions afterwards so their own hover transitions come back. The look depends on html[data-motion]
+// (styles.css). Hidden states apply only under html.rv-ready, which is never set for reduced motion.
+const MOTION_THEMES=[['rise','Плавный подъём'],['focus','Фокус']];
+const RV_SKIP='.lead-form,.modal,.cookie-notice,.tabs,.route-stops,.scene,label,button:not(.messengers>button),summary';
+const RV_TARGETS=[
+  ['media','.case-visual,.journey-visual,.team-globe,.founder-media,.insurance-art'],
+  ['item','.task-grid>article,.services-grid>article,.clients-grid>li,.team-roles>*,.founder-facts>*,.case-details>*,.messengers>button,.faq-list>details,.case-stat'],
+  ['heading','h2,h3'],
+  ['text','p,.bullets>li,.exclusions'],
+];
+function readMotion(){
+  if(!MOTION_SWITCHER)return MOTION_THEME;
+  try{const v=localStorage.getItem(MOTION_KEY);return MOTION_THEMES.some(([id])=>id===v)?v:MOTION_THEME;}catch{return MOTION_THEME;}
+}
+function setupReveal(){
+  if(matchMedia('(prefers-reduced-motion: reduce)').matches)return ()=>{};
+  const scope=[...document.querySelectorAll('main > section:not(.hero)')],tagged=[];
+  for(const [kind,selector] of RV_TARGETS)for(const section of scope)for(const el of section.querySelectorAll(selector)){
+    if(el.closest(RV_SKIP)||el.parentElement.closest('[data-rv]')||el.hasAttribute('data-rv'))continue;
+    el.dataset.rv=kind;tagged.push(el);
+  }
+  for(const el of tagged){
+    let i=0;for(let sib=el.previousElementSibling;sib;sib=sib.previousElementSibling)if(sib.hasAttribute('data-rv'))i++;
+    el.style.setProperty('--rv-i',Math.min(i,7));
+  }
+  // Position check on scroll rather than IntersectionObserver: it also runs where observers are paused
+  // (background tabs, embedded previews), so nothing can stay hidden.
+  const timers=new Set();let pending=[...tagged],queued=0;
+  const reveal=el=>{
+    el.classList.add('rv-in');
+    const t=setTimeout(()=>{el.classList.add('rv-done');timers.delete(t);},1600+Number(el.style.getPropertyValue('--rv-i')||0)*90);timers.add(t);
+  };
+  const check=()=>{
+    queued=0;const line=window.innerHeight*.92;
+    pending=pending.filter(el=>{const r=el.getBoundingClientRect();if(r.top<line&&(r.bottom>0||r.top<0)){reveal(el);return false;}return true;});
+  };
+  const schedule=()=>{if(!queued)queued=setTimeout(check,50);};
+  document.documentElement.classList.add('rv-ready');
+  check();window.addEventListener('scroll',schedule,{passive:true});window.addEventListener('resize',schedule);
+  const replay=()=>{timers.forEach(clearTimeout);timers.clear();tagged.forEach(el=>el.classList.remove('rv-in','rv-done'));pending=[...tagged];requestAnimationFrame(()=>requestAnimationFrame(check));setTimeout(check,120);};
+  window.addEventListener('rv-replay',replay);
+  return ()=>{clearTimeout(queued);timers.forEach(clearTimeout);window.removeEventListener('scroll',schedule);window.removeEventListener('resize',schedule);window.removeEventListener('rv-replay',replay);document.documentElement.classList.remove('rv-ready');};
+}
+function MotionSwitcher({motion,setMotion,lifted}){
+  const i=MOTION_THEMES.findIndex(([id])=>id===motion),n=MOTION_THEMES.length;
+  const go=d=>{setMotion(MOTION_THEMES[(i+d+n)%n][0]);requestAnimationFrame(()=>window.dispatchEvent(new Event('rv-replay')));};
+  return <div className={`motion-switcher${lifted?' is-lifted':''}`} role="group" aria-label="Анимация появления">
+    <button type="button" onClick={()=>go(-1)} aria-label="Предыдущая анимация"><ArrowLeft size={18}/></button>
+    <span aria-live="polite"><b>{i+1}</b> / {n}<em> · {MOTION_THEMES[i][1]}</em></span>
+    <button type="button" onClick={()=>go(1)} aria-label="Следующая анимация"><ArrowRight size={18}/></button>
+    <button type="button" className="motion-replay" onClick={()=>window.dispatchEvent(new Event('rv-replay'))} aria-label="Повторить анимацию" title="Повторить"><RotateCcw size={16}/></button>
+  </div>;
+}
+
 // "Наверх": bottom-left, shown once the visitor is a screen below the top.
 function ScrollTopButton(){
   const [shown,setShown]=useState(false);
@@ -357,7 +413,8 @@ function ScrollTopButton(){
 }
 
 export default function App(){
-  const [theme,setTheme]=useState(readTheme);
+  const [theme,setTheme]=useState(readTheme),[motion,setMotion]=useState(readMotion);
+  useLayoutEffect(()=>{document.documentElement.dataset.motion=motion;try{if(MOTION_SWITCHER)localStorage.setItem(MOTION_KEY,motion);}catch{}},[motion]);
   useLayoutEffect(()=>{applyTheme(theme);try{if(THEME_SWITCHER)localStorage.setItem(THEME_KEY,theme);}catch{}},[theme]);
   const [modal,setModal]=useState(null),[legal,setLegal]=useState(null),[selected,setSelected]=useState([selection[0]]),[notice,setNotice]=useState('');
   const [reduced,setReduced]=useState(()=>matchMedia('(prefers-reduced-motion: reduce)').matches);
@@ -372,8 +429,8 @@ export default function App(){
     const mq=matchMedia('(prefers-reduced-motion: reduce)');const pref=e=>setReduced(e.matches);mq.addEventListener('change',pref);
     let frame;const onScroll=()=>{if(frame)return;frame=requestAnimationFrame(()=>{const max=document.documentElement.scrollHeight-innerHeight;if(progressBar.current)progressBar.current.style.transform=`scaleX(${max>0?window.scrollY/max:0})`;frame=null;});};
     addEventListener('scroll',onScroll,{passive:true});onScroll();
-    const observer=new IntersectionObserver(items=>items.forEach(i=>{if(i.isIntersecting){i.target.classList.add('revealed');observer.unobserve(i.target);}}),{threshold:.05});document.querySelectorAll('[data-reveal]').forEach(el=>observer.observe(el));
-    return()=>{mq.removeEventListener('change',pref);removeEventListener('scroll',onScroll);cancelAnimationFrame(frame);observer.disconnect();clearTimeout(noticeTimer.current);};
+    const stopReveal=setupReveal();
+    return()=>{mq.removeEventListener('change',pref);removeEventListener('scroll',onScroll);cancelAnimationFrame(frame);stopReveal();clearTimeout(noticeTimer.current);};
   },[]);
   const chooseService=i=>{setSelected([selection[[0,1,1,2][i]]]);scrollToRequest();};
   return <MotionContext.Provider value={reduced}><ScenesContext.Provider value={scenesMode}><FramesContext.Provider value={imageFrames}><div className={`site${reduced?' reduce-motion':''}${scenesMode==='images'?' scenes-static':''}`}><ImageTweaks/>
@@ -429,7 +486,7 @@ export default function App(){
       <section className="section contact" data-reveal><div className="wrap contact-layout"><h2><Text value={sourceTitle(12)}/></h2><div className="contact-actions"><div className="messengers"><button className="messenger-max" onClick={()=>notify('Ссылка на MAX будет добавлена позже.')}><span className="messenger-main"><MessageSquare/>Написать в MAX</span><span className="messenger-go" aria-hidden="true"><ArrowUpRight size={18}/></span></button><button className="messenger-whatsapp" onClick={()=>notify('Ссылка на WhatsApp будет добавлена позже.')}><span className="messenger-main"><MessageCircle/>Написать в WhatsApp</span><span className="messenger-go" aria-hidden="true"><ArrowUpRight size={18}/></span></button><button className="messenger-telegram" onClick={()=>notify('Ссылка на Telegram будет добавлена позже.')}><span className="messenger-main"><Send/>Написать в Telegram</span><span className="messenger-go" aria-hidden="true"><ArrowUpRight size={18}/></span></button></div><p>Или позвоните по номеру:</p><a className="contact-phone" href="tel:+79038792020">+7 (903) 879-20-20</a><a className="contact-email" href="mailto:info@customsleader.ru">info@customsleader.ru</a></div></div></section>
     </main>
     <footer className="footer wrap"><div className="footer-top"><a href="#" className="wordmark" aria-label="КАСТОМС ЛИДЕР — в начало"><img className="logo-on-dark" src={logoOnDark} alt="КАСТОМС ЛИДЕР" width="960" height="113" loading="lazy"/><img className="logo-on-light" src={logoOnLight} alt="КАСТОМС ЛИДЕР" width="960" height="112" loading="lazy"/></a><p>Международная и внутренняя логистика. Промышленного оборудования и негабарита. Горнодобывающее, горнопромышленное и вспомогательное оборудование к ним.</p><p className="footer-address">Адрес: <a href="https://yandex.ru/maps/-/CXefnW0a" target="_blank" rel="noopener noreferrer">Иваново,<br/>ул. Степанова, 5,<br/>оф. 307А</a></p><div className="footer-contacts"><a href="tel:+79038792020">+7 (903) 879-20-20</a><a href="mailto:info@customsleader.ru">info@customsleader.ru</a><button onClick={()=>setModal('callback')}>Заказать звонок <ArrowUpRight size={16}/></button></div></div><div className="footer-bottom"><p>ООО «КАСТОМС ЛИДЕР» ИНН: 3702195282</p><p>Информация на сайте носит справочный характер и не является публичной офертой (ст. 437 ГК РФ). Стоимость и сроки определяются индивидуальным расчётом и договором.</p><div><button onClick={()=>setLegal('privacy')}>Политика конфиденциальности</button><button onClick={()=>setLegal('personal-data')}>Политика обработки персональных данных</button><button onClick={()=>setCookieOpen(true)}>Настройки cookie</button></div></div></footer>
-    {!cookieOpen&&<ScrollTopButton/>}{cookieOpen&&<CookieNotice onClose={()=>setCookieOpen(false)} onPolicy={()=>setLegal('cookies')}/>}
+    {!cookieOpen&&<ScrollTopButton/>}{MOTION_SWITCHER&&<MotionSwitcher motion={motion} setMotion={setMotion} lifted={cookieOpen}/>}{cookieOpen&&<CookieNotice onClose={()=>setCookieOpen(false)} onPolicy={()=>setLegal('cookies')}/>}
     {notice&&<div className="toast" role="status">{notice}<button aria-label="Закрыть уведомление" onClick={()=>setNotice('')}><X size={17}/></button></div>}
     {modal&&<Modal type={modal} onClose={()=>setModal(null)} onLegal={setLegal}/>}{legal&&<Modal type={legal} onClose={()=>setLegal(null)}/>} 
   </div></FramesContext.Provider></ScenesContext.Provider></MotionContext.Provider>;
