@@ -6,6 +6,10 @@ export const SCENES_KEY='scenes-mode';
 export const TWEAKS_CASES_KEY='tweaks-cases';
 export const TWEAKS_STILLS_KEY='tweaks-stills';
 export const TWEAKS_FOUNDER_KEY='tweaks-founder';
+// Colour themes: Graphite (dark) is the default, Steel the light one. THEME_SWITCHER shows the sun/moon
+// button in the header; set it to false to hide it and always use Graphite.
+export const THEME_KEY='site-theme';
+export const THEME_SWITCHER=true;
 // Cookie notice. Bump COOKIE_CONSENT_VERSION when the cookie policy changes so visitors are asked again.
 // Analytics loads only after "Принять все": set YANDEX_METRIKA_ID to the counter number (e.g. 12345678)
 // and GOOGLE_ANALYTICS_ID to the GA4 measurement ID (e.g. 'G-XXXXXXXXXX'). null keeps a service off.

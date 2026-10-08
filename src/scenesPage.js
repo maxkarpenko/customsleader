@@ -19,10 +19,10 @@ document.querySelectorAll('input[name=mode]').forEach(input=>input.addEventListe
 }));
 render();
 
-// Dev tweak panels: unchecked stores '0', checked removes the key (panels default to on).
+// Dev tweak panels: checked stores '1', unchecked removes the key (panels default to off).
 document.querySelectorAll('input[data-tweak]').forEach(box=>{
   const key=box.dataset.tweak;
-  try{box.checked=localStorage.getItem(key)!=='0';}catch{box.checked=true;}
-  box.addEventListener('change',()=>{try{box.checked?localStorage.removeItem(key):localStorage.setItem(key,'0');}catch{}});
+  try{box.checked=localStorage.getItem(key)==='1';}catch{box.checked=false;}
+  box.addEventListener('change',()=>{try{box.checked?localStorage.setItem(key,'1'):localStorage.removeItem(key);}catch{}});
 });
 
