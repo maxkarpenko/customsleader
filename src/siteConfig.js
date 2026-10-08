@@ -10,11 +10,6 @@ export const TWEAKS_FOUNDER_KEY='tweaks-founder';
 // button in the header; set it to false to hide it and always use Graphite.
 export const THEME_KEY='site-theme';
 export const THEME_SWITCHER=true;
-// Scroll reveal look: 'rise' or 'focus' (see styles.css). MOTION_SWITCHER shows a
-// bar at the bottom of the page for comparing them, the pick is stored per browser; set it to false for launch.
-export const MOTION_THEME='rise';
-export const MOTION_KEY='motion-theme';
-export const MOTION_SWITCHER=true;
 // Cookie notice. Bump COOKIE_CONSENT_VERSION when the cookie policy changes so visitors are asked again.
 // Analytics loads only after "Принять все": set YANDEX_METRIKA_ID to the counter number (e.g. 12345678)
 // and GOOGLE_ANALYTICS_ID to the GA4 measurement ID (e.g. 'G-XXXXXXXXXX'). null keeps a service off.

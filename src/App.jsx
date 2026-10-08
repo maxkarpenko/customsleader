@@ -1,7 +1,7 @@
 import React, {useEffect, useId, useLayoutEffect, useRef, useState, createContext, useContext} from 'react';
 import {ArrowUpRight, ArrowRight, ArrowDown, ArrowUp, Sun, Moon, ArrowLeft, Check, Plus, Minus, X, Phone, ShieldCheck, PackageCheck, Route, Truck, FileCheck2, Globe2, MessageCircle, MessageSquare, Mail, UserRound, CircleCheck, Info, LoaderCircle, Send, Layers3, Settings2, SlidersHorizontal, RotateCcw, Copy} from 'lucide-react';
 import content from './content.json';
-import {SCENES_MODE,SCENES_KEY,TWEAKS_CASES_KEY,TWEAKS_STILLS_KEY,TWEAKS_FOUNDER_KEY,THEME_KEY,THEME_SWITCHER,MOTION_THEME,MOTION_KEY,MOTION_SWITCHER,COOKIE_CONSENT_KEY,COOKIE_CONSENT_VERSION,YANDEX_METRIKA_ID,GOOGLE_ANALYTICS_ID} from './siteConfig.js';
+import {SCENES_MODE,SCENES_KEY,TWEAKS_CASES_KEY,TWEAKS_STILLS_KEY,TWEAKS_FOUNDER_KEY,THEME_KEY,THEME_SWITCHER,COOKIE_CONSENT_KEY,COOKIE_CONSENT_VERSION,YANDEX_METRIKA_ID,GOOGLE_ANALYTICS_ID} from './siteConfig.js';
 import privacyPolicy from './legal/privacy-policy.md?raw';
 import personalDataPolicy from './legal/personal-data-policy.md?raw';
 import consentText from './legal/consent.md?raw';
@@ -13,6 +13,9 @@ import routeConvoy from './assets/media/route-convoy.webp';
 import routeRain from './assets/media/route-rain.webp';
 import logoOnDark from './assets/media/logo-on-dark.webp';
 import logoOnLight from './assets/media/logo-on-light.webp';
+import teamContainer from './assets/team/01-monumental-container.webp';
+import teamAerial from './assets/team/02-aerial-shadows.webp';
+import teamCargo from './assets/team/03-monochrome-industrial-cargo.webp';
 import founderPhoto from './assets/media/founder.webp';
 
 const {sections:S,services,cases,tabs,faq}=content;
@@ -250,9 +253,9 @@ function LegalDoc({source}){
 function Modal({type,onClose,onLegal}){
   const dialog=useRef(null);
   useEffect(()=>{dialog.current?.showModal();const old=document.body.style.overflow;document.body.style.overflow='hidden';return()=>{document.body.style.overflow=old;};},[]);
-  const titles={callback:'Заказать звонок',russia:'Нужна перевозка по России?',consent:'Согласие на обработку персональных данных',privacy:'Политика конфиденциальности','personal-data':'Политика в отношении обработки персональных данных',cookies:'Политика использования cookie'};
+  const titles={hero:'Получите стоимость и сроки доставки',callback:'Заказать звонок',russia:'Нужна перевозка по России?',consent:'Согласие на обработку персональных данных',privacy:'Политика конфиденциальности','personal-data':'Политика в отношении обработки персональных данных',cookies:'Политика использования cookie'};
   const doc=LEGAL_DOCS[type];
-  return <dialog ref={dialog} className={`modal${doc?' modal-doc':''}`} onCancel={onClose} aria-labelledby={`modal-title-${type}`} onClick={e=>{if(e.target===dialog.current)onClose();}}><div className="modal-inner"><button className="close-button" onClick={onClose} aria-label="Закрыть окно"><X/></button><h2 id={`modal-title-${type}`}>{titles[type]}</h2>{['callback','russia'].includes(type)?<Form variant={type} onLegal={onLegal}/>:<LegalDoc source={doc}/>}</div></dialog>;
+  return <dialog ref={dialog} className={`modal modal-${type}${doc?' modal-doc':''}`} onCancel={onClose} aria-labelledby={`modal-title-${type}`} onClick={e=>{if(e.target===dialog.current)onClose();}}><div className="modal-inner"><button className="close-button" onClick={onClose} aria-label="Закрыть окно"><X/></button><h2 id={`modal-title-${type}`}>{titles[type]}</h2>{type==='hero'?<Form id="hero-modal" onLegal={onLegal}/>:['callback','russia'].includes(type)?<Form variant={type} onLegal={onLegal}/>:<LegalDoc source={doc}/>}</div></dialog>;
 }
 
 function Journey({onRequest}){
@@ -323,10 +326,14 @@ function scrollToCase(e){
   document.getElementById('case-norda')?.scrollIntoView({behavior:reduce?'auto':'smooth',block:'start'});
 }
 const CASE_LABEL="Смотреть кейс: 1'200 тонн и 140 метров, Китай → рудник Таймырский";
+// The case link appears twice: under the benefits on desktop, over the photo on phones (CSS shows one).
+function CaseLink({className}){
+  return <a className={`hp-case ${className}`} href="#case-norda" onClick={scrollToCase} aria-label={CASE_LABEL}><span className="hc-body"><span className="hc-figs"><b>1'200 тонн</b> и <b>140 метров</b></span><span className="hc-route">Китай → рудник Таймырский</span></span><span className="hc-more">Смотреть кейс<ArrowDown size={18} aria-hidden="true"/></span></a>;
+}
 function HeroProof(){
   return <div className="hero-proof">
     <ul className="hp-benefits">{HERO_BENEFITS.map(([Icon,title])=><li key={title}><Icon aria-hidden="true"/>{title}</li>)}</ul>
-    <a className="hp-case" href="#case-norda" onClick={scrollToCase} aria-label={CASE_LABEL}><span className="hc-body"><span className="hc-figs"><b>1'200 тонн</b> и <b>140 метров</b></span><span className="hc-route">Китай → рудник Таймырский</span></span><span className="hc-more">Смотреть кейс<ArrowDown size={18} aria-hidden="true"/></span></a>
+    <CaseLink className="hp-case-story"/>
   </div>;
 }
 
@@ -344,20 +351,15 @@ function applyTheme(id){
 
 // Scroll reveal. Below the first screen, headings, text, media and grid items are tagged data-rv="kind"
 // with a stagger index (--rv-i) and get .rv-in as they enter the viewport; .rv-done drops the reveal
-// transitions afterwards so their own hover transitions come back. The look depends on html[data-motion]
-// (styles.css). Hidden states apply only under html.rv-ready, which is never set for reduced motion.
-const MOTION_THEMES=[['rise','Плавный подъём'],['focus','Фокус']];
+// transitions afterwards so their own hover transitions come back (styles.css, "Scroll reveal").
+// Hidden states apply only under html.rv-ready, which is never set for reduced motion.
 const RV_SKIP='.lead-form,.modal,.cookie-notice,.tabs,.route-stops,.scene,label,button:not(.messengers>button),summary';
 const RV_TARGETS=[
-  ['media','.case-visual,.journey-visual,.team-globe,.founder-media,.insurance-art'],
+  ['media','.case-visual,.journey-visual,.team-carousel,.founder-media,.insurance-art'],
   ['item','.task-grid>article,.services-grid>article,.clients-grid>li,.team-roles>*,.founder-facts>*,.case-details>*,.messengers>button,.faq-list>details,.case-stat'],
   ['heading','h2,h3'],
   ['text','p,.bullets>li,.exclusions'],
 ];
-function readMotion(){
-  if(!MOTION_SWITCHER)return MOTION_THEME;
-  try{const v=localStorage.getItem(MOTION_KEY);return MOTION_THEMES.some(([id])=>id===v)?v:MOTION_THEME;}catch{return MOTION_THEME;}
-}
 function setupReveal(){
   if(matchMedia('(prefers-reduced-motion: reduce)').matches)return ()=>{};
   const scope=[...document.querySelectorAll('main > section:not(.hero)')],tagged=[];
@@ -383,18 +385,26 @@ function setupReveal(){
   const schedule=()=>{if(!queued)queued=setTimeout(check,50);};
   document.documentElement.classList.add('rv-ready');
   check();window.addEventListener('scroll',schedule,{passive:true});window.addEventListener('resize',schedule);
-  const replay=()=>{timers.forEach(clearTimeout);timers.clear();tagged.forEach(el=>el.classList.remove('rv-in','rv-done'));pending=[...tagged];requestAnimationFrame(()=>requestAnimationFrame(check));setTimeout(check,120);};
-  window.addEventListener('rv-replay',replay);
-  return ()=>{clearTimeout(queued);timers.forEach(clearTimeout);window.removeEventListener('scroll',schedule);window.removeEventListener('resize',schedule);window.removeEventListener('rv-replay',replay);document.documentElement.classList.remove('rv-ready');};
+  return ()=>{clearTimeout(queued);timers.forEach(clearTimeout);window.removeEventListener('scroll',schedule);window.removeEventListener('resize',schedule);document.documentElement.classList.remove('rv-ready');};
 }
-function MotionSwitcher({motion,setMotion,lifted}){
-  const i=MOTION_THEMES.findIndex(([id])=>id===motion),n=MOTION_THEMES.length;
-  const go=d=>{setMotion(MOTION_THEMES[(i+d+n)%n][0]);requestAnimationFrame(()=>window.dispatchEvent(new Event('rv-replay')));};
-  return <div className={`motion-switcher${lifted?' is-lifted':''}`} role="group" aria-label="Анимация появления">
-    <button type="button" onClick={()=>go(-1)} aria-label="Предыдущая анимация"><ArrowLeft size={18}/></button>
-    <span aria-live="polite"><b>{i+1}</b> / {n}<em> · {MOTION_THEMES[i][1]}</em></span>
-    <button type="button" onClick={()=>go(1)} aria-label="Следующая анимация"><ArrowRight size={18}/></button>
-    <button type="button" className="motion-replay" onClick={()=>window.dispatchEvent(new Event('rv-replay'))} aria-label="Повторить анимацию" title="Повторить"><RotateCcw size={16}/></button>
+// Team section carousel: three stills that cross-fade, autoplay pauses on hover, focus and reduced motion.
+const TEAM_SLIDES=[
+  {src:teamContainer,alt:'Тени четырёх специалистов на бетонной стене рядом с зелёным морским контейнером'},
+  {src:teamAerial,alt:'Вид сверху: зелёный контейнер и длинные тени команды'},
+  {src:teamCargo,alt:'Груз под тентом на раме и тени команды на стене склада'},
+];
+function TeamCarousel(){
+  const [index,setIndex]=useState(0),[paused,setPaused]=useState(false),reduced=useContext(MotionContext),start=useRef(null),n=TEAM_SLIDES.length;
+  const go=d=>setIndex(v=>(v+d+n)%n);
+  useEffect(()=>{if(paused||reduced)return;const t=setInterval(()=>setIndex(v=>(v+1)%n),5500);return ()=>clearInterval(t);},[paused,reduced,n]);
+  return <div className="team-carousel" role="region" aria-roledescription="карусель" aria-label="Команда" onMouseEnter={()=>setPaused(true)} onMouseLeave={()=>setPaused(false)} onFocus={()=>setPaused(true)} onBlur={()=>setPaused(false)}
+    onPointerDown={e=>{start.current=e.clientX;}} onPointerUp={e=>{if(start.current==null)return;const dx=e.clientX-start.current;start.current=null;if(Math.abs(dx)>40)go(dx<0?1:-1);}}>
+    {TEAM_SLIDES.map((slide,k)=><figure key={slide.src} className={`team-slide${k===index?' is-active':''}`} aria-hidden={k!==index}><img src={slide.src} alt={slide.alt} width="1374" height="1145" loading="lazy" decoding="async" draggable="false"/></figure>)}
+    <div className="team-controls">
+      <div className="team-dots">{TEAM_SLIDES.map((slide,k)=><button type="button" key={slide.src} aria-label={`Слайд ${k+1} из ${n}`} aria-current={k===index?'true':undefined} onClick={()=>setIndex(k)}/>)}</div>
+      <button type="button" onClick={()=>go(-1)} aria-label="Предыдущий слайд"><ArrowLeft size={18}/></button>
+      <button type="button" onClick={()=>go(1)} aria-label="Следующий слайд"><ArrowRight size={18}/></button>
+    </div>
   </div>;
 }
 
@@ -413,8 +423,7 @@ function ScrollTopButton(){
 }
 
 export default function App(){
-  const [theme,setTheme]=useState(readTheme),[motion,setMotion]=useState(readMotion);
-  useLayoutEffect(()=>{document.documentElement.dataset.motion=motion;try{if(MOTION_SWITCHER)localStorage.setItem(MOTION_KEY,motion);}catch{}},[motion]);
+  const [theme,setTheme]=useState(readTheme);
   useLayoutEffect(()=>{applyTheme(theme);try{if(THEME_SWITCHER)localStorage.setItem(THEME_KEY,theme);}catch{}},[theme]);
   const [modal,setModal]=useState(null),[legal,setLegal]=useState(null),[selected,setSelected]=useState([selection[0]]),[notice,setNotice]=useState('');
   const [reduced,setReduced]=useState(()=>matchMedia('(prefers-reduced-motion: reduce)').matches);
@@ -441,14 +450,14 @@ export default function App(){
 
       <p className="header-description">Международная и внутренняя логистика. Промышленного оборудования и негабарита. Горнодобывающее, горнопромышленное и вспомогательное оборудование к ним.</p>
 
-      <button className="russia-link text-link" onClick={()=>setModal('russia')}>Нужна перевозка по России? <ArrowUpRight size={15}/></button>
+      <button className="russia-link text-link" onClick={()=>setModal('russia')}><span className="russia-text"><span>Нужна перевозка</span> <span>по России?</span></span> <ArrowUpRight size={15}/></button>
       <div className="header-contacts"><a href="tel:+79038792020">+7 (903) 879-20-20</a><a href="mailto:info@customsleader.ru">info@customsleader.ru</a></div>
       <button className="header-callback" onClick={()=>setModal('callback')}>Заказать звонок <ArrowUpRight size={16}/></button>
       {THEME_SWITCHER&&<button type="button" className="theme-flip" onClick={()=>setTheme(t=>t==="graphite"?"steel":"graphite")} aria-label={theme==="graphite"?"Включить светлую тему":"Включить тёмную тему"} title={theme==="graphite"?"Светлая тема":"Тёмная тема"}>{theme==="graphite"?<Sun size={20}/>:<Moon size={20}/>}</button>}
     </header>
     <main id="main">
       <section className="hero wrap">
-        <div className="hero-layout"><div className="hero-backdrop" aria-hidden="true"><img src={miningComplex} alt="" width="1280" height="851"/></div><div className="hero-story"><h1>Доставим станки, линии и негабарит из Китая «в белую», даже на <span>Крайний Север</span></h1><p className="hero-lead"><Text value={S[1].LEAD}/></p><Button className="mobile-hero-action" onClick={()=>document.getElementById('hero-request').scrollIntoView({behavior:'instant',block:'start'})}>{shortCTA}</Button><HeroProof/></div><div className="hero-form" id="hero-request"><Form id="hero" onLegal={setLegal}/></div></div>
+        <div className="hero-layout"><div className="hero-backdrop"><img src={miningComplex} alt="" width="1280" height="851" aria-hidden="true"/><CaseLink className="hp-case-photo"/></div><div className="hero-story"><h1>Доставим станки, линии и негабарит из Китая «в белую», даже на <span>Крайний Север</span></h1><p className="hero-lead"><Text value={S[1].LEAD}/></p><Button className="mobile-hero-action" onClick={()=>setModal('hero')}>{shortCTA}</Button><HeroProof/></div><div className="hero-form" id="hero-request"><Form id="hero" onLegal={setLegal}/></div></div>
       </section>
 
       <section className="section tasks light" data-reveal><div className="wrap"><h2><Text value={sourceTitle(2)}/></h2><div className="task-grid">{S[2].tables.map(([title,text],i)=>{const Icon=[Settings2,PackageCheck,Truck,Route][i];return <article key={title}><div className={`task-diagram diagram-${i}`} aria-hidden="true"><Icon size={64} strokeWidth={.9}/><span className="diagram-cross a"/><span className="diagram-cross b"/></div><h3><Text value={title}/></h3><p><Text value={text}/></p></article>})}</div></div></section>
@@ -471,7 +480,7 @@ export default function App(){
 
       <Journey onRequest={scrollToRequest}/>
 
-      <section className="section team light" data-reveal><div className="wrap"><div className="team-intro"><div className="team-globe"><Scene kind="globe" label="Иллюстрация международных маршрутов на вращающемся глобусе"/></div><div><h2><Text value={sourceTitle(7)}/></h2><p className="lead"><Text value={S[7].LEAD}/></p><p className="note"><Layers3 size={22}/>Если менеджер сменился или в отпуске, коллега откроет историю сделки и продолжит работу с текущего этапа</p></div></div><div className="team-roles">{S[7].tables.map(([name,text],i)=>{const Icon=[UserRound,FileCheck2,Route,Layers3][i];return <article key={name}><Icon size={28} strokeWidth={1.2}/><h3>{name}</h3><p><Text value={text}/></p></article>})}</div></div></section>
+      <section className="section team light" data-reveal><div className="wrap"><div className="team-intro"><TeamCarousel/><div><h2><Text value={sourceTitle(7)}/></h2><p className="lead"><Text value={S[7].LEAD}/></p><p className="note"><Layers3 size={22}/>Если менеджер сменился или в отпуске, коллега откроет историю сделки и продолжит работу с текущего этапа</p></div></div><div className="team-roles">{S[7].tables.map(([name,text],i)=>{const Icon=[UserRound,FileCheck2,Route,Layers3][i];return <article key={name}><Icon size={28} strokeWidth={1.2}/><h3>{name}</h3><p><Text value={text}/></p></article>})}</div></div></section>
 
       <section className="section insurance" data-reveal><div className="wrap insurance-layout"><div><h2><Text value={sourceTitle(8)}/></h2><Bullets items={['Понимаете, на какую сумму защищён груз. Проверим страховую сумму и лимиты применительно к вашей поставке. В случае непокрытия ответственности, застрахуем дополнительно.','Знаете об ограничениях до отправки. Покажем, какие риски покрываются, а какие расходы могут остаться на вашей стороне.','Получаете подтверждение защиты документами. До договора предоставим действующий полис и подтверждение оплаты']}/></div><div className="insurance-art" aria-hidden="true"><ShieldCheck size={156} strokeWidth={.7}/><div className="orbit orbit-a"/><div className="orbit orbit-b"/><div className="orbit orbit-c"/></div></div></section>
 
@@ -486,7 +495,7 @@ export default function App(){
       <section className="section contact" data-reveal><div className="wrap contact-layout"><h2><Text value={sourceTitle(12)}/></h2><div className="contact-actions"><div className="messengers"><button className="messenger-max" onClick={()=>notify('Ссылка на MAX будет добавлена позже.')}><span className="messenger-main"><MessageSquare/>Написать в MAX</span><span className="messenger-go" aria-hidden="true"><ArrowUpRight size={18}/></span></button><button className="messenger-whatsapp" onClick={()=>notify('Ссылка на WhatsApp будет добавлена позже.')}><span className="messenger-main"><MessageCircle/>Написать в WhatsApp</span><span className="messenger-go" aria-hidden="true"><ArrowUpRight size={18}/></span></button><button className="messenger-telegram" onClick={()=>notify('Ссылка на Telegram будет добавлена позже.')}><span className="messenger-main"><Send/>Написать в Telegram</span><span className="messenger-go" aria-hidden="true"><ArrowUpRight size={18}/></span></button></div><p>Или позвоните по номеру:</p><a className="contact-phone" href="tel:+79038792020">+7 (903) 879-20-20</a><a className="contact-email" href="mailto:info@customsleader.ru">info@customsleader.ru</a></div></div></section>
     </main>
     <footer className="footer wrap"><div className="footer-top"><a href="#" className="wordmark" aria-label="КАСТОМС ЛИДЕР — в начало"><img className="logo-on-dark" src={logoOnDark} alt="КАСТОМС ЛИДЕР" width="960" height="113" loading="lazy"/><img className="logo-on-light" src={logoOnLight} alt="КАСТОМС ЛИДЕР" width="960" height="112" loading="lazy"/></a><p>Международная и внутренняя логистика. Промышленного оборудования и негабарита. Горнодобывающее, горнопромышленное и вспомогательное оборудование к ним.</p><p className="footer-address">Адрес: <a href="https://yandex.ru/maps/-/CXefnW0a" target="_blank" rel="noopener noreferrer">Иваново,<br/>ул. Степанова, 5,<br/>оф. 307А</a></p><div className="footer-contacts"><a href="tel:+79038792020">+7 (903) 879-20-20</a><a href="mailto:info@customsleader.ru">info@customsleader.ru</a><button onClick={()=>setModal('callback')}>Заказать звонок <ArrowUpRight size={16}/></button></div></div><div className="footer-bottom"><p>ООО «КАСТОМС ЛИДЕР» ИНН: 3702195282</p><p>Информация на сайте носит справочный характер и не является публичной офертой (ст. 437 ГК РФ). Стоимость и сроки определяются индивидуальным расчётом и договором.</p><div><button onClick={()=>setLegal('privacy')}>Политика конфиденциальности</button><button onClick={()=>setLegal('personal-data')}>Политика обработки персональных данных</button><button onClick={()=>setCookieOpen(true)}>Настройки cookie</button></div></div></footer>
-    {!cookieOpen&&<ScrollTopButton/>}{MOTION_SWITCHER&&<MotionSwitcher motion={motion} setMotion={setMotion} lifted={cookieOpen}/>}{cookieOpen&&<CookieNotice onClose={()=>setCookieOpen(false)} onPolicy={()=>setLegal('cookies')}/>}
+    {!cookieOpen&&<ScrollTopButton/>}{cookieOpen&&<CookieNotice onClose={()=>setCookieOpen(false)} onPolicy={()=>setLegal('cookies')}/>}
     {notice&&<div className="toast" role="status">{notice}<button aria-label="Закрыть уведомление" onClick={()=>setNotice('')}><X size={17}/></button></div>}
     {modal&&<Modal type={modal} onClose={()=>setModal(null)} onLegal={setLegal}/>}{legal&&<Modal type={legal} onClose={()=>setLegal(null)}/>} 
   </div></FramesContext.Provider></ScenesContext.Provider></MotionContext.Provider>;
