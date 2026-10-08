@@ -310,3 +310,37 @@
   .modal-hero .form-intro{font-size:var(--fs-meta);margin-bottom:18px}
   .modal-hero .form-legal{font-size:var(--fs-micro);margin-bottom:0}
 }
+/* Phones: every 2×2 grid becomes a single column of blocks, one after another */
+@media(max-width:650px){
+  .task-grid,.choice-grid,.tabs,.team-roles,.founder-facts{grid-template-columns:1fr}
+  .team-roles{gap:28px}
+  .founder-facts{gap:20px}
+  .choice-grid label{min-height:0}
+}
+/* Phones: tasks as compact rows, a small round icon beside the title and text, hairlines between rows */
+@media(max-width:650px){
+  .task-grid{gap:0;margin-top:28px}
+  .task-grid article{display:grid;grid-template-columns:44px 1fr;column-gap:16px;padding-block:20px;border-top:1px solid var(--line)}
+  .task-grid article:last-child{border-bottom:1px solid var(--line)}
+  .task-diagram{grid-row:1 / 3;align-self:start;width:44px;height:44px;margin:0;border:1px solid var(--line);border-radius:50%;color:var(--green-deep)}
+  .task-diagram>svg{width:22px;height:22px;stroke-width:1.5}
+  .diagram-cross{display:none}
+  .task-grid h3{font-size:17px;line-height:1.3;min-height:0}
+  .task-grid p{margin-top:6px;font-size:var(--fs-meta);line-height:1.6}
+}
+/* Phones: services as a swipe carousel of cards; "Не работаем" as compact chips */
+@media(max-width:650px){
+  .exclusions{padding:14px 16px}
+  .exclusions>span{font-size:15px;margin-bottom:10px}
+  .exclusions ul{flex-direction:row;flex-wrap:wrap;gap:6px}
+  .exclusions li{gap:6px;padding:5px 10px 5px 8px;border:1px solid color-mix(in srgb,var(--stop) 45%,transparent);border-radius:999px;font-size:13px}
+  .exclusions li svg{width:13px;height:13px}
+  .services-grid{display:flex;gap:12px;margin:0 -20px;padding:0 20px 8px;border-top:0;overflow-x:auto;scroll-snap-type:x mandatory;scroll-padding-inline:20px;scrollbar-width:none}
+  .services-grid::-webkit-scrollbar{display:none}
+  .services-grid article,.services-grid article:nth-child(2n){flex:0 0 84%;scroll-snap-align:start;padding:13px 18px;border:1px solid var(--line);border-radius:6px;background:var(--steel-900)}
+  .services-grid h3{font-size:24px;margin-bottom:10px}
+  .services-grid article>p{font-size:15px}
+  .services-grid .bullets{margin-block:8px}
+  .services-grid .bullets li{font-size:15px}
+  .service-cta{margin-top:auto}
+}
