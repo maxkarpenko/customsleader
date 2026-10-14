@@ -486,16 +486,28 @@
 
 /* Dialogs take focus themselves on open; only the controls inside show a ring */
 .modal:focus{outline:none}
-/* Phones: the pinned button floats at the bottom as a pill, like the Safari address bar,
-   next to the round section-menu button */
+/* Phones: one row at the bottom laid out like Safari's toolbar — the "up" button where Back sits,
+   the request pill as wide as the address field, the section menu where the "…" button sits */
 @media(max-width:650px){
-  .sticky-cta{top:auto;bottom:calc(14px + env(safe-area-inset-bottom));left:16px;right:76px;width:auto;transform:translateY(calc(100% + 40px));transition:transform .4s var(--ease),opacity .25s,visibility .4s}
+  .sticky-cta{top:auto;bottom:calc(14px + env(safe-area-inset-bottom));left:90px;right:90px;width:auto;transform:translateY(calc(100% + 40px));transition:transform .4s var(--ease),opacity .25s,visibility .4s}
   .sticky-cta.is-shown{transform:none}
-  .sticky-cta .button{min-height:50px;padding:0 20px;justify-content:center;gap:10px;border-radius:999px;font-size:15px;box-shadow:0 12px 32px -8px rgba(0,0,0,.4)}
+  .sticky-cta .button{min-height:48px;padding:0 12px;justify-content:center;border-radius:999px;font-size:clamp(13px,3.55vw,15px);letter-spacing:-.01em;white-space:nowrap;box-shadow:0 12px 32px -8px rgba(0,0,0,.4)}
+  .sticky-cta .button svg{display:none}
   .sticky-cta .button:active{transform:scale(.97)}
-  /* the round "up" button sits above the pill */
-  .scroll-top{bottom:calc(78px + env(safe-area-inset-bottom))}
+  .scroll-top{left:34px;bottom:calc(14px + env(safe-area-inset-bottom));width:48px;height:48px}
+  /* same glass circle as the section-menu button */
+  .scroll-top{border:.5px solid rgba(255,255,255,.14);background:rgba(38,43,45,.72);color:#f0f1eb;-webkit-backdrop-filter:blur(20px) saturate(1.8);backdrop-filter:blur(20px) saturate(1.8);box-shadow:0 12px 32px -8px rgba(0,0,0,.45)}
+  :root[data-tone="light"] .scroll-top{border-color:rgba(0,0,0,.08);background:rgba(255,255,255,.74);color:#162026;box-shadow:0 12px 32px -8px rgba(22,32,38,.3)}
+  .scroll-top svg{width:22px;height:22px}
+  .scroll-top:hover svg{transform:none}
+  .scroll-top:active{transform:scale(.94)}
 }
 @media(max-width:650px) and (prefers-reduced-motion:reduce){.sticky-cta{transition:opacity .2s,visibility .2s}}
 /* While the cookie notice is up on phones, the bottom controls wait above it */
-@media(max-width:650px){:root:has(.cookie-notice) :is(.sticky-cta,.section-menu-toggle){bottom:calc(var(--cookie-h,130px) + 12px)}}
+@media(max-width:650px){:root:has(.cookie-notice) :is(.sticky-cta,.section-menu-toggle,.scroll-top){bottom:calc(var(--cookie-h,130px) + 12px)}}
+/* Phones: the round glass buttons brighten under the pointer or finger */
+@media(max-width:650px){
+  .scroll-top,.section-menu-toggle{transition:opacity .25s,transform .2s,visibility .25s,background-color .2s,border-color .2s}
+  :is(.scroll-top,.section-menu-toggle):is(:hover,:active){background:rgba(74,81,83,.8);border-color:rgba(255,255,255,.24);color:#f0f1eb}
+  :root[data-tone="light"] :is(.scroll-top,.section-menu-toggle):is(:hover,:active){background:rgba(255,255,255,.96);border-color:rgba(0,0,0,.12);color:#162026}
+}
