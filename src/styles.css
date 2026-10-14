@@ -511,3 +511,6 @@
   :is(.scroll-top,.section-menu-toggle):is(:hover,:active){background:rgba(74,81,83,.8);border-color:rgba(255,255,255,.24);color:#f0f1eb}
   :root[data-tone="light"] :is(.scroll-top,.section-menu-toggle):is(:hover,:active){background:rgba(255,255,255,.96);border-color:rgba(0,0,0,.12);color:#162026}
 }
+/* Founder: role line right under the name */
+.founder-copy h3:has(+ .founder-role){margin-bottom:6px}
+.founder-copy>.founder-role{margin-bottom:16px;font-size:var(--fs-small);color:var(--ink-muted)}

@@ -18,12 +18,19 @@
   .section-menu-toggle{position:fixed;z-index:72;right:34px;bottom:calc(14px + env(safe-area-inset-bottom));display:grid;place-items:center;width:48px;height:48px;padding:0;border:.5px solid rgba(255,255,255,.14);border-radius:50%;background:rgba(38,43,45,.72);color:#f0f1eb;-webkit-backdrop-filter:blur(20px) saturate(1.8);backdrop-filter:blur(20px) saturate(1.8);box-shadow:0 12px 32px -8px rgba(0,0,0,.45);cursor:pointer;-webkit-tap-highlight-color:transparent;transition:transform .2s}
   .section-menu-toggle:active{transform:scale(.94)}
   :root[data-tone="light"] .section-menu-toggle{border-color:rgba(0,0,0,.08);background:rgba(255,255,255,.74);color:#162026;box-shadow:0 12px 32px -8px rgba(22,32,38,.3)}
-  .section-menu-backdrop{display:block;position:fixed;inset:0;z-index:70;background:rgba(23,27,29,.45);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);animation:section-menu-in .25s ease-out}
-  :root[data-tone="light"] .section-menu-backdrop{background:rgba(243,246,247,.5)}
-  .section-dots.is-open{z-index:71;left:20px;gap:2px;animation:section-menu-in .25s ease-out}
-  .section-dots.is-open .section-dot{padding:3px 0;gap:12px}
-  .section-dots.is-open .section-dot span{display:block;opacity:1;transform:none;padding:6px 12px;font-size:17px;background:rgba(var(--glass),.6)}
+  .section-menu-backdrop{display:block;position:fixed;inset:0;z-index:70;background:rgba(23,27,29,.74);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);animation:section-menu-in .25s ease-out}
+  :root[data-tone="light"] .section-menu-backdrop{background:rgba(243,246,247,.66)}
+  /* open: dots stay on the left edge, names line up on the right, near the menu button; no chips, only the blur */
+  .section-dots.is-open{z-index:71;left:7px;right:34px;align-items:stretch;gap:0;animation:section-menu-in .25s ease-out}
+  .section-dots.is-open .section-dot{justify-content:space-between;width:100%;padding:2px 0}
+  .section-dots.is-open .section-dot span{display:block;opacity:1;transform:none;padding:7px 0;font-size:19px;font-weight:500;text-align:right;background:none;-webkit-backdrop-filter:none;backdrop-filter:none}
   .section-dots.is-open .section-dot[aria-current] span{color:var(--acc);font-weight:600}
 }
 @keyframes section-menu-in{from{opacity:0}}
 @media(prefers-reduced-motion:reduce){.section-menu-backdrop,.section-dots.is-open{animation:none}}
+/* Phones: dots fade out a second after scrolling stops */
+@media(max-width:650px){
+  .section-dots{transition:opacity .5s ease}
+  .section-dots.is-idle{opacity:0;pointer-events:none}
+}
+@media(max-width:650px){.section-dots.is-open[data-tone=dark]{--acc:#4cc283}}

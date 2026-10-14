@@ -73,6 +73,14 @@ function scrollToSection(j, offset = 24){
 export default function SectionNav(){
   const s = useSectionScroll();
   const [open, setOpen] = useState(false);
+  // Phones: the dots fade away a second after scrolling stops and come back on the next scroll
+  const [idle, setIdle] = useState(false);
+  useEffect(() => {
+    let timer = setTimeout(() => setIdle(true), 1000);
+    const wake = () => { setIdle(false); clearTimeout(timer); timer = setTimeout(() => setIdle(true), 1000); };
+    addEventListener('scroll', wake, {passive: true});
+    return () => { removeEventListener('scroll', wake); clearTimeout(timer); };
+  }, []);
   useEffect(() => {
     if(!open) return;
     const key = e => { if(e.key === 'Escape') setOpen(false); };
@@ -84,7 +92,7 @@ export default function SectionNav(){
   const tone = open ? (document.documentElement.dataset.tone === 'light' ? 'light' : 'dark') : s.toneMid;
   return <>
     {open && <div className="section-menu-backdrop" onClick={() => setOpen(false)} aria-hidden="true"/>}
-    <nav id="section-dots" className={`section-dots${open ? ' is-open' : ''}`} data-tone={tone} aria-label="Разделы страницы">
+    <nav id="section-dots" className={`section-dots${open ? ' is-open' : ''}${idle && !open ? ' is-idle' : ''}`} data-tone={tone} aria-label="Разделы страницы">
       {SECTIONS.map(([, label], j) => <button type="button" key={j} className="section-dot" style={{'--m': near(s.pos, j)}} onClick={() => go(j)} aria-current={j === s.active ? 'true' : undefined}><i/><span>{label}</span></button>)}
     </nav>
     <button type="button" className="section-menu-toggle" aria-expanded={open} aria-controls="section-dots" aria-label={open ? 'Закрыть меню разделов' : 'Меню разделов'} onClick={() => setOpen(o => !o)}>{open ? <X size={22}/> : <Menu size={22}/>}</button>
