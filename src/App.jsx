@@ -524,19 +524,16 @@ export default function App(){
   useEffect(()=>{try{localStorage.removeItem('customs-cookie-choice');}catch{}if(readCookieConsent()?.analytics)loadAnalytics();},[]);
   // Full-bleed hero photos extend under the header; keep its height in --header-h.
   useEffect(()=>{const h=document.querySelector('.header');if(!h)return;const set=()=>document.documentElement.style.setProperty('--header-h',`${h.offsetHeight}px`);set();const ro=new ResizeObserver(set);ro.observe(h);return()=>ro.disconnect();},[]);
-  const progressBar=useRef(null);const noticeTimer=useRef(null);
+  const noticeTimer=useRef(null);
   const notify=s=>{clearTimeout(noticeTimer.current);setNotice(s);noticeTimer.current=setTimeout(()=>setNotice(''),4200);};
   useEffect(()=>{
     const mq=matchMedia('(prefers-reduced-motion: reduce)');const pref=e=>setReduced(e.matches);mq.addEventListener('change',pref);
-    let frame;const onScroll=()=>{if(frame)return;frame=requestAnimationFrame(()=>{const max=document.documentElement.scrollHeight-innerHeight;if(progressBar.current)progressBar.current.style.transform=`scaleX(${max>0?window.scrollY/max:0})`;frame=null;});};
-    addEventListener('scroll',onScroll,{passive:true});onScroll();
     const stopReveal=setupReveal();
-    return()=>{mq.removeEventListener('change',pref);removeEventListener('scroll',onScroll);cancelAnimationFrame(frame);stopReveal();clearTimeout(noticeTimer.current);};
+    return()=>{mq.removeEventListener('change',pref);stopReveal();clearTimeout(noticeTimer.current);};
   },[]);
   const chooseService=i=>{setSelected([selection[[0,1,1,2][i]]]);scrollToRequest();};
   return <MotionContext.Provider value={reduced}><ScenesContext.Provider value={scenesMode}><FramesContext.Provider value={imageFrames}><div className={`site${reduced?' reduce-motion':''}${scenesMode==='images'?' scenes-static':''}`}><ImageTweaks/>
     <a className="skip-link" href="#main">Перейти к содержимому</a>
-    <div className="reading-progress" aria-hidden="true" ref={progressBar}/>
     <SectionNav/>
     <StickyCta onOpen={()=>setModal('hero')} hidden={!!modal}/>
     <header className="header wrap">
