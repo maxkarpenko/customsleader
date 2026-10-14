@@ -310,10 +310,19 @@ function LegalDoc({source}){
 
 function Modal({type,onClose,onLegal}){
   const dialog=useRef(null);
-  useEffect(()=>{dialog.current?.showModal();const old=document.body.style.overflow;document.body.style.overflow='hidden';return()=>{document.body.style.overflow=old;};},[]);
+  useEffect(()=>{
+    const d=dialog.current;d?.showModal();
+    // Open with focus on the dialog itself, not on the close button, so no focus ring shows on arrival
+    d?.focus({preventScroll:true});
+    const old=document.body.style.overflow;document.body.style.overflow='hidden';
+    // The full-screen form on phones paints the status bar in its own light surface
+    const meta=document.querySelector('meta[name="theme-color"]'),oldColor=meta?.content;
+    if(type==='hero'&&d&&matchMedia('(max-width:650px)').matches)setThemeColor(getComputedStyle(d).backgroundColor);
+    return()=>{document.body.style.overflow=old;setThemeColor(oldColor);};
+  },[]);
   const titles={hero:'Получите стоимость и сроки доставки',callback:'Заказать звонок',russia:'Нужна перевозка по России?',consent:'Согласие на обработку персональных данных',privacy:'Политика конфиденциальности','personal-data':'Политика в отношении обработки персональных данных',cookies:'Политика использования cookie'};
   const doc=LEGAL_DOCS[type];
-  return <dialog ref={dialog} className={`modal modal-${type}${doc?' modal-doc':''}`} onCancel={onClose} aria-labelledby={`modal-title-${type}`} onClick={e=>{if(e.target===dialog.current)onClose();}}><div className="modal-inner"><button className="close-button" onClick={onClose} aria-label="Закрыть окно"><X/></button><h2 id={`modal-title-${type}`}>{titles[type]}</h2>{type==='hero'?<Form id="hero-modal" onLegal={onLegal}/>:['callback','russia'].includes(type)?<Form variant={type} onLegal={onLegal}/>:<LegalDoc source={doc}/>}</div></dialog>;
+  return <dialog ref={dialog} tabIndex={-1} className={`modal modal-${type}${doc?' modal-doc':''}`} onCancel={onClose} aria-labelledby={`modal-title-${type}`} onClick={e=>{if(e.target===dialog.current)onClose();}}><div className="modal-inner"><button className="close-button" onClick={onClose} aria-label="Закрыть окно"><X/></button><h2 id={`modal-title-${type}`}>{titles[type]}</h2>{type==='hero'?<Form id="hero-modal" onLegal={onLegal}/>:['callback','russia'].includes(type)?<Form variant={type} onLegal={onLegal}/>:<LegalDoc source={doc}/>}</div></dialog>;
 }
 
 // The first screen's call to action stays on screen: once its button reaches the top edge, a copy
@@ -457,9 +466,12 @@ function readTheme(){
   if(!THEME_SWITCHER)return 'graphite';
   try{const v=localStorage.getItem(THEME_KEY);return v in THEMES?v:'graphite';}catch{return 'graphite';}
 }
+// Browser chrome (the phone status bar) takes this colour; keep it on the current surface
+function setThemeColor(color){const meta=document.querySelector('meta[name="theme-color"]');if(meta&&color)meta.content=color;}
 function applyTheme(id){
   const root=document.documentElement;
   root.dataset.theme=id;root.dataset.tone=THEMES[id].tone;
+  setThemeColor(getComputedStyle(root).backgroundColor);
 }
 
 // Scroll reveal. Below the first screen, headings, text, media and grid items are tagged data-rv="kind"
