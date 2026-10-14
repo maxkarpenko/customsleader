@@ -339,14 +339,16 @@ function StickyCta({onOpen,hidden}){
       const r=src.getBoundingClientRect();
       // Not needed while another request form is already on screen
       const formInView=[...document.querySelectorAll('.final-request .lead-form, #request .lead-form')].some(f=>{const b=f.getBoundingClientRect();return b.top<innerHeight-80&&b.bottom>80;});
-      setBox(r.top<=12&&!formInView?{left:r.left,width:r.width}:null);
+      // Phones: a floating pill at the bottom once the first-screen button has left the screen
+      const phone=matchMedia('(max-width:650px)').matches;
+      setBox((phone?r.bottom<=0:r.top<=12)&&!formInView?{left:r.left,width:r.width,phone}:null);
     };
     const queue=()=>{if(!frame)frame=requestAnimationFrame(check);};
     addEventListener('scroll',queue,{passive:true});addEventListener('resize',queue);queue();
     return()=>{removeEventListener('scroll',queue);removeEventListener('resize',queue);cancelAnimationFrame(frame);};
   },[]);
   const shown=box&&!hidden;
-  return <div className={`sticky-cta${shown?' is-shown':''}`} style={box?{left:box.left,width:box.width}:undefined} aria-hidden={shown?undefined:'true'}>
+  return <div className={`sticky-cta${shown?' is-shown':''}`} style={box&&!box.phone?{left:box.left,width:box.width}:undefined} aria-hidden={shown?undefined:'true'}>
     <Button onClick={onOpen} tabIndex={shown?0:-1}>Получить стоимость и сроки</Button>
   </div>;
 }
@@ -397,7 +399,10 @@ function CookieNotice({onClose,onPolicy}){
     onClose();
   }
   const policy=<button type="button" className="cookie-policy-link" onClick={onPolicy}>Политике использования cookie</button>;
-  return <aside className="cookie-notice" aria-label="Уведомление о cookie">
+  // Fixed controls at the bottom of phones sit above the notice: publish its height
+  const box=useRef(null);
+  useEffect(()=>{const el=box.current;if(!el)return;const root=document.documentElement;const set=()=>root.style.setProperty('--cookie-h',`${el.offsetHeight+10}px`);set();const ro=new ResizeObserver(set);ro.observe(el);return()=>{ro.disconnect();root.style.removeProperty('--cookie-h');};},[]);
+  return <aside className="cookie-notice" aria-label="Уведомление о cookie" ref={box}>
     {analytics
       ?<p>Мы сохраняем в браузере необходимые настройки и, с вашего согласия, используем аналитические cookie Яндекс Метрики и Google Analytics, чтобы оценивать посещаемость. Данные Google Analytics обрабатываются за рубежом. Подробнее — в {policy}.</p>
       :<p>Сайт не устанавливает cookie: в браузере сохраняются только необходимые настройки. Подробнее — в {policy}.</p>}
@@ -441,7 +446,7 @@ function InsuranceDoc(){
     </figcaption>
   </figure>;
 }
-const HERO_BENEFITS=[[ShieldCheck,'Более 20 лет работы с ВЭД'],[PackageCheck,'Сами работаем с поставщиком'],[Route,'Бюджет всей поставки известен заранее']];
+const HERO_BENEFITS=[[ShieldCheck,'Более 20 лет работы в ВЭД'],[PackageCheck,'Сами работаем с поставщиками'],[Route,'Бюджет всей поставки известен заранее']];
 function scrollToCase(e){
   e.preventDefault();
   const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;

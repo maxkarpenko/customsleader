@@ -1,8 +1,10 @@
 import React, {useEffect, useState} from 'react';
+import {Menu, X} from 'lucide-react';
 import './sectionNav.css';
 
 // Section navigation that shows where the visitor is on the page.
 // Dots on the left edge: the current one stretches and shows its name; each dot scrolls to its section.
+// Phones also get a round menu button at the bottom that opens the full list over the blurred page.
 const SECTIONS = [
   ['section.hero', 'Начало'],
   ['section.tasks', 'Задачи'],
@@ -70,7 +72,21 @@ function scrollToSection(j, offset = 24){
 
 export default function SectionNav(){
   const s = useSectionScroll();
-  return <nav className="section-dots" data-tone={s.toneMid} aria-label="Разделы страницы">
-    {SECTIONS.map(([, label], j) => <button type="button" key={j} className="section-dot" style={{'--m': near(s.pos, j)}} onClick={() => scrollToSection(j)} aria-current={j === s.active ? 'true' : undefined}><i/><span>{label}</span></button>)}
-  </nav>;
+  const [open, setOpen] = useState(false);
+  useEffect(() => {
+    if(!open) return;
+    const key = e => { if(e.key === 'Escape') setOpen(false); };
+    const old = document.body.style.overflow; document.body.style.overflow = 'hidden';
+    addEventListener('keydown', key);
+    return () => { removeEventListener('keydown', key); document.body.style.overflow = old; };
+  }, [open]);
+  const go = j => { if(open){ setOpen(false); setTimeout(() => scrollToSection(j), 40); } else scrollToSection(j); };
+  const tone = open ? (document.documentElement.dataset.tone === 'light' ? 'light' : 'dark') : s.toneMid;
+  return <>
+    {open && <div className="section-menu-backdrop" onClick={() => setOpen(false)} aria-hidden="true"/>}
+    <nav id="section-dots" className={`section-dots${open ? ' is-open' : ''}`} data-tone={tone} aria-label="Разделы страницы">
+      {SECTIONS.map(([, label], j) => <button type="button" key={j} className="section-dot" style={{'--m': near(s.pos, j)}} onClick={() => go(j)} aria-current={j === s.active ? 'true' : undefined}><i/><span>{label}</span></button>)}
+    </nav>
+    <button type="button" className="section-menu-toggle" aria-expanded={open} aria-controls="section-dots" aria-label={open ? 'Закрыть меню разделов' : 'Меню разделов'} onClick={() => setOpen(o => !o)}>{open ? <X size={22}/> : <Menu size={22}/>}</button>
+  </>;
 }
