@@ -356,7 +356,6 @@ function Journey({onRequest}){
       <p className="journey-stage"><span className="journey-stage-step">{i+1} / {tabs.length}</span><span className="journey-stage-name">{tab.label}</span></p>
       <h3>{tab.title}</h3><p>{tab.text}</p><Bullets items={tab.list}/><p className="note"><Info size={19}/>{tab.note}</p>
     </article>)}</div>
-    <div className="journey-sticky"><Button onClick={onRequest}>{shortCTA}</Button></div>
   </div></section>;
 }
 
