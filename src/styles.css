@@ -353,7 +353,11 @@
   .form-detailed .form-columns .consent{margin-top:22px}
 
   /* 4 · Consent on one line: the text scales to the available width */
-  .consent label{white-space:nowrap;font-size:min(14px,calc((100vw - 63px) / 26))}
+  /* one line in any form width: sized from the consent row itself, not the viewport */
+  .consent{container-type:inline-size}
+  .consent label{white-space:nowrap;font-size:min(14px,calc((100cqi - 23px) / 26))}
+  /* too narrow for one readable line: wrap instead of shrinking below 11px */
+  @container (max-width:308px){.consent label{white-space:normal;font-size:12px}}
 
   /* 5 · Journey: cards instead of tabs, CTA pinned to the bottom of the screen */
   .journey .tabs,.journey .journey-panel{display:none}
@@ -438,7 +442,7 @@
 /* Founder: one-line career path under the name */
 .founder-copy h3:has(+ .founder-path){margin-bottom:8px}
 .founder-copy>.founder-path{margin-bottom:26px;max-width:600px;font-size:clamp(19px,1.7vw,24px);line-height:1.3;font-weight:600;letter-spacing:-.025em;color:var(--ink);text-wrap:balance}
-.founder-path mark{color:var(--green-deep);background:linear-gradient(transparent 58%,var(--green-tint) 58%,var(--green-tint) 92%,transparent 92%);padding:0 .08em;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+.founder-path mark{color:var(--green-deep);background:none}
 .founder-copy h3:has(+ .founder-path){margin-bottom:12px}
 @media(max-width:650px){.founder-copy>.founder-path{font-size:19px;margin-bottom:20px}}
 /* Required marks and field errors */
@@ -491,13 +495,13 @@
 @media(max-width:650px){
   .sticky-cta{top:auto;bottom:calc(14px + env(safe-area-inset-bottom));left:90px;right:90px;width:auto;transform:translateY(calc(100% + 40px));transition:transform .4s var(--ease),opacity .25s,visibility .4s}
   .sticky-cta.is-shown{transform:none}
-  .sticky-cta .button{min-height:48px;padding:0 12px;justify-content:center;border-radius:999px;font-size:clamp(13px,3.55vw,15px);letter-spacing:-.01em;white-space:nowrap;box-shadow:0 12px 32px -8px rgba(0,0,0,.4)}
+  .sticky-cta .button{min-height:48px;padding:0 12px;justify-content:center;border-radius:999px;font-size:clamp(13px,3.55vw,15px);letter-spacing:-.01em;white-space:nowrap;box-shadow:none}
   .sticky-cta .button svg{display:none}
   .sticky-cta .button:active{transform:scale(.97)}
   .scroll-top{left:34px;bottom:calc(14px + env(safe-area-inset-bottom));width:48px;height:48px}
   /* same glass circle as the section-menu button */
-  .scroll-top{border:.5px solid rgba(255,255,255,.14);background:rgba(38,43,45,.72);color:#f0f1eb;-webkit-backdrop-filter:blur(20px) saturate(1.8);backdrop-filter:blur(20px) saturate(1.8);box-shadow:0 12px 32px -8px rgba(0,0,0,.45)}
-  :root[data-tone="light"] .scroll-top{border-color:rgba(0,0,0,.08);background:rgba(255,255,255,.74);color:#162026;box-shadow:0 12px 32px -8px rgba(22,32,38,.3)}
+  .scroll-top{border:.5px solid rgba(255,255,255,.14);background:rgba(38,43,45,.72);color:#f0f1eb;-webkit-backdrop-filter:blur(20px) saturate(1.8);backdrop-filter:blur(20px) saturate(1.8)}
+  :root[data-tone="light"] .scroll-top{border-color:rgba(0,0,0,.08);background:rgba(255,255,255,.74);color:#162026}
   .scroll-top svg{width:22px;height:22px}
   .scroll-top:hover svg{transform:none}
   .scroll-top:active{transform:scale(.94)}
@@ -511,3 +515,5 @@
   :is(.scroll-top,.section-menu-toggle):is(:hover,:active){background:rgba(74,81,83,.8);border-color:rgba(255,255,255,.24);color:#f0f1eb}
   :root[data-tone="light"] :is(.scroll-top,.section-menu-toggle):is(:hover,:active){background:rgba(255,255,255,.96);border-color:rgba(0,0,0,.12);color:#162026}
 }
+/* "Получить стоимость и сроки" buttons always carry white text, on any surface and theme */
+.button.cta-quote,.button.cta-quote:hover{color:#fff}

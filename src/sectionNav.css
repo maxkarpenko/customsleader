@@ -15,9 +15,9 @@
 /* Phones: round menu button at the bottom (like Safari's "…" button) opening the full list over the blurred page */
 .section-menu-toggle,.section-menu-backdrop{display:none}
 @media(max-width:650px){
-  .section-menu-toggle{position:fixed;z-index:72;right:34px;bottom:calc(14px + env(safe-area-inset-bottom));display:grid;place-items:center;width:48px;height:48px;padding:0;border:.5px solid rgba(255,255,255,.14);border-radius:50%;background:rgba(38,43,45,.72);color:#f0f1eb;-webkit-backdrop-filter:blur(20px) saturate(1.8);backdrop-filter:blur(20px) saturate(1.8);box-shadow:0 12px 32px -8px rgba(0,0,0,.45);cursor:pointer;-webkit-tap-highlight-color:transparent;transition:transform .2s}
+  .section-menu-toggle{position:fixed;z-index:72;right:34px;bottom:calc(14px + env(safe-area-inset-bottom));display:grid;place-items:center;width:48px;height:48px;padding:0;border:.5px solid rgba(255,255,255,.14);border-radius:50%;background:rgba(38,43,45,.72);color:#f0f1eb;-webkit-backdrop-filter:blur(20px) saturate(1.8);backdrop-filter:blur(20px) saturate(1.8);cursor:pointer;-webkit-tap-highlight-color:transparent;transition:transform .2s}
   .section-menu-toggle:active{transform:scale(.94)}
-  :root[data-tone="light"] .section-menu-toggle{border-color:rgba(0,0,0,.08);background:rgba(255,255,255,.74);color:#162026;box-shadow:0 12px 32px -8px rgba(22,32,38,.3)}
+  :root[data-tone="light"] .section-menu-toggle{border-color:rgba(0,0,0,.08);background:rgba(255,255,255,.74);color:#162026}
   .section-menu-backdrop{display:block;position:fixed;inset:0;z-index:70;background:rgba(23,27,29,.74);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);animation:section-menu-in .25s ease-out}
   :root[data-tone="light"] .section-menu-backdrop{background:rgba(243,246,247,.66)}
   /* open: dots stay on the left edge, names line up on the right, near the menu button; no chips, only the blur */
