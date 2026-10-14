@@ -1,27 +1,40 @@
 import React, {useEffect, useId, useLayoutEffect, useRef, useState, createContext, useContext} from 'react';
-import {ArrowUpRight, ArrowRight, ArrowDown, ArrowUp, Sun, Moon, ArrowLeft, Check, Plus, Minus, X, Phone, ShieldCheck, PackageCheck, Route, Truck, FileCheck2, Globe2, MessageCircle, MessageSquare, Mail, UserRound, CircleCheck, Info, LoaderCircle, Send, Layers3, Settings2, SlidersHorizontal, RotateCcw, Copy} from 'lucide-react';
+import {ArrowUpRight, ArrowRight, ArrowDown, ArrowUp, Sun, Moon, ArrowLeft, Check, Plus, Minus, X, Phone, ShieldCheck, PackageCheck, Route, Truck, FileCheck2, Globe2, MessageCircle, MessageSquare, Mail, UserRound, CircleCheck, Info, LoaderCircle, Send, Layers3, Settings2, SlidersHorizontal, RotateCcw, Copy, Download} from 'lucide-react';
 import content from './content.json';
+import SectionNav from './SectionNav.jsx';
 import {SCENES_MODE,SCENES_KEY,TWEAKS_CASES_KEY,TWEAKS_STILLS_KEY,TWEAKS_FOUNDER_KEY,THEME_KEY,THEME_SWITCHER,COOKIE_CONSENT_KEY,COOKIE_CONSENT_VERSION,YANDEX_METRIKA_ID,GOOGLE_ANALYTICS_ID} from './siteConfig.js';
 import privacyPolicy from './legal/privacy-policy.md?raw';
 import personalDataPolicy from './legal/personal-data-policy.md?raw';
 import consentText from './legal/consent.md?raw';
 import cookiePolicy from './legal/cookie-policy.md?raw';
 import bottlingLine from './assets/media/bottling-line.webp';
+import bottlingLineInstalled from './assets/media/case-1-bottling-line.webp';
 import hvacTruck from './assets/media/hvac-truck.webp';
 import miningComplex from './assets/media/mining-complex.webp';
 import routeConvoy from './assets/media/route-convoy.webp';
 import routeRain from './assets/media/route-rain.webp';
 import logoOnDark from './assets/media/logo-on-dark.webp';
 import logoOnLight from './assets/media/logo-on-light.webp';
-import teamContainer from './assets/team/01-monumental-container.webp';
-import teamAerial from './assets/team/02-aerial-shadows.webp';
-import teamCargo from './assets/team/03-monochrome-industrial-cargo.webp';
 import founderPhoto from './assets/media/founder.webp';
+import insurancePage from './assets/media/insurance-contract-page.webp';
+import insuranceContract from './assets/files/dogovor-strahovaniya-2026-2027.pdf';
 
 const {sections:S,services,cases,tabs,faq}=content;
 const MotionContext=createContext(false);
 const clean=s=>s?.replaceAll('<br>',' ')||'';
 const Text=({value})=><>{clean(value)}</>;
+// Source texts sometimes split two sentences with <br> and no full stop: a break before a capital letter
+// becomes ". ", any other break a space.
+const sentences=s=>(s||'').replace(/([^.!?:;,])\s*<br>\s*(?=[А-ЯЁA-Z])/g,'$1. ').replaceAll('<br>',' ');
+// Case titles may carry a "[1]" marker: it becomes a superscript reference to footnote 1 in the footer
+// (the source link itself lives there). The marker stays glued to the word before it.
+const CaseTitle=({title})=>{
+  const [before,after]=clean(title).split('[1]');
+  if(after===undefined)return <>{clean(title)}</>;
+  const cut=before.lastIndexOf(' ')+1;
+  return <>{before.slice(0,cut)}<span className="footnote-word">{before.slice(cut)}<sup className="footnote"><a href="#fn-1" id="fnref-1" aria-label="Сноска 1">1</a></sup></span>{after}</>;
+};
+const FOOTNOTE_SOURCE=cases.find(c=>c.source)?.source;
 const entries=(n,tag)=>S[n].entries.filter(e=>e.tag===tag).map(e=>e.text);
 const sourceTitle=n=>S[n].H2;
 const shortCTA='Получить стоимость и сроки';
@@ -84,7 +97,7 @@ function Scene3D({kind='hero',className='',label='Иллюстрация пер�
 // shipped framing; in dev the tweak panel overrides it live (kept in localStorage) and copies the
 // values to paste back here. Which groups get a panel is switched on /3d.html.
 const CASE_PHOTOS=[
-  {src:bottlingLine,w:1600,h:1073,alt:'Тягач с линией розлива воды в открытом контейнере на трассе через тайгу'},
+  {src:bottlingLineInstalled,w:1280,h:592,alt:'Линия розлива в собранном виде на заводе клиента',caption:'Линия в собранном виде на заводе клиента'},
   {src:miningComplex,w:1280,h:851,alt:'Горнопроходческий комплекс в цехе завода перед отгрузкой'},
   {src:hvacTruck,w:1600,h:893,alt:'Тягач с климатическим оборудованием в упаковочной плёнке на трассе'},
 ];
@@ -109,7 +122,7 @@ function FramedPicture({id,photo,className,eager=false,children}){
   const style={'--photo-w':`${t.width}%`,'--photo-h':ratio==='auto'?`${t.height}px`:'auto','--photo-ratio':ratio,'--photo-fit':t.fit,'--photo-zoom':t.zoom,'--photo-x':`${t.posX}%`,'--photo-y':`${t.posY}%`,'--photo-dx':`${t.offsetX}px`,'--photo-dy':`${t.offsetY}px`};
   return <figure className={className} style={style}><Picture {...photo} eager={eager}/>{children}</figure>;
 }
-const FOUNDER_PHOTO={src:founderPhoto,w:910,h:1280,alt:'Эдуард Хасанов, основатель КАСТОМС ЛИДЕР'};
+const FOUNDER_PHOTO={src:founderPhoto,w:883,h:1280,alt:'Эдуард Хасанов, основатель КАСТОМС ЛИДЕР'};
 function CasePhoto({i,children}){return <FramedPicture id={`case${i}`} photo={CASE_PHOTOS[i]} className="case-photo">{children}</FramedPicture>;}
 function ImageTweaks(){
   const targets=[...(TWEAK_GROUPS.cases?['case0','case1','case2']:[]),...(TWEAK_GROUPS.stills?['hero']:[]),...(TWEAK_GROUPS.founder?['founder']:[])];
@@ -141,7 +154,15 @@ function ImageTweaks(){
 function Button({children,onClick,type='button',secondary=false,className='',...props}){
   return <button type={type} onClick={onClick} className={`button ${secondary?'secondary':''} ${className}`} {...props}>{children}<ArrowUpRight size={19}/></button>;
 }
-function Bullets({items,className=''}){return <ul className={`bullets ${className}`}>{items.map((s,i)=><li key={i}><Check size={17}/><span><Text value={s}/></span></li>)}</ul>}
+// "для вас это бесплатно" is the one offer worth spotting at a glance: the phrase is set in bold
+// wherever a bullet list mentions it.
+const FREE='для вас это бесплатно';
+function BulletText({value}){
+  const text=clean(value),at=text.indexOf(FREE);
+  if(at<0)return text;
+  return <>{text.slice(0,at)}<strong className="free-mark">{FREE}</strong>{text.slice(at+FREE.length)}</>;
+}
+function Bullets({items,className=''}){return <ul className={`bullets ${className}`}>{items.map((s,i)=><li key={i}><Check size={17}/><span><BulletText value={s}/></span></li>)}</ul>}
 // Russian phone mask: +7 (999) 123-45-67. Typing, paste and iOS/Android autofill may bring
 // 9991234567, 89991234567, 79991234567 or an already formatted number; all end up in the same format.
 function phoneDigits(raw){
@@ -183,12 +204,49 @@ function PhoneInput(props){
   };
   return <input {...props} ref={input} type="tel" inputMode="tel" autoComplete="tel" value={value} onChange={change} maxLength={18} pattern="\+7 \(\d{3}\) \d{3}-\d{2}-\d{2}" title="Номер полностью: +7 (999) 123-45-67"/>;
 }
+// Two-option radio choice styled like a field (legend as the label, options side by side).
+function ChoiceGroup({legend,name,options,required=false}){
+  return <fieldset className="transport-type"><legend>{legend}<Req on={required}/></legend><div className="transport-options">{options.map(([value,label])=><label key={value}><input type="radio" name={name} value={value} required={required}/><span>{label}</span></label>)}</div></fieldset>;
+}
+// Required "Тип перевозки" choice, shared by the short and the detailed request forms.
+const TransportType=()=><ChoiceGroup legend="Тип перевозки" name="transport" required options={[['international','Международная'],['russia','По России']]}/>;
+// Front-end checks for e-mail and INN: the message appears after the visitor leaves the field and is also
+// set as the field's validity message, so the form cannot be sent with an invalid value.
+const EMAIL_RE=/^[A-Za-z0-9._%+-]+@([A-Za-z0-9-]+\.)+[A-Za-z]{2,}$/;
+const CHECKS={
+  // Only Latin letters, digits and e-mail symbols can be typed: Cyrillic and spaces are dropped as you type
+  email:{test:v=>EMAIL_RE.test(v),sanitize:v=>v.replace(/[^\x21-\x7E]/g,''),message:'Проверьте адрес почты, например: logist@company.ru',props:{type:'text',inputMode:'email',autoCapitalize:'off',spellCheck:false}},
+  // INN: digits only, 10 for a company or 12 for a sole trader (no checksum, so any real number passes)
+  inn:{test:v=>/^(\d{10}|\d{12})$/.test(v),sanitize:v=>v.replace(/\D/g,'').slice(0,12),message:'Проверьте ИНН: 10 цифр у организации, 12 — у ИП',props:{inputMode:'numeric',maxLength:12}},
+};
+function CheckedInput({check,errorId,onError,...props}){
+  const [value,setValue]=useState(''),[shown,setShown]=useState(false),input=useRef(null);
+  const bad=value!==''&&!check.test(value);
+  useEffect(()=>{input.current?.setCustomValidity(bad?check.message:'');onError(shown&&bad);},[bad,shown,check,onError]);
+  return <input {...props} {...check.props} ref={input} value={value} aria-invalid={shown&&bad?'true':undefined} aria-describedby={shown&&bad?errorId:undefined}
+    onChange={e=>setValue(check.sanitize?check.sanitize(e.target.value):e.target.value)} onBlur={()=>setShown(true)}/>;
+}
+const Req=({on})=>on?<span className="req" aria-hidden="true">*</span>:null;
 function Field({label,name,placeholder,type='text',required=false,textarea=false,hint}){
-  const id=useId();return <div className="field"><label htmlFor={id}>{label}{required?'*':''}</label>{textarea?<textarea id={id} name={name} placeholder={placeholder} rows={3}/>:type==='tel'?<PhoneInput id={id} name={name} required={required} placeholder={placeholder}/>:<input id={id} name={name} type={type} required={required} placeholder={placeholder} autoComplete={name==='phone'?'tel':name==='name'?'name':name==='email'?'email':name==='company'?'organization':'off'}/>} {hint&&<small>{hint}</small>}</div>
+  const id=useId(),errorId=useId(),[error,setError]=useState(false),check=CHECKS[name];
+  return <div className="field"><label htmlFor={id}>{label}<Req on={required}/></label>{textarea?<textarea id={id} name={name} required={required} placeholder={placeholder} rows={3}/>:type==='tel'?<PhoneInput id={id} name={name} required={required} placeholder={placeholder}/>:check?<CheckedInput check={check} errorId={errorId} onError={setError} id={id} name={name} type={type} required={required} placeholder={placeholder} autoComplete={name==='email'?'email':'off'}/>:<input id={id} name={name} type={type} required={required} placeholder={placeholder} autoComplete={name==='phone'?'tel':name==='name'?'name':name==='company'?'organization':'off'}/>}{error?<small className="field-error" id={errorId}>{check.message}</small>:hint&&<small>{hint}</small>}</div>
 }
 
 function Form({variant='short',id,chosen,setChosen,onLegal}){
-  const [status,setStatus]=useState('idle'),[error,setError]=useState(''),[serviceError,setServiceError]=useState(false);const services=useRef(null);const serviceErrorId=useId();const [hintOpen,setHintOpen]=useState(false);const hintId=useId();const [cargoOpen,setCargoOpen]=useState(false);const cargoId=useId();const intro=useRef(null);
+  const [status,setStatus]=useState('idle'),[error,setError]=useState(''),[serviceError,setServiceError]=useState(false);const services=useRef(null);const serviceErrorId=useId();const [hintOpen,setHintOpen]=useState(false);const hintId=useId();const [cargoOpen,setCargoOpen]=useState(false);const cargoId=useId();const formRef=useRef(null);
+  // Detailed form on desktop: stretch "Что нужно сделать?" so its bottom edge lines up with the submit button.
+  useLayoutEffect(()=>{
+    if(variant!=='detailed')return;
+    const fit=()=>{
+      const form=formRef.current,ta=form?.querySelector('.cargo-fields textarea'),email=form?.querySelector('button[type=submit]');
+      if(!ta||!email)return;
+      if(!matchMedia('(min-width: 651px)').matches){ta.style.height=ta.style.minHeight='';return;}
+      const h=email.getBoundingClientRect().bottom-ta.getBoundingClientRect().top;
+      ta.style.height=ta.style.minHeight=h>=90?`${Math.round(h)}px`:'';
+    };
+    fit();window.addEventListener('resize',fit);document.fonts?.ready.then(fit);
+    return ()=>window.removeEventListener('resize',fit);
+  },[variant]);const intro=useRef(null);
   // The estimate hint floats over the fields (no layout shift); close it on Escape or a click elsewhere.
   useEffect(()=>{
     if(!hintOpen)return;
@@ -209,17 +267,16 @@ function Form({variant='short',id,chosen,setChosen,onLegal}){
     catch{setStatus('idle');setError('Не удалось отправить заявку. Попробуйте ещё раз или позвоните: +7 (903) 879-20-20.');}
   }
   if(status==='success')return <div className="success" role="status"><CircleCheck size={44}/><h3>Спасибо! Заявка отправлена</h3><p>Менеджер свяжется с вами в течение 1 часа</p></div>;
-  return <form className={`lead-form form-${variant}`} onSubmit={submit}>
-    {!detailed&&!callback&&!russia&&<><p className="form-title">Получите стоимость<br/>и сроки доставки</p><p className="form-intro" ref={intro}>В предложении подготовим маршрут, срок, стоимость и состав платежей. <button type="button" className="estimate-toggle" aria-expanded={hintOpen} aria-controls={hintId} onClick={()=>setHintOpen(o=>!o)}><span>Что входит в расчёт</span><span className="estimate-q" aria-hidden="true">?</span></button><span className="estimate-note" id={hintId} hidden={!hintOpen}>Перевозка, таможенное оформление и платежи готовим в одном предложении.<br/>Фиксируем состав работ; возможные дополнительные расходы и условия их возникновения обозначаем отдельно</span></p></>}
+  return <form ref={formRef} className={`lead-form form-${variant}`} onSubmit={submit} onInvalidCapture={e=>{if(detailed&&!cargoOpen&&e.target.closest('.cargo-body')){setCargoOpen(true);requestAnimationFrame(()=>formRef.current?.reportValidity());}}}>
+    {!detailed&&!callback&&!russia&&<><p className="form-title">Получите стоимость<br/>и сроки доставки</p><p className="form-intro" ref={intro}>В предложении подготовим маршрут, срок, стоимость и состав платежей. <button type="button" className="estimate-toggle" aria-expanded={hintOpen} aria-controls={hintId} onClick={()=>setHintOpen(o=>!o)}><span>Что входит в расчёт</span><span className="estimate-q" aria-hidden="true">?</span></button><span className="estimate-note" id={hintId} hidden={!hintOpen}>Перевозка, таможенное оформление и платежи готовим в одном предложении.<br/>Фиксируем состав работ, а также возможные дополнительные расходы, условия возникновения которых, обозначаем отдельно</span></p></>}
     {detailed&&(
       <fieldset ref={services} className="service-choices" aria-describedby={serviceError?serviceErrorId:undefined}><legend>Выберите услугу</legend><div className="choice-grid">{selection.map((name,i)=>{const Icon=[Layers3,Truck,FileCheck2,MessageCircle][i];return <label key={name} className={chosen.includes(name)?'selected':''}><input type="radio" name="services" value={name} checked={chosen.includes(name)} onChange={()=>{setServiceError(false);setChosen([name]);}}/><Icon className="svc-icon" size={26} strokeWidth={1.5} aria-hidden="true"/><span><strong>{name}</strong><small>{['Поставка под ключ','Международная или по РФ','В том числе с вашим перевозчиком','Сложная ситуация или вопрос'][i]}</small></span><span className="svc-check" aria-hidden="true"><Check size={14} strokeWidth={2.6}/></span></label>})}</div>{serviceError&&<p className="form-error service-error" id={serviceErrorId} role="alert">Выберите услугу.</p>}</fieldset>
     )}
     <div className={detailed?'form-columns':''}>
-      {detailed&&<fieldset className={`cargo-fields${cargoOpen?' is-open':''}`}><legend><span>О грузе и маршруте</span><button type="button" className="cargo-toggle" aria-expanded={cargoOpen} aria-controls={cargoId} onClick={()=>setCargoOpen(o=>!o)}>{cargoOpen?<Minus size={16}/>:<Plus size={16}/>}{cargoOpen?'Свернуть':'Раскрыть'}</button></legend><div className="cargo-body" id={cargoId}><div className="field-pair"><Field label="Тип груза / задачи" name="cargo" placeholder="Например: линия розлива"/><Field label="Негабаритный груз?" name="oversized" placeholder="Например: пока не знаю, нужна оценка"/></div><div className="field-pair"><Field label="Направление перевозки" name="direction" placeholder="Например: из Китая"/><Field label="Когда груз нужен на месте" name="deadline" placeholder="Например: к концу ноября"/></div><div className="field-pair"><Field label="Откуда забрать?" name="origin" placeholder="Например: Гонконг"/><Field label="Куда доставить?" name="destination" placeholder="Например: Казань"/></div><Field label="Что нужно сделать?" name="message" textarea placeholder="Опишите своими словами. Например: линия розлива из Гонконга в Казань"/></div></fieldset>}
       <fieldset><legend className={detailed?'':'sr-only'}>{detailed?'О вас и компании':'Контактные данные'}</legend>
-        {!detailed&&!callback&&!russia&&<Field label="Что и куда доставить?" name="message" textarea placeholder="Опишите своими словами. Например: линия розлива из Циндао в Тулу"/>}
-        {(detailed||callback||russia)&&<Field label="Ваше имя" name="name" required placeholder="Как к вам обращаться?"/>}
-        {detailed&&<><Field label="Компания" name="company" placeholder="Название вашей организации"/><Field label="ИНН компании или ИП" name="inn" placeholder="10 или 12 цифр" hint="Для подготовки предложения на вашу организацию."/></>}
+        {!detailed&&!callback&&!russia&&<><TransportType/><Field label="Что и куда доставить?" name="message" textarea required placeholder="Опишите своими словами. Например: линия розлива из Циндао в Тулу"/></>}
+                {(detailed||callback||russia)&&<Field label="Ваше имя" name="name" required placeholder="Как к вам обращаться?"/>}
+        {detailed&&<><Field label="Компания" name="company" required placeholder="Название вашей организации"/><Field label="ИНН компании" name="inn" required placeholder="10 или 12 цифр" hint="Для подготовки предложения на вашу организацию."/></>}
         <div className={detailed?'field-pair':''}><Field label="Укажите телефон" name="phone" type="tel" required placeholder="+7 (900) 000-00-00"/>{detailed&&<Field label="Укажите почту" name="email" type="email" required placeholder="logist@company.ru"/>}</div>
         {callback&&<Field label="Компания и должность" name="company" placeholder="Например: ООО «Компания», логист"/>}
         {russia&&<><div className="field-pair"><Field label="Откуда забрать?" name="origin" placeholder="Например: Тула"/><Field label="Куда доставить?" name="destination" placeholder="Например: Казань"/></div><Field label="Тип груза / задачи" name="cargo" placeholder="Например: линия розлива"/><Field label="Компания" name="company" placeholder="Название вашей организации"/></>}
@@ -228,6 +285,7 @@ function Form({variant='short',id,chosen,setChosen,onLegal}){
         {status==='demo'&&<p className="form-feedback" role="status">Форма заполнена. В локальной версии отправка ещё не подключена. Свяжитесь с нами: <a href="tel:+79038792020">+7 (903) 879-20-20</a>.</p>}
         {error&&<p className="form-error" role="alert">{error}</p>}
       </fieldset>
+      {detailed&&<fieldset className={`cargo-fields${cargoOpen?' is-open':''}`}><legend><span>О грузе и маршруте</span><button type="button" className="cargo-toggle" aria-expanded={cargoOpen} aria-controls={cargoId} onClick={()=>setCargoOpen(o=>!o)}>{cargoOpen?<Minus size={16}/>:<Plus size={16}/>}{cargoOpen?'Свернуть':'Раскрыть'}</button></legend><div className="cargo-body" id={cargoId}><TransportType/><div className="field-pair"><Field label="Тип груза" name="cargo" required placeholder="Например: линия розлива"/><ChoiceGroup legend="Негабаритный груз?" name="oversized" required options={[['да','Да'],['нет','Нет']]}/></div><div className="field-pair"><Field label="Откуда забрать?" name="origin" required placeholder="Например: Гонконг"/><Field label="Куда доставить?" name="destination" required placeholder="Например: Казань"/></div><div className="field-pair"><Field label="Вес" name="weight" required placeholder="Например: 24 т"/><Field label="Упаковка" name="packaging" required placeholder="Например: контейнер, паллеты"/></div><Field label="Что нужно сделать?" name="message" textarea placeholder="Дополнительная информация о грузе своими словами"/></div></fieldset>}
     </div>
   </form>;
 }
@@ -256,6 +314,32 @@ function Modal({type,onClose,onLegal}){
   const titles={hero:'Получите стоимость и сроки доставки',callback:'Заказать звонок',russia:'Нужна перевозка по России?',consent:'Согласие на обработку персональных данных',privacy:'Политика конфиденциальности','personal-data':'Политика в отношении обработки персональных данных',cookies:'Политика использования cookie'};
   const doc=LEGAL_DOCS[type];
   return <dialog ref={dialog} className={`modal modal-${type}${doc?' modal-doc':''}`} onCancel={onClose} aria-labelledby={`modal-title-${type}`} onClick={e=>{if(e.target===dialog.current)onClose();}}><div className="modal-inner"><button className="close-button" onClick={onClose} aria-label="Закрыть окно"><X/></button><h2 id={`modal-title-${type}`}>{titles[type]}</h2>{type==='hero'?<Form id="hero-modal" onLegal={onLegal}/>:['callback','russia'].includes(type)?<Form variant={type} onLegal={onLegal}/>:<LegalDoc source={doc}/>}</div></dialog>;
+}
+
+// The first screen's call to action stays on screen: once its button reaches the top edge, a copy
+// takes over at the same place and width, pinned to the top, and opens the first-screen form in a popup.
+// It steps aside while one of the page's own request forms is on screen.
+function StickyCta({onOpen,hidden}){
+  const [box,setBox]=useState(null);
+  useEffect(()=>{
+    let frame=null;
+    const check=()=>{
+      frame=null;
+      const src=[...document.querySelectorAll('.hero-form button[type=submit], .mobile-hero-action')].find(b=>b.offsetParent);
+      if(!src){setBox(null);return;}
+      const r=src.getBoundingClientRect();
+      // Not needed while another request form is already on screen
+      const formInView=[...document.querySelectorAll('.final-request .lead-form, #request .lead-form')].some(f=>{const b=f.getBoundingClientRect();return b.top<innerHeight-80&&b.bottom>80;});
+      setBox(r.top<=12&&!formInView?{left:r.left,width:r.width}:null);
+    };
+    const queue=()=>{if(!frame)frame=requestAnimationFrame(check);};
+    addEventListener('scroll',queue,{passive:true});addEventListener('resize',queue);queue();
+    return()=>{removeEventListener('scroll',queue);removeEventListener('resize',queue);cancelAnimationFrame(frame);};
+  },[]);
+  const shown=box&&!hidden;
+  return <div className={`sticky-cta${shown?' is-shown':''}`} style={box?{left:box.left,width:box.width}:undefined} aria-hidden={shown?undefined:'true'}>
+    <Button onClick={onOpen} tabIndex={shown?0:-1}>Получить стоимость и сроки</Button>
+  </div>;
 }
 
 function Journey({onRequest}){
@@ -326,16 +410,39 @@ function ClientLogos(){
 }
 
 // Hero proof under the H1: the three benefits and a link to the NORDA case further down the page.
+const INSURANCE_FILE='Договор страхования Кастомс Лидер 2026–2027.pdf';
+// The single-file build inlines the PDF as data:, which browsers refuse to open in a new tab — serve it as a blob instead
+function useFileUrl(src){
+  const [url,setUrl]=useState(src);
+  useEffect(()=>{
+    if(!src.startsWith('data:'))return;
+    let blobUrl;
+    fetch(src).then(r=>r.blob()).then(b=>{blobUrl=URL.createObjectURL(b);setUrl(blobUrl);}).catch(()=>{});
+    return()=>{if(blobUrl)URL.revokeObjectURL(blobUrl);};
+  },[src]);
+  return url;
+}
+function InsuranceDoc(){
+  const pdf=useFileUrl(insuranceContract);
+  return <figure className="insurance-art insurance-doc">
+    <a className="insurance-doc-page" href={pdf} target="_blank" rel="noopener" aria-label="Открыть договор страхования в новой вкладке"><img src={insurancePage} alt="Первая страница договора страхования № 483-561-165567/26/FFW" width="620" height="878" loading="lazy" decoding="async"/></a>
+    <figcaption>
+      <span className="insurance-doc-kicker"><ShieldCheck size={16}/>Действующий договор</span>
+      <dl><div><dt>Страховщик</dt><dd>СПАО «Ингосстрах»</dd></div></dl>
+      <a className="button insurance-doc-download" href={pdf} download={INSURANCE_FILE}><Download size={18}/>Скачать PDF</a>
+    </figcaption>
+  </figure>;
+}
 const HERO_BENEFITS=[[ShieldCheck,'Более 20 лет работы с ВЭД'],[PackageCheck,'Сами работаем с поставщиком'],[Route,'Бюджет всей поставки известен заранее']];
 function scrollToCase(e){
   e.preventDefault();
   const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
   document.getElementById('case-norda')?.scrollIntoView({behavior:reduce?'auto':'smooth',block:'start'});
 }
-const CASE_LABEL="Смотреть кейс: 1'200 тонн и 140 метров, Китай → рудник Таймырский";
+const CASE_LABEL="Смотреть кейс: 1'200 тонн и 160 метров, Китай → рудник Таймырский";
 // The case link appears twice: under the benefits on desktop, over the photo on phones (CSS shows one).
 function CaseLink({className}){
-  return <a className={`hp-case ${className}`} href="#case-norda" onClick={scrollToCase} aria-label={CASE_LABEL}><span className="hc-body"><span className="hc-figs"><b>1'200 тонн</b> и <b>140 метров</b></span><span className="hc-route">Китай → рудник Таймырский</span></span><span className="hc-more">Смотреть кейс<ArrowDown size={18} aria-hidden="true"/></span></a>;
+  return <a className={`hp-case ${className}`} href="#case-norda" onClick={scrollToCase} aria-label={CASE_LABEL}><span className="hc-body"><span className="hc-figs"><b>1'200 тонн</b> и <b>160 метров</b></span><span className="hc-route">Китай → рудник Таймырский</span></span><span className="hc-more">Смотреть кейс<ArrowDown size={18} aria-hidden="true"/></span></a>;
 }
 function HeroProof(){
   return <div className="hero-proof">
@@ -362,7 +469,7 @@ function applyTheme(id){
 // Hidden states apply only under html.rv-ready, which is never set for reduced motion.
 const RV_SKIP='.lead-form,.modal,.cookie-notice,.tabs,.route-stops,.scene,label,button:not(.messengers>button),summary';
 const RV_TARGETS=[
-  ['media','.case-visual,.journey-visual,.team-carousel,.founder-media,.insurance-art'],
+  ['media','.case-visual,.journey-visual,.founder-media,.insurance-art'],
   ['item','.task-grid>article,.services-grid>article,.clients-grid>li,.team-roles>*,.founder-facts>*,.case-details>*,.messengers>button,.faq-list>details,.case-stat'],
   ['heading','h2,h3'],
   ['text','p,.bullets>li,.exclusions'],
@@ -394,27 +501,6 @@ function setupReveal(){
   check();window.addEventListener('scroll',schedule,{passive:true});window.addEventListener('resize',schedule);
   return ()=>{clearTimeout(queued);timers.forEach(clearTimeout);window.removeEventListener('scroll',schedule);window.removeEventListener('resize',schedule);document.documentElement.classList.remove('rv-ready');};
 }
-// Team section carousel: three stills that cross-fade, autoplay pauses on hover, focus and reduced motion.
-const TEAM_SLIDES=[
-  {src:teamContainer,alt:'Тени четырёх специалистов на бетонной стене рядом с зелёным морским контейнером'},
-  {src:teamAerial,alt:'Вид сверху: зелёный контейнер и длинные тени команды'},
-  {src:teamCargo,alt:'Груз под тентом на раме и тени команды на стене склада'},
-];
-function TeamCarousel(){
-  const [index,setIndex]=useState(0),[paused,setPaused]=useState(false),reduced=useContext(MotionContext),start=useRef(null),n=TEAM_SLIDES.length;
-  const go=d=>setIndex(v=>(v+d+n)%n);
-  useEffect(()=>{if(paused||reduced)return;const t=setInterval(()=>setIndex(v=>(v+1)%n),5500);return ()=>clearInterval(t);},[paused,reduced,n]);
-  return <div className="team-carousel" role="region" aria-roledescription="карусель" aria-label="Команда" onMouseEnter={()=>setPaused(true)} onMouseLeave={()=>setPaused(false)} onFocus={()=>setPaused(true)} onBlur={()=>setPaused(false)}
-    onPointerDown={e=>{start.current=e.clientX;}} onPointerUp={e=>{if(start.current==null)return;const dx=e.clientX-start.current;start.current=null;if(Math.abs(dx)>40)go(dx<0?1:-1);}}>
-    {TEAM_SLIDES.map((slide,k)=><figure key={slide.src} className={`team-slide${k===index?' is-active':''}`} aria-hidden={k!==index}><img src={slide.src} alt={slide.alt} width="1374" height="1145" loading="lazy" decoding="async" draggable="false"/></figure>)}
-    <div className="team-controls">
-      <div className="team-dots">{TEAM_SLIDES.map((slide,k)=><button type="button" key={slide.src} aria-label={`Слайд ${k+1} из ${n}`} aria-current={k===index?'true':undefined} onClick={()=>setIndex(k)}/>)}</div>
-      <button type="button" onClick={()=>go(-1)} aria-label="Предыдущий слайд"><ArrowLeft size={18}/></button>
-      <button type="button" onClick={()=>go(1)} aria-label="Следующий слайд"><ArrowRight size={18}/></button>
-    </div>
-  </div>;
-}
-
 // "Наверх": bottom-left, shown once the visitor is a screen below the top.
 function ScrollTopButton(){
   const [shown,setShown]=useState(false);
@@ -452,10 +538,12 @@ export default function App(){
   return <MotionContext.Provider value={reduced}><ScenesContext.Provider value={scenesMode}><FramesContext.Provider value={imageFrames}><div className={`site${reduced?' reduce-motion':''}${scenesMode==='images'?' scenes-static':''}`}><ImageTweaks/>
     <a className="skip-link" href="#main">Перейти к содержимому</a>
     <div className="reading-progress" aria-hidden="true" ref={progressBar}/>
+    <SectionNav/>
+    <StickyCta onOpen={()=>setModal('hero')} hidden={!!modal}/>
     <header className="header wrap">
       <a href="#" className="wordmark" aria-label="КАСТОМС ЛИДЕР — в начало"><img className="header-logo logo-on-dark" src={logoOnDark} alt="КАСТОМС ЛИДЕР" width="960" height="113"/><img className="header-logo logo-on-light" src={logoOnLight} alt="КАСТОМС ЛИДЕР" width="960" height="112"/></a>
 
-      <p className="header-description">Международная и внутренняя логистика. Промышленного оборудования и негабарита. Горнодобывающее, горнопромышленное и вспомогательное оборудование к ним.</p>
+      <p className="header-description">Международная и внутренняя логистика промышленного горнодобывающего оборудования и негабарита.</p>
 
       <button className="russia-link text-link" onClick={()=>setModal('russia')}><span className="russia-text"><span>Нужна перевозка</span> <span>по России?</span></span> <ArrowUpRight size={15}/></button>
       <div className="header-contacts"><a href="tel:+79038792020">+7 (903) 879-20-20</a><a href="mailto:info@customsleader.ru">info@customsleader.ru</a></div>
@@ -470,7 +558,7 @@ export default function App(){
       <section className="section tasks light" data-reveal><div className="wrap"><h2><Text value={sourceTitle(2)}/></h2><div className="task-grid">{S[2].tables.map(([title,text],i)=>{const Icon=[Settings2,PackageCheck,Truck,Route][i];return <article key={title}><div className={`task-diagram diagram-${i}`} aria-hidden="true"><Icon size={64} strokeWidth={.9}/><span className="diagram-cross a"/><span className="diagram-cross b"/></div><h3><Text value={title}/></h3><p><Text value={text}/></p></article>})}</div></div></section>
 
       <section className="section services" data-reveal><div className="wrap"><div className="section-heading"><h2><Text value={sourceTitle(3)}/></h2>
-          <div className="exclusions"><span>Не работаем:</span><ul><li><X size={16} strokeWidth={2.2} aria-hidden="true"/>с военными грузами</li><li><X size={16} strokeWidth={2.2} aria-hidden="true"/>с продуктами питания</li><li><X size={16} strokeWidth={2.2} aria-hidden="true"/>с табаком и алкоголем</li><li><X size={16} strokeWidth={2.2} aria-hidden="true"/>с физическими лицами</li></ul></div>
+          <div className="exclusions"><span>Не работаем:</span><ul><li><X size={16} strokeWidth={2.2} aria-hidden="true"/>с продуктами питания</li><li><X size={16} strokeWidth={2.2} aria-hidden="true"/>с военными грузами</li><li><X size={16} strokeWidth={2.2} aria-hidden="true"/>с табаком и алкоголем</li><li><X size={16} strokeWidth={2.2} aria-hidden="true"/>с физическими лицами</li></ul></div>
         </div>
 
         <div className="services-grid">{services.map((s,i)=>{const Icon=[Layers3,Globe2,Truck,FileCheck2][i];return <article key={s.title}><Icon size={30} strokeWidth={1.3}/><h3>{s.title}</h3><p><Text value={s.text}/></p><Bullets items={s.list}/><button className="service-cta" onClick={()=>chooseService(i)}>{s.cta}<ArrowUpRight size={21}/></button></article>})}</div>
@@ -479,29 +567,35 @@ export default function App(){
 
       <section className="section cases"><div className="wrap"><h2 data-reveal><Text value={sourceTitle(4)}/></h2>
 
-        <div className="case-list">{cases.map((c,i)=><article className={`case case-${i}`} id={i===1?'case-norda':undefined} key={c.title} data-reveal><div className="case-main"><div className="case-copy"><h3><Text value={c.title}/></h3><div className={`case-stat ${i===2?'stat-words':''}`}><strong>{c.stat}</strong>{c.label&&<span><Text value={c.label}/></span>}</div><p>{c.description}</p></div><div className="case-visual has-photo"><CasePhoto i={i}><span className="client-label">Кейс {i+1}</span></CasePhoto></div></div><div className="case-details">{c.headings.map((h,k)=>{const cut=h.indexOf(':')+1;return <div key={h}><h4>{cut>0?<><span className="case-step">{h.slice(0,cut)}</span> {h.slice(cut).trim()}</>:h}</h4><p>{c.paragraphs[k]}</p></div>})}</div></article>)}</div>
+        <div className="case-list">{cases.map((c,i)=><article className={`case case-${i}`} id={i===1?'case-norda':undefined} key={c.title} data-reveal><div className="case-main"><div className="case-copy"><h3><CaseTitle title={c.title}/></h3><div className={`case-stat ${i===2?'stat-words':''}`}><strong>{c.stat}</strong>{c.label&&<span><Text value={c.label}/></span>}</div><p>{c.description}</p></div><div className="case-visual has-photo"><CasePhoto i={i}><span className="client-label">Кейс {i+1}</span>{CASE_PHOTOS[i].caption&&<span className="photo-caption" aria-hidden="true">{CASE_PHOTOS[i].caption}</span>}</CasePhoto></div></div><div className="case-details">{c.headings.map((h,k)=>{const cut=h.indexOf(':')+1;return <div key={h}><h4>{cut>0?<><span className={`case-step${h.startsWith('Сложность')?' is-risk':''}`}>{h.slice(0,cut)}</span> {(t=>t.charAt(0).toUpperCase()+t.slice(1))(h.slice(cut).trim())}</>:h}</h4><p>{c.paragraphs[k]}</p></div>})}</div></article>)}</div>
 
       </div></section>
 
-      <section className="section request light" id="request" data-reveal><div className="wrap"><div className="section-heading"><div><h2><Text value={sourceTitle(5)}/></h2><p className="lead"><Text value={S[5].LEAD}/></p></div><Bullets items={['После заявки менеджер свяжется с вами в течение 1 часа','Сформируем 1–3 маршрута: по сроку, стоимости, надёжности','Сравним: авиа, авто, ЖД, объясним нюансы (наличие СВХ, по коду ТН ВЭД, сезонность)']}/></div><Form id="detailed" variant="detailed" chosen={selected} setChosen={setSelected} onLegal={setLegal}/></div></section>
+      <section className="section request light" id="request" data-reveal><div className="wrap"><div className="section-heading"><div><h2><Text value={sourceTitle(5)}/></h2><p className="lead"><Text value={S[5].LEAD}/></p></div><Bullets items={['После заявки менеджер свяжется с вами в течение 1 часа','Сформируем 1–3 маршрута: по сроку, стоимости, надёжности','Сравним: авиа, авто, ЖД, море. Объясним нюансы (наличие СВХ, разницу кодов ТН ВЭД, сезонность)']}/></div><Form id="detailed" variant="detailed" chosen={selected} setChosen={setSelected} onLegal={setLegal}/></div></section>
 
       <Journey onRequest={scrollToRequest}/>
 
-      <section className="section team light" data-reveal><div className="wrap"><div className="team-intro"><TeamCarousel/><div><h2><Text value={sourceTitle(7)}/></h2><p className="lead"><Text value={S[7].LEAD}/></p><p className="note"><Layers3 size={22}/>Если менеджер сменился или в отпуске, коллега откроет историю сделки и продолжит работу с текущего этапа</p></div></div><div className="team-roles">{S[7].tables.map(([name,text],i)=>{const Icon=[UserRound,FileCheck2,Route,Layers3][i];return <article key={name}><Icon size={28} strokeWidth={1.2}/><h3>{name}</h3><p><Text value={text}/></p></article>})}</div></div></section>
+      <section className="section team light" data-reveal><div className="wrap"><div className="team-heading"><h2><Text value={sourceTitle(7)}/></h2><p className="lead"><Text value={S[7].LEAD}/></p></div><div className="team-roles">{S[7].tables.map(([name,text],i)=>{const Icon=[UserRound,FileCheck2,Route,Layers3][i];return <article key={name}><Icon size={28} strokeWidth={1.2}/><h3>{name}</h3><p>{sentences(text)}</p></article>})}</div></div></section>
 
-      <section className="section insurance" data-reveal><div className="wrap insurance-layout"><div><h2><Text value={sourceTitle(8)}/></h2><Bullets items={['Понимаете, на какую сумму защищён груз. Проверим страховую сумму и лимиты применительно к вашей поставке. В случае непокрытия ответственности, застрахуем дополнительно.','Знаете об ограничениях до отправки. Покажем, какие риски покрываются, а какие расходы могут остаться на вашей стороне.','Получаете подтверждение защиты документами. До договора предоставим действующий полис и подтверждение оплаты']}/></div><div className="insurance-art" aria-hidden="true"><ShieldCheck size={156} strokeWidth={.7}/><div className="orbit orbit-a"/><div className="orbit orbit-b"/><div className="orbit orbit-c"/></div></div></section>
+      <section className="section insurance" data-reveal><div className="wrap insurance-layout"><div><h2><Text value={sourceTitle(8)}/></h2><Bullets items={['Понимаете, на какую сумму защищён груз. Проверим страховую сумму и лимиты применительно к вашей поставке. В случае непокрытия ответственности, застрахуем дополнительно.','Знаете об ограничениях до отправки. Покажем, какие риски покрываются, а какие расходы могут остаться на вашей стороне.','Получаете подтверждение защиты документами. До договора предоставим действующий полис и подтверждение оплаты']}/></div><InsuranceDoc/></div></section>
 
-      <section className="section founder light" data-reveal><div className="wrap"><h2><Text value={sourceTitle(9)}/></h2><div className="founder-layout"><div className="founder-media"><FramedPicture id="founder" photo={FOUNDER_PHOTO} className="founder-photo"/></div><div className="founder-copy"><h3>Хасанов Эдуард Ряфхатович</h3><p><Text value={entries(9,'P')[0]}/></p><ul className="founder-facts"><li><strong>13 лет</strong><span>в таможенных органах</span></li><li><strong>9 лет</strong><span>развивал таможенное и логистическое направление других компаний</span></li><li><strong>8 лет</strong><span>строит собственную компанию</span></li><li><FileCheck2 size={29}/><span>Юридическое образование</span></li></ul></div></div></div></section>
+      <section className="section founder light" data-reveal><div className="wrap"><h2><Text value={sourceTitle(9)}/></h2><div className="founder-layout"><div className="founder-media"><FramedPicture id="founder" photo={FOUNDER_PHOTO} className="founder-photo"/></div>
+
+        <div className="founder-copy"><h3>Хасанов Эдуард Ряфхатович</h3>
+          <p className="founder-path">От рядового сотрудника до <mark>владельца международной компании</mark></p>
+          <p><Text value={entries(9,'P')[0]}/></p><ul className="founder-facts"><li><strong>13 лет</strong><span>в таможенных органах</span></li><li><strong>9 лет</strong><span>развивал таможенное и логистическое направление других компаний</span></li><li><strong>8 лет</strong><span>строит собственную компанию</span></li><li><FileCheck2 size={29}/><span>Юридическое образование</span></li></ul></div>
+
+      </div></div></section>
 
       <section className="section faq light" data-reveal><div className="wrap faq-layout"><h2><Text value={sourceTitle(10)}/></h2><div className="faq-list">{faq.map((f,i)=><details key={f.question}><summary><h3>{f.question}</h3><Plus className="faq-plus" size={21}/></summary><p>{f.answer}</p></details>)}</div></div></section>
 
-      <section className="section final-request" data-reveal><div className="wrap"><div className="final-layout"><div><h2><Text value={sourceTitle(11)}/></h2><Bullets items={['После заявки менеджер свяжется с вами в течение 1 часа','Запросим базовые данные: откуда, что везём, вес/объём, требования','Сформируем 1–3 маршрута: по сроку, стоимости, надёжности','Сравним: авиа, авто, ЖД, объясним нюансы (наличие СВХ, по коду ТН ВЭД, сезонность)']}/></div><Form id="final" onLegal={setLegal}/></div></div></section>
+      <section className="section final-request" data-reveal><div className="wrap"><div className="final-layout"><div><h2><Text value={sourceTitle(11)}/></h2><Bullets items={['После заявки менеджер свяжется с вами в течение 1 часа','Запросим базовые данные: откуда, что везём, вес/объём, требования','Сформируем 1–3 маршрута: по сроку, стоимости, надёжности','Сравним: авиа, авто, ЖД, море. Объясним нюансы (наличие СВХ, разницу кодов ТН ВЭД, сезонность)']}/></div><Form id="final" onLegal={setLegal}/></div></div></section>
 
       <section className="section clients-section" data-reveal><div className="wrap"><ClientLogos/></div></section>
 
       <section className="section contact" data-reveal><div className="wrap contact-layout"><h2><Text value={sourceTitle(12)}/></h2><div className="contact-actions"><div className="messengers"><button className="messenger-max" onClick={()=>notify('Ссылка на MAX будет добавлена позже.')}><span className="messenger-main"><MessageSquare/>Написать в MAX</span><span className="messenger-go" aria-hidden="true"><ArrowUpRight size={18}/></span></button><button className="messenger-whatsapp" onClick={()=>notify('Ссылка на WhatsApp будет добавлена позже.')}><span className="messenger-main"><MessageCircle/>Написать в WhatsApp</span><span className="messenger-go" aria-hidden="true"><ArrowUpRight size={18}/></span></button><button className="messenger-telegram" onClick={()=>notify('Ссылка на Telegram будет добавлена позже.')}><span className="messenger-main"><Send/>Написать в Telegram</span><span className="messenger-go" aria-hidden="true"><ArrowUpRight size={18}/></span></button></div><p>Или позвоните по номеру:</p><a className="contact-phone" href="tel:+79038792020">+7 (903) 879-20-20</a><a className="contact-email" href="mailto:info@customsleader.ru">info@customsleader.ru</a></div></div></section>
     </main>
-    <footer className="footer wrap"><div className="footer-top"><a href="#" className="wordmark" aria-label="КАСТОМС ЛИДЕР — в начало"><img className="logo-on-dark" src={logoOnDark} alt="КАСТОМС ЛИДЕР" width="960" height="113" loading="lazy"/><img className="logo-on-light" src={logoOnLight} alt="КАСТОМС ЛИДЕР" width="960" height="112" loading="lazy"/></a><p>Международная и внутренняя логистика. Промышленного оборудования и негабарита. Горнодобывающее, горнопромышленное и вспомогательное оборудование к ним.</p><p className="footer-address">Адрес: <a href="https://yandex.ru/maps/-/CXefnW0a" target="_blank" rel="noopener noreferrer">Иваново,<br/>ул. Степанова, 5,<br/>оф. 307А</a></p><div className="footer-contacts"><a href="tel:+79038792020">+7 (903) 879-20-20</a><a href="mailto:info@customsleader.ru">info@customsleader.ru</a><button onClick={()=>setModal('callback')}>Заказать звонок <ArrowUpRight size={16}/></button></div></div><div className="footer-bottom"><p>ООО «КАСТОМС ЛИДЕР» ИНН: 3702195282</p><p>Информация на сайте носит справочный характер и не является публичной офертой (ст. 437 ГК РФ). Стоимость и сроки определяются индивидуальным расчётом и договором.</p><div><button onClick={()=>setLegal('privacy')}>Политика конфиденциальности</button><button onClick={()=>setLegal('personal-data')}>Политика обработки персональных данных</button><button onClick={()=>setCookieOpen(true)}>Настройки cookie</button></div></div></footer>
+    <footer className="footer wrap"><div className="footer-top"><a href="#" className="wordmark" aria-label="КАСТОМС ЛИДЕР — в начало"><img className="logo-on-dark" src={logoOnDark} alt="КАСТОМС ЛИДЕР" width="960" height="113" loading="lazy"/><img className="logo-on-light" src={logoOnLight} alt="КАСТОМС ЛИДЕР" width="960" height="112" loading="lazy"/></a><p>Международная и внутренняя логистика промышленного горнодобывающего оборудования и негабарита.</p><p className="footer-address">Адрес: <a href="https://yandex.ru/maps/-/CXefnW0a" target="_blank" rel="noopener noreferrer">Иваново,<br/>ул. Степанова, 5,<br/>оф. 307А</a></p><div className="footer-contacts"><a href="tel:+79038792020">+7 (903) 879-20-20</a><a href="mailto:info@customsleader.ru">info@customsleader.ru</a><button onClick={()=>setModal('callback')}>Заказать звонок <ArrowUpRight size={16}/></button></div></div><div className="footer-bottom"><p>ООО «КАСТОМС ЛИДЕР» ИНН: 3702195282</p><p>Информация на сайте носит справочный характер и не является публичной офертой (ст. 437 ГК РФ). Стоимость и сроки определяются индивидуальным расчётом и договором.</p><div><button onClick={()=>setLegal('privacy')}>Политика конфиденциальности</button><button onClick={()=>setLegal('personal-data')}>Политика обработки персональных данных</button><button onClick={()=>setCookieOpen(true)}>Настройки cookie</button></div></div>{FOOTNOTE_SOURCE&&<ol className="footnotes" aria-label="Сноски"><li id="fn-1">Источник: <a href={FOOTNOTE_SOURCE} target="_blank" rel="noopener noreferrer">«Норникель» запустил уникальный проходческий комплекс NORDA</a> <a href="#fnref-1" className="footnote-back" aria-label="Вернуться к тексту">↩</a></li></ol>}</footer>
     {!cookieOpen&&<ScrollTopButton/>}{cookieOpen&&<CookieNotice onClose={()=>setCookieOpen(false)} onPolicy={()=>setLegal('cookies')}/>}
     {notice&&<div className="toast" role="status">{notice}<button aria-label="Закрыть уведомление" onClick={()=>setNotice('')}><X size={17}/></button></div>}
     {modal&&<Modal type={modal} onClose={()=>setModal(null)} onLegal={setLegal}/>}{legal&&<Modal type={legal} onClose={()=>setLegal(null)}/>} 
