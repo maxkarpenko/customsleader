@@ -315,9 +315,9 @@ function Modal({type,onClose,onLegal}){
     // Open with focus on the dialog itself, not on the close button, so no focus ring shows on arrival
     d?.focus({preventScroll:true});
     const old=document.body.style.overflow;document.body.style.overflow='hidden';
-    // The full-screen form on phones paints the status bar in its own light surface
+    // The full-screen forms on phones paint the status bar in their own light surface
     const meta=document.querySelector('meta[name="theme-color"]'),oldColor=meta?.content;
-    if(type==='hero'&&d&&matchMedia('(max-width:650px)').matches)setThemeColor(getComputedStyle(d).backgroundColor);
+    if(['hero','callback','russia'].includes(type)&&d&&matchMedia('(max-width:650px)').matches)setThemeColor(getComputedStyle(d).backgroundColor);
     return()=>{document.body.style.overflow=old;setThemeColor(oldColor);};
   },[]);
   const titles={hero:'Получите стоимость и сроки доставки',callback:'Заказать звонок',russia:'Нужна перевозка по России?',consent:'Согласие на обработку персональных данных',privacy:'Политика конфиденциальности','personal-data':'Политика в отношении обработки персональных данных',cookies:'Политика использования cookie'};

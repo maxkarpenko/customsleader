@@ -289,12 +289,12 @@
 /* Phones: the hero form opens as a full-screen sheet from the hero button instead of a block below */
 @media(max-width:650px){
   .hero-form{display:none}
-  .modal.modal-hero{width:100%;max-width:none;height:100dvh;max-height:none;margin:0;border:0;border-radius:0}
-  .modal-hero .modal-inner{min-height:100%;display:flex;flex-direction:column;justify-content:flex-end;padding:72px 20px calc(24px + env(safe-area-inset-bottom))}
-  .modal-hero h2{margin:0 0 14px}
+  .modal:is(.modal-hero,.modal-callback,.modal-russia){width:100%;max-width:none;height:100dvh;max-height:none;margin:0;border:0;border-radius:0}
+  :is(.modal-hero,.modal-callback,.modal-russia) .modal-inner{min-height:100%;display:flex;flex-direction:column;justify-content:flex-end;padding:72px 20px calc(24px + env(safe-area-inset-bottom))}
+  :is(.modal-hero,.modal-callback,.modal-russia) h2{margin:0 0 14px}
   .modal-hero .form-title{display:none}
-  .modal-hero .form-intro{font-size:var(--fs-meta);margin-bottom:18px}
-  .modal-hero .form-legal{font-size:11.5px;line-height:1.45;margin-bottom:0;text-wrap:wrap}
+  :is(.modal-hero,.modal-callback,.modal-russia) .form-intro{font-size:var(--fs-meta);margin-bottom:18px}
+  :is(.modal-hero,.modal-callback,.modal-russia) .form-legal{font-size:11.5px;line-height:1.45;margin-bottom:0;text-wrap:wrap}
 }
 /* Phones: every 2×2 grid becomes a single column of blocks, one after another */
 @media(max-width:650px){
