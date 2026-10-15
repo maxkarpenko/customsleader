@@ -517,3 +517,6 @@
 }
 /* "Получить стоимость и сроки" buttons always carry white text, on any surface and theme */
 .button.cta-quote,.button.cta-quote:hover{color:#fff}
+/* The phone pill says it shorter */
+.sticky-cta .cta-short{display:none}
+@media(max-width:650px){.sticky-cta .cta-long{display:none}.sticky-cta .cta-short{display:inline}}

@@ -349,7 +349,7 @@ function StickyCta({onOpen,hidden}){
   },[]);
   const shown=box&&!hidden;
   return <div className={`sticky-cta${shown?' is-shown':''}`} style={box&&!box.phone?{left:box.left,width:box.width}:undefined} aria-hidden={shown?undefined:'true'}>
-    <Button className="cta-quote" onClick={onOpen} tabIndex={shown?0:-1}>Получить стоимость и сроки</Button>
+    <Button className="cta-quote" onClick={onOpen} tabIndex={shown?0:-1}><span className="cta-long">Получить стоимость и сроки</span><span className="cta-short">Получить расчёт</span></Button>
   </div>;
 }
 
@@ -594,7 +594,7 @@ export default function App(){
 
       <section className="section founder light" data-reveal><div className="wrap"><h2><Text value={sourceTitle(9)}/></h2><div className="founder-layout"><div className="founder-media"><FramedPicture id="founder" photo={FOUNDER_PHOTO} className="founder-photo"/></div>
 
-        <div className="founder-copy"><h3>Хасанов Эдуард Ряфхатович</h3>
+        <div className="founder-copy"><h3>Хасанов<br/>Эдуард Ряфхатович</h3>
           <p className="founder-path">Основатель и <mark>руководитель компании</mark></p>
           <p><Text value={entries(9,'P')[0]}/></p><ul className="founder-facts"><li><strong>13 лет</strong><span>в таможенных органах</span></li><li><strong>9 лет</strong><span>развивал таможенное и логистическое направление других компаний</span></li><li><strong>8 лет</strong><span>строит собственную компанию</span></li><li><FileCheck2 size={29}/><span>Юридическое образование</span></li></ul></div>
 
