@@ -316,9 +316,14 @@ function Modal({type,onClose,onLegal}){
     d?.focus({preventScroll:true});
     const old=document.body.style.overflow;document.body.style.overflow='hidden';
     // The full-screen forms on phones paint the status bar in their own light surface
+    // iOS Safari tints the status bar from the page background, not only theme-color: repaint html and body too
     const meta=document.querySelector('meta[name="theme-color"]'),oldColor=meta?.content;
-    if(['hero','callback','russia'].includes(type)&&d&&matchMedia('(max-width:650px)').matches)setThemeColor(getComputedStyle(d).backgroundColor);
-    return()=>{document.body.style.overflow=old;setThemeColor(oldColor);};
+    const root=document.documentElement,body=document.body,oldBg=[root.style.backgroundColor,body.style.backgroundColor];
+    if(['hero','callback','russia'].includes(type)&&d&&matchMedia('(max-width:650px)').matches){
+      const surface=getComputedStyle(d).backgroundColor;
+      setThemeColor(surface);root.style.backgroundColor=surface;body.style.backgroundColor=surface;
+    }
+    return()=>{document.body.style.overflow=old;setThemeColor(oldColor);root.style.backgroundColor=oldBg[0];body.style.backgroundColor=oldBg[1];};
   },[]);
   const titles={hero:'Получите стоимость и сроки доставки',callback:'Заказать звонок',russia:'Нужна перевозка по России?',consent:'Согласие на обработку персональных данных',privacy:'Политика конфиденциальности','personal-data':'Политика в отношении обработки персональных данных',cookies:'Политика использования cookie'};
   const doc=LEGAL_DOCS[type];
