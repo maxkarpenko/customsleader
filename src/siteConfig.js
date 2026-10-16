@@ -6,6 +6,9 @@ export const SCENES_KEY='scenes-mode';
 export const TWEAKS_CASES_KEY='tweaks-cases';
 export const TWEAKS_STILLS_KEY='tweaks-stills';
 export const TWEAKS_FOUNDER_KEY='tweaks-founder';
+// Case presentation chosen on /3d.html: 'stack' (bands, photo beside the text) or 'cover' (photo across the page)
+export const CASES_STYLE_KEY='cases-style';
+export const CASES_STYLE='stack';
 // Colour themes: Graphite (dark) is the default, Steel the light one. THEME_SWITCHER shows the sun/moon
 // button in the header; set it to false to hide it and always use Graphite.
 export const THEME_KEY='site-theme';

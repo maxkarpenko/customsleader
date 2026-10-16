@@ -39,26 +39,37 @@ function toneOf(el){
 function useSectionScroll(){
   const [s, setS] = useState({pos: 0, active: 0, toneMid: 'dark'});
   useEffect(() => {
-    let frame = null;
-    const measure = () => {
-      frame = null;
+    // Layout (section tops, surface tones) is measured only when the page changes size or theme;
+    // scrolling itself reads nothing but scrollY, so it never forces layout or style work
+    let frame = null, layout = null, last = '';
+    const relayout = () => {
       const els = SECTIONS.map(([sel]) => document.querySelector(sel));
-      if(els.some(e => !e)) return;
-      const y = scrollY, vh = innerHeight, docH = document.documentElement.scrollHeight;
+      if(els.some(e => !e)){ layout = null; return; }
+      const y = scrollY, docH = document.documentElement.scrollHeight;
       const tops = els.map(e => e.getBoundingClientRect().top + y);
-      const ends = tops.map((t, k) => k < LAST ? tops[k + 1] : docH);
-      const probe = y + vh * PROBE;
-      let i = 0; tops.forEach((t, k) => { if(t <= probe) i = k; });
-      let pos = i + clamp((probe - tops[i]) / (ends[i] - tops[i]));
-      if(y + vh >= docH - 2){ i = LAST; pos = LAST; }
-      setS({pos, active: i, toneMid: toneOf(els[i])});
+      layout = {tops, ends: tops.map((t, k) => k < LAST ? tops[k + 1] : docH), docH, tones: els.map(toneOf)};
     };
-    const queue = () => { if(!frame) frame = requestAnimationFrame(measure); };
-    addEventListener('scroll', queue, {passive: true}); addEventListener('resize', queue);
-    const ro = new ResizeObserver(queue); ro.observe(document.body);
-    const mo = new MutationObserver(queue); mo.observe(document.documentElement, {attributes: true, attributeFilter: ['data-theme', 'data-tone']});
+    const update = () => {
+      frame = null;
+      if(!layout) relayout();
+      if(!layout) return;
+      const {tops, ends, docH, tones} = layout;
+      const y = scrollY, vh = innerHeight, probe = y + vh * PROBE;
+      let i = 0; tops.forEach((t, k) => { if(t <= probe) i = k; });
+      // quantised so the dots re-render in visible steps, not on every scrolled pixel
+      let pos = i + Math.round(clamp((probe - tops[i]) / (ends[i] - tops[i])) * 40) / 40;
+      if(y + vh >= docH - 2){ i = LAST; pos = LAST; }
+      const key = `${i}|${pos.toFixed(3)}|${tones[i]}`;
+      if(key === last) return;
+      last = key; setS({pos, active: i, toneMid: tones[i]});
+    };
+    const queue = () => { if(!frame) frame = requestAnimationFrame(update); };
+    const remeasure = () => { layout = null; queue(); };
+    addEventListener('scroll', queue, {passive: true}); addEventListener('resize', remeasure);
+    const ro = new ResizeObserver(remeasure); ro.observe(document.body);
+    const mo = new MutationObserver(remeasure); mo.observe(document.documentElement, {attributes: true, attributeFilter: ['data-theme', 'data-tone']});
     queue();
-    return () => { removeEventListener('scroll', queue); removeEventListener('resize', queue); ro.disconnect(); mo.disconnect(); cancelAnimationFrame(frame); };
+    return () => { removeEventListener('scroll', queue); removeEventListener('resize', remeasure); ro.disconnect(); mo.disconnect(); cancelAnimationFrame(frame); };
   }, []);
   return s;
 }

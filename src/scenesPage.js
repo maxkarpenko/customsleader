@@ -1,4 +1,4 @@
-import {SCENES_MODE,SCENES_KEY} from './siteConfig.js';
+import {SCENES_MODE,SCENES_KEY,CASES_STYLE_KEY,CASES_STYLE} from './siteConfig.js';
 import './scenesPage.css';
 
 const labels={'3d':'3D включено','images':'3D выключено, картинки'};
@@ -26,3 +26,9 @@ document.querySelectorAll('input[data-tweak]').forEach(box=>{
   box.addEventListener('change',()=>{try{box.checked?localStorage.setItem(key,'1'):localStorage.removeItem(key);}catch{}});
 });
 
+
+// Case style: the default is not stored, any other choice is.
+document.querySelectorAll('input[name=cases]').forEach(input=>{
+  try{input.checked=input.value===(localStorage.getItem(CASES_STYLE_KEY)||CASES_STYLE);}catch{input.checked=input.value===CASES_STYLE;}
+  input.addEventListener('change',()=>{try{input.value===CASES_STYLE?localStorage.removeItem(CASES_STYLE_KEY):localStorage.setItem(CASES_STYLE_KEY,input.value);}catch{}});
+});

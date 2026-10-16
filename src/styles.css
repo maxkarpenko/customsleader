@@ -157,9 +157,8 @@
 .hp-benefits li{display:flex;align-items:center;gap:12px;font-size:16px;line-height:1.3;color:var(--text)}
 .hp-benefits svg{width:19px;height:19px;flex:none;color:var(--green)}
 /* Case link: a green light sweeps around the border to draw the eye */
-@property --hc-angle{syntax:'<angle>';inherits:false;initial-value:0deg}
 .hp-case{position:relative;isolation:isolate;display:inline-flex;align-items:center;gap:22px;margin-top:28px;padding:14px 20px 14px 22px;border-radius:8px;color:var(--text);text-decoration:none}
-.hp-case::before{content:"";position:absolute;inset:0;z-index:-2;border-radius:inherit;background:conic-gradient(from var(--hc-angle),rgba(47,175,107,.15) 0deg,var(--green) 60deg,rgba(47,175,107,.15) 120deg,rgba(47,175,107,.15) 360deg);animation:hc-spin 3.6s linear infinite}
+.hp-case::before{content:"";position:absolute;z-index:-2}
 .hp-case::after{content:"";position:absolute;inset:1px;z-index:-1;border-radius:7px;background:rgba(23,27,29,.86);transition:background-color .2s}
 .hp-case:hover::after{background:rgba(23,36,29,.92)}
 .hp-case svg{flex:none;transition:transform .25s var(--ease)}
@@ -169,7 +168,6 @@
 .hc-figs b{font-weight:500;color:var(--green)}
 .hc-route{font-size:15px;line-height:1.35;color:var(--steel-200)}
 .hc-more{display:inline-flex;align-items:center;gap:6px;font-size:var(--fs-meta);font-weight:500;color:var(--green);white-space:nowrap}
-@keyframes hc-spin{to{--hc-angle:360deg}}
 @media(prefers-reduced-motion:reduce){.hp-case::before{animation:none}}
 @media(max-width:650px){.hp-case{flex-wrap:wrap;row-gap:8px}.hc-figs{white-space:normal}}
 .hp-case:focus-visible{outline:2px solid var(--green);outline-offset:4px}
@@ -425,7 +423,7 @@
   .hero-form .field label{margin-bottom:6px}
   .hero-form .field textarea{min-height:72px;height:72px}
   .hero-form .consent{margin-block:10px}
-  .hero-form .consent label{white-space:nowrap;font-size:12px}
+  .hero-form .consent label{white-space:nowrap;font-size:min(12px,calc((100cqi - 23px) / 26))}
   .hero-form .form-legal{margin-top:8px}
 }
 /* The transport legend keeps its field-label look inside the detailed form too */
@@ -451,7 +449,7 @@
 .field input[aria-invalid=true]{border-color:#c2372b}
 .field .field-error{color:#a52c22}
 /* Insurance: the actual contract as a downloadable document card */
-.insurance-doc{height:auto;margin:0;display:grid;grid-template-columns:minmax(0,250px) minmax(0,1fr);gap:34px;align-items:stretch;color:var(--text);isolation:auto}
+.insurance-doc{height:auto;margin:0;display:grid;grid-template-columns:minmax(0,250px) minmax(160px,1fr);gap:34px;align-items:stretch;color:var(--text);isolation:auto}
 .insurance-doc-page{position:relative;display:block;aspect-ratio:620/878;border-radius:3px;transform:rotate(-2deg);transition:transform .45s var(--ease)}
 .insurance-doc-page:before,.insurance-doc-page:after{content:'';position:absolute;inset:0;border-radius:3px;background:#dfe2dc;box-shadow:0 1px 2px rgba(0,0,0,.25);z-index:-1;transition:transform .45s var(--ease)}
 .insurance-doc-page:before{transform:translate(9px,7px) rotate(3deg)}
@@ -485,8 +483,8 @@
 .sticky-cta.is-shown{visibility:visible;opacity:1;pointer-events:auto}
 .sticky-cta .button{width:100%;box-shadow:0 10px 28px rgba(0,0,0,.28)}
 .modal-hero .form-title{display:none}
-/* Case 2 solution: Russian hyphenation keeps the paragraph to three lines */
-.case-1 .case-details>div:last-child p{-webkit-hyphens:auto;hyphens:auto;hyphenate-limit-chars:6 3 3}
+/* Norda case solution: Russian hyphenation keeps the paragraph to three lines */
+#case-norda .case-details>div:last-child p{-webkit-hyphens:auto;hyphens:auto;hyphenate-limit-chars:6 3 3}
 
 /* Dialogs take focus themselves on open; only the controls inside show a ring */
 .modal:focus{outline:none}
@@ -520,3 +518,72 @@
 /* The phone pill says it shorter */
 .sticky-cta .cta-short{display:none}
 @media(max-width:650px){.sticky-cta .cta-long{display:none}.sticky-cta .cta-short{display:inline}}
+
+/* ===== Cases: two styles, chosen on the settings page (/3d.html); pills above the list jump to each case ===== */
+/* case pills stay pinned at the top while any case is on screen */
+.cases-nav{position:sticky;z-index:6;top:12px;display:flex;flex-wrap:wrap;align-items:center;gap:8px;width:max-content;max-width:100%;margin:-30px 0 44px}
+.cases-nav button{padding:8px 15px;border:1px solid var(--line);border-radius:999px;background:rgba(23,27,29,.9);color:var(--text);font-size:13px;font-weight:500;transition:background-color .2s,border-color .2s,color .2s}
+.cases-nav button:hover{border-color:var(--steel-500)}
+:root[data-tone="light"] .cases-nav button{background:rgba(243,246,247,.92)}
+.cases-nav button[aria-current],:root[data-tone="light"] .cases-nav button[aria-current]{background:var(--accent);border-color:var(--accent);color:#fff}
+/* full-bleed bands and covers must not cause sideways scroll */
+.cases{overflow-x:clip;--case-a:var(--ink)}
+:root[data-tone="light"] .cases{--case-a:var(--bg)}
+
+/* Both styles: every case is a full-width band, alternating tone; each pins when its bottom meets the screen
+   bottom (top set from JS) and the next case slides over it whole while the one underneath darkens.
+   "Stack" alternates the photo side, "Cover" opens each case with a photo across the page carrying its title */
+.case-list>.case,.case-list>.case:last-child{position:sticky;isolation:isolate;will-change:transform;margin:0;padding:72px 0;border:0}
+.case-list>.case::before{content:'';position:absolute;z-index:-1;top:0;bottom:0;left:calc(50% - 50vw);right:calc(50% - 50vw);background:var(--case-a)}
+.case-list>.case:nth-child(even)::before{background:var(--steel-900)}
+.case-list>.case+.case::before{box-shadow:0 -28px 56px -18px rgba(0,0,0,.5)}
+:root[data-tone="light"] .case-list>.case+.case::before{box-shadow:0 -24px 48px -20px rgba(22,32,38,.25)}
+/* the case underneath darkens while the next one slides over it (opacity set from JS) */
+.case-dim{position:absolute;z-index:3;top:0;bottom:0;left:calc(50% - 50vw);right:calc(50% - 50vw);background:#000;opacity:0;pointer-events:none;will-change:opacity}
+@media(min-width:651px){
+  .case-list[data-v="stack"]>.case:nth-child(even) .case-main{grid-template-columns:1.15fr .85fr}
+  .case-list[data-v="stack"]>.case:nth-child(even) .case-copy{order:2}
+}
+@media(max-width:650px){.case-list>.case,.case-list>.case:last-child{padding:48px 0}}
+/* a breath of empty band after each case's content before the next one starts sliding in */
+.case-list>.case:not(:last-child){padding-bottom:calc(72px + 12vh)}
+@media(max-width:650px){.case-list>.case:not(:last-child){padding-bottom:calc(48px + 9vh)}}
+/* room above each case for the pinned case pills (they end about 50px from the top) */
+.case-list>.case,.case-list>.case:last-child{padding-top:96px}
+@media(max-width:650px){.case-list>.case,.case-list>.case:last-child{padding-top:84px}}
+
+/* Cover: a photo across the page width opens each case with its title set on the image */
+@media(min-width:651px){
+  .case-list[data-v="cover"] .case-main{grid-template-columns:.85fr 1.15fr;grid-template-areas:"media media" "stat text";gap:30px 48px;align-items:start}
+  .case-list[data-v="cover"] .case-copy{display:contents}
+  .case-list[data-v="cover"] .case-visual{grid-area:media;height:clamp(380px,42vw,640px)}
+  .case-list[data-v="cover"] .case-visual .case-photo{height:100%;aspect-ratio:auto}
+  .case-list[data-v="cover"] .case-visual::after{content:'';position:absolute;inset:0;z-index:1;background:linear-gradient(180deg,transparent 40%,rgba(10,13,14,.85));pointer-events:none}
+  .case-list[data-v="cover"] .case-copy h3{grid-area:media;position:relative;z-index:2;align-self:end;max-width:760px;padding:0 40px 40px;color:#f4f5f0;font-size:clamp(30px,3.2vw,48px);line-height:1.12}
+  .case-list[data-v="cover"] .case-stat{grid-area:stat;margin:0}
+  .case-list[data-v="cover"] .case-copy>p{grid-area:text;max-width:none}
+  .case-list[data-v="cover"] .photo-caption{top:19px;bottom:auto}
+}
+
+@media(max-width:650px){
+  .cases-nav{margin:-18px 0 28px}
+}
+/* Journey: no route strip under the picture — the tabs above already name the stages */
+.route-stops{display:none}
+.journey-visual,.journey-panel .journey-visual{height:auto}
+/* Team and insurance: the band fills the whole screen, content centred in it */
+:is(.team,.insurance){min-height:100vh;min-height:100svh;display:flex;flex-direction:column;justify-content:center}
+/* Consent line in every form: sized from its own row; narrow rows wrap instead of spilling out */
+.consent{container-type:inline-size}
+@container (max-width:308px){.lead-form .consent label{white-space:normal;font-size:12px}}
+/* Full-page scrolling for the cases on desktops: every case fills exactly one screen (taller ones grow),
+   content centred; one wheel gesture moves one screen (see the paging effect in App.jsx) */
+@media(min-width:901px){
+  .case-list>.case,.case-list>.case:last-child,.case-list>.case:not(:last-child){min-height:100vh;min-height:100svh;display:flex;flex-direction:column;justify-content:center;padding-bottom:72px}
+}
+/* Performance: the case button's sweeping border turns a large gradient square with transform (handled by the
+   compositor) instead of animating a custom property, which repainted the button on every frame forever */
+.hp-case{overflow:hidden}
+.hp-case::before{inset:auto;left:50%;top:50%;width:max(160%,320px);aspect-ratio:1;border-radius:0;background:conic-gradient(rgba(47,175,107,.15) 0deg,var(--green) 60deg,rgba(47,175,107,.15) 120deg,rgba(47,175,107,.15) 360deg);transform:translate(-50%,-50%);animation:hc-rotate 3.6s linear infinite}
+@keyframes hc-rotate{to{transform:translate(-50%,-50%) rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){.hp-case::before{animation:none}}

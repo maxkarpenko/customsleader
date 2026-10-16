@@ -2,7 +2,7 @@ import React, {useEffect, useId, useLayoutEffect, useRef, useState, createContex
 import {ArrowUpRight, ArrowRight, ArrowDown, ArrowUp, Sun, Moon, ArrowLeft, Check, Plus, Minus, X, Phone, ShieldCheck, PackageCheck, Route, Truck, FileCheck2, Globe2, MessageCircle, MessageSquare, Mail, UserRound, CircleCheck, Info, LoaderCircle, Send, Layers3, Settings2, SlidersHorizontal, RotateCcw, Copy, Download} from 'lucide-react';
 import content from './content.json';
 import SectionNav from './SectionNav.jsx';
-import {SCENES_MODE,SCENES_KEY,TWEAKS_CASES_KEY,TWEAKS_STILLS_KEY,TWEAKS_FOUNDER_KEY,THEME_KEY,THEME_SWITCHER,COOKIE_CONSENT_KEY,COOKIE_CONSENT_VERSION,YANDEX_METRIKA_ID,GOOGLE_ANALYTICS_ID} from './siteConfig.js';
+import {SCENES_MODE,SCENES_KEY,TWEAKS_CASES_KEY,TWEAKS_STILLS_KEY,TWEAKS_FOUNDER_KEY,CASES_STYLE_KEY,CASES_STYLE,THEME_KEY,THEME_SWITCHER,COOKIE_CONSENT_KEY,COOKIE_CONSENT_VERSION,YANDEX_METRIKA_ID,GOOGLE_ANALYTICS_ID} from './siteConfig.js';
 import privacyPolicy from './legal/privacy-policy.md?raw';
 import personalDataPolicy from './legal/personal-data-policy.md?raw';
 import consentText from './legal/consent.md?raw';
@@ -10,6 +10,7 @@ import cookiePolicy from './legal/cookie-policy.md?raw';
 import bottlingLine from './assets/media/bottling-line.webp';
 import bottlingLineInstalled from './assets/media/case-1-bottling-line.webp';
 import hvacTruck from './assets/media/hvac-truck.webp';
+import refrigerationPlant from './assets/media/case-3-refrigeration.webp';
 import miningComplex from './assets/media/mining-complex.webp';
 import routeConvoy from './assets/media/route-convoy.webp';
 import routeRain from './assets/media/route-rain.webp';
@@ -97,12 +98,12 @@ function Scene3D({kind='hero',className='',label='Иллюстрация пер�
 // shipped framing; in dev the tweak panel overrides it live (kept in localStorage) and copies the
 // values to paste back here. Which groups get a panel is switched on /3d.html.
 const CASE_PHOTOS=[
-  {src:bottlingLineInstalled,w:1280,h:592,alt:'Линия розлива в собранном виде на заводе клиента',caption:'Линия в собранном виде на заводе клиента'},
   {src:miningComplex,w:1280,h:851,alt:'Горнопроходческий комплекс в цехе завода перед отгрузкой'},
-  {src:hvacTruck,w:1600,h:893,alt:'Тягач с климатическим оборудованием в упаковочной плёнке на трассе'},
+  {src:bottlingLineInstalled,w:1280,h:592,alt:'Линия розлива в собранном виде на заводе клиента',caption:'Линия в собранном виде на заводе клиента'},
+  {src:refrigerationPlant,w:1280,h:960,alt:'Компрессорная холодильная станция и шкафы управления'},
 ];
 const FRAME={width:100,height:375,ratio:'3/2',fit:'cover',zoom:1,posX:50,posY:50,offsetX:0,offsetY:0};
-const IMAGE_FRAMES={case0:{...FRAME},case1:{...FRAME},case2:{...FRAME},hero:{...FRAME,ratio:'auto',height:360},end:{...FRAME,ratio:'auto',height:420},founder:{...FRAME,ratio:'4/5',posY:25}};
+const IMAGE_FRAMES={case0:{...FRAME},case1:{...FRAME},case2:{...FRAME,posY:0},hero:{...FRAME,ratio:'auto',height:360},end:{...FRAME,ratio:'auto',height:420},founder:{...FRAME,ratio:'4/5',posY:25}};
 const FRAME_LABELS={case0:'Кейс 1',case1:'Кейс 2',case2:'Кейс 3',hero:'Первый экран',end:'Финальный блок',founder:'Фото основателя'};
 const FRAMES_KEY='image-frames';
 // Panels are opt-in: switched on per browser on /3d.html ('1'), hidden otherwise.
@@ -333,6 +334,13 @@ function Modal({type,onClose,onLegal}){
 // The first screen's call to action stays on screen: once its button reaches the top edge, a copy
 // takes over at the same place and width, pinned to the top, and opens the first-screen form in a popup.
 // It steps aside while one of the page's own request forms is on screen.
+// Case pills: scroll to where a case starts in the flow (cases are sticky, so their live position can't be used)
+function goToCase(i){
+  const list=document.querySelector('.case-list');if(!list)return;
+  const items=[...list.children];
+  const top=list.getBoundingClientRect().top+scrollY+items.slice(0,i).reduce((sum,c)=>sum+c.offsetHeight,0);
+  scrollTo({top,behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});
+}
 function StickyCta({onOpen,hidden}){
   const [box,setBox]=useState(null);
   useEffect(()=>{
@@ -346,14 +354,18 @@ function StickyCta({onOpen,hidden}){
       const formInView=[...document.querySelectorAll('.final-request .lead-form, #request .lead-form')].some(f=>{const b=f.getBoundingClientRect();return b.top<innerHeight-80&&b.bottom>80;});
       // Phones: a floating pill at the bottom once the first-screen button has left the screen
       const phone=matchMedia('(max-width:650px)').matches;
-      setBox((phone?r.bottom<=0:r.top<=12)&&!formInView?{left:r.left,width:r.width,phone}:null);
+      const next=(phone?r.bottom<=0:r.top<=12)&&!formInView?{left:Math.round(r.left),width:Math.round(r.width),phone}:null;
+      // re-render only when something actually changed
+      setBox(prev=>(prev===next||(prev&&next&&prev.left===next.left&&prev.width===next.width&&prev.phone===next.phone))?prev:next);
     };
     const queue=()=>{if(!frame)frame=requestAnimationFrame(check);};
     addEventListener('scroll',queue,{passive:true});addEventListener('resize',queue);queue();
     return()=>{removeEventListener('scroll',queue);removeEventListener('resize',queue);cancelAnimationFrame(frame);};
   },[]);
   const shown=box&&!hidden;
-  return <div className={`sticky-cta${shown?' is-shown':''}`} style={box&&!box.phone?{left:box.left,width:box.width}:undefined} aria-hidden={shown?undefined:'true'}>
+  // Keep the last position while fading out, so the hidden button never jumps to the left edge
+  const last=useRef(null);if(box)last.current=box;const at=box||last.current;
+  return <div className={`sticky-cta${shown?' is-shown':''}`} style={at&&!at.phone?{left:at.left,width:at.width}:undefined} aria-hidden={shown?undefined:'true'}>
     <Button className="cta-quote" onClick={onOpen} tabIndex={shown?0:-1}><span className="cta-long">Получить стоимость и сроки</span><span className="cta-short">Получить расчёт</span></Button>
   </div>;
 }
@@ -454,8 +466,7 @@ function InsuranceDoc(){
 const HERO_BENEFITS=[[ShieldCheck,'Более 20 лет работы в ВЭД'],[PackageCheck,'Сами работаем с поставщиками'],[Route,'Бюджет всей поставки известен заранее']];
 function scrollToCase(e){
   e.preventDefault();
-  const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
-  document.getElementById('case-norda')?.scrollIntoView({behavior:reduce?'auto':'smooth',block:'start'});
+  goToCase(Math.max(0,cases.findIndex(c=>c.source)));
 }
 const CASE_LABEL="Смотреть кейс: 1'200 тонн и 160 метров, Китай → рудник Таймырский";
 // The case link appears twice: under the benefits on desktop, over the photo on phones (CSS shows one).
@@ -488,7 +499,9 @@ function applyTheme(id){
 // with a stagger index (--rv-i) and get .rv-in as they enter the viewport; .rv-done drops the reveal
 // transitions afterwards so their own hover transitions come back (styles.css, "Scroll reveal").
 // Hidden states apply only under html.rv-ready, which is never set for reduced motion.
-const RV_SKIP='.lead-form,.modal,.cookie-notice,.tabs,.route-stops,.scene,label,button:not(.messengers>button),summary';
+// cases are skipped: they slide in over each other already, and fading their contents in on top of that
+// started a burst of layer work right during the case change
+const RV_SKIP='.lead-form,.modal,.cookie-notice,.tabs,.route-stops,.scene,label,button:not(.messengers>button),summary,.case-list';
 const RV_TARGETS=[
   ['media','.case-visual,.journey-visual,.founder-media,.insurance-art'],
   ['item','.task-grid>article,.services-grid>article,.clients-grid>li,.team-roles>*,.founder-facts>*,.case-details>*,.messengers>button,.faq-list>details,.case-stat'],
@@ -547,6 +560,105 @@ export default function App(){
   // Full-bleed hero photos extend under the header; keep its height in --header-h.
   useEffect(()=>{const h=document.querySelector('.header');if(!h)return;const set=()=>document.documentElement.style.setProperty('--header-h',`${h.offsetHeight}px`);set();const ro=new ResizeObserver(set);ro.observe(h);return()=>ro.disconnect();},[]);
   const noticeTimer=useRef(null);
+  // Temporary: picking how the cases are separated from each other
+  // Case style is picked on the settings page (/3d.html); the site only reads it
+  const [casesV]=useState(()=>{try{const v=localStorage.getItem(CASES_STYLE_KEY);return ['stack','cover'].includes(v)?v:CASES_STYLE;}catch{return CASES_STYLE;}});
+  // Cases stack: each one pins once its bottom reaches the bottom of the screen, so the next case slides over it whole,
+  // and the case underneath darkens as it is covered
+  useEffect(()=>{
+    const list=document.querySelector('.case-list');if(!list)return;
+    const items=[...list.children];
+    const place=()=>items.forEach(c=>{c.style.top=`${Math.min(0,innerHeight-c.offsetHeight)}px`;});
+    // (opacity of a dedicated layer only: no style recalculation of the case's content while scrolling)
+    const shades=items.map(c=>c.querySelector('.case-dim'));let frame=0;
+    const dim=()=>{frame=0;items.forEach((c,k)=>{const next=items[k+1],shade=shades[k];if(!shade)return;const p=next?Math.min(1,Math.max(0,(innerHeight-next.getBoundingClientRect().top)/innerHeight)):0;const o=(p*.7).toFixed(3);if(shade.style.opacity!==o)shade.style.opacity=o;});};
+    const onScroll=()=>{if(!frame)frame=requestAnimationFrame(dim);};
+    place();const ro=new ResizeObserver(place);items.forEach(c=>ro.observe(c));addEventListener('resize',place);addEventListener('scroll',onScroll,{passive:true});onScroll();
+    return()=>{ro.disconnect();removeEventListener('resize',place);removeEventListener('scroll',onScroll);cancelAnimationFrame(frame);items.forEach(c=>c.style.removeProperty('top'));shades.forEach(d=>d&&(d.style.opacity=''));};
+  },[casesV]);
+  // Case photos are fetched and decoded ahead of time (once the page is idle), so the first case change never
+  // waits for a large image to arrive and be decoded in the middle of the slide
+  useEffect(()=>{
+    const warm=()=>document.querySelectorAll('.case-list img').forEach(img=>{img.loading='eager';img.decode?.().catch(()=>{});});
+    const id=window.requestIdleCallback?requestIdleCallback(warm,{timeout:2500}):setTimeout(warm,1500);
+    return()=>{window.cancelIdleCallback?cancelIdleCallback(id):clearTimeout(id);};
+  },[]);
+  // Full-page scrolling on desktops: every case fills one screen and one wheel gesture moves the page to the start of
+  // the next (or previous) case and stops there; the rest of the gesture's momentum is swallowed. Approaching from above catches the first
+  // case once 80% of it is on screen; past the last one and above the first one the page scrolls normally. Phones keep plain scrolling, since a
+  // case there is taller than the screen.
+  useEffect(()=>{
+    if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+    const list=document.querySelector('.case-list');if(!list)return;
+    // The wheel listener sits on the cases section only, not on the window: a non-passive wheel listener makes the
+    // browser run scrolling through the main thread wherever it applies, so elsewhere the page keeps fast scrolling
+    const zone=list.closest('section');
+    let starts=[],anim=0,animEnd=0,animTarget=0,locked=false,lockTimer=0,lockSince=0,lastAbs=0,lastAt=0,lockDir=0;
+    const enabled=()=>matchMedia('(min-width:901px)').matches;
+    // stops: each case's start, plus its end when the case is taller than the screen (so its lower part is shown too)
+    let firstH=0,lastH=0,cameFromBelow=false;
+    const measure=()=>{let y=list.getBoundingClientRect().top+scrollY;const out=[];firstH=list.firstElementChild?.offsetHeight||0;lastH=list.lastElementChild?.offsetHeight||0;[...list.children].forEach(c=>{const h=c.offsetHeight;out.push(Math.round(y));if(h>innerHeight+20)out.push(Math.round(y+h-innerHeight));y+=h;});starts=out;};
+    // ease-out: the page starts moving at once, which reads as an instant response
+    const ease=t=>1-Math.pow(1-t,3);
+    const unlockLater=()=>{clearTimeout(lockTimer);lockTimer=setTimeout(()=>{locked=false;},100);};
+    const go=target=>{
+      cancelAnimationFrame(anim);const from=scrollY,dist=target-from,t0=performance.now(),dur=520;animEnd=t0+dur;animTarget=target;locked=true;lockSince=t0;lockDir=Math.sign(dist);
+      const step=now=>{const t=Math.min(1,(now-t0)/dur);scrollTo(0,from+dist*ease(t));if(t<1)anim=requestAnimationFrame(step);else{anim=0;unlockLater();}};
+      anim=requestAnimationFrame(step);
+    };
+    // an animation whose frames never came (tab in the background) must not keep the page locked
+    const settle=()=>{if(anim&&performance.now()>animEnd+300){cancelAnimationFrame(anim);anim=0;scrollTo(0,animTarget);unlockLater();}};
+    const target=dir=>{
+      const y=scrollY,first=starts[0],last=starts[starts.length-1];
+      // coming from above, the first case is caught once the bottom of the screen reaches 80% of its height
+      if(dir>0){if(y+innerHeight<first+firstH*.8||y>=last-2)return null;return starts.find(v=>v>y+2)??null;}
+      // coming from below, the last case is caught first (once 80% of it is on screen) and the page stops on it whole;
+      // only the next gesture moves on to the previous case
+      if(y>last+2)return y<=last+lastH*.2?last:null;
+      if(cameFromBelow&&y<last-2)return last;   // a fast flick skipped past the catch line: still stop on the last case
+      if(y<=first+2)return null;
+      for(let i=starts.length-1;i>=0;i--)if(starts[i]<y-2)return starts[i];return null;
+    };
+    const onWheel=e=>{
+      if(!enabled()||!starts.length||e.ctrlKey||Math.abs(e.deltaY)<=Math.abs(e.deltaX))return;
+      settle();
+      // After a case change the rest of that gesture's momentum is swallowed, but a fresh gesture is answered at once.
+      // Momentum arrives as a dense stream of shrinking deltas in the same direction; a fresh gesture shows as a pause
+      // in the stream, a jump in size, or a change of direction.
+      const now=performance.now(),abs=Math.abs(e.deltaY),dir=Math.sign(e.deltaY);
+      const fresh=abs>lastAbs*1.6+4||now-lastAt>60||dir!==lockDir;lastAbs=abs;lastAt=now;
+      if(locked&&(anim||!fresh)&&now-lockSince<1200){e.preventDefault();if(!anim)unlockLater();return;}
+      locked=false;clearTimeout(lockTimer);
+      const last=starts[starts.length-1],to=target(Math.sign(e.deltaY));
+      cameFromBelow=e.deltaY<0&&(scrollY>last+2||cameFromBelow&&to==null);
+      if(to==null)return;
+      cameFromBelow=false;e.preventDefault();go(to);
+    };
+    // Keyboard: ↓ / PageDown / Space go to the next case, ↑ / PageUp / Shift+Space to the previous one
+    const onKey=e=>{
+      if(!enabled()||!starts.length||e.altKey||e.ctrlKey||e.metaKey||e.defaultPrevented)return;
+      const el=document.activeElement;if(el&&(el.closest('input,textarea,select,[contenteditable=true],dialog')||(e.key===' '&&el.closest('button,a,summary'))))return;
+      const dir={ArrowDown:1,PageDown:1,ArrowUp:-1,PageUp:-1}[e.key]??(e.key===' '?(e.shiftKey?-1:1):0);if(!dir)return;
+      settle();
+      if(anim){e.preventDefault();return;}
+      const to=target(dir);if(to==null)return;
+      e.preventDefault();go(to);
+    };
+    measure();const ro=new ResizeObserver(measure);ro.observe(list);addEventListener('resize',measure);zone.addEventListener('wheel',onWheel,{passive:false});addEventListener('keydown',onKey);
+    return()=>{ro.disconnect();removeEventListener('resize',measure);zone.removeEventListener('wheel',onWheel);removeEventListener('keydown',onKey);cancelAnimationFrame(anim);clearTimeout(lockTimer);};
+  },[casesV]);
+  // Case pills: the case that holds the upper part of the screen is the current one
+  const [activeCase,setActiveCase]=useState(0);
+  useEffect(()=>{
+    const list=document.querySelector('.case-list');if(!list)return;
+    let starts=[];
+    const measure=()=>{const items=[...list.children];let y=list.getBoundingClientRect().top+scrollY;starts=items.map(c=>{const at=y;y+=c.offsetHeight;return at;});};
+    // scroll work is a comparison against cached numbers only; React skips the render when the case is unchanged
+    const onScroll=()=>{const probe=scrollY+innerHeight*.4;let k=0;starts.forEach((t,i)=>{if(t<=probe)k=i;});setActiveCase(k);};
+    const remeasure=()=>{measure();onScroll();};
+    remeasure();const ro=new ResizeObserver(remeasure);ro.observe(list);addEventListener('resize',remeasure);addEventListener('scroll',onScroll,{passive:true});
+    return()=>{ro.disconnect();removeEventListener('resize',remeasure);removeEventListener('scroll',onScroll);};
+  },[]);
   const notify=s=>{clearTimeout(noticeTimer.current);setNotice(s);noticeTimer.current=setTimeout(()=>setNotice(''),4200);};
   useEffect(()=>{
     const mq=matchMedia('(prefers-reduced-motion: reduce)');const pref=e=>setReduced(e.matches);mq.addEventListener('change',pref);
@@ -585,7 +697,8 @@ export default function App(){
 
       <section className="section cases"><div className="wrap"><h2 data-reveal><Text value={sourceTitle(4)}/></h2>
 
-        <div className="case-list">{cases.map((c,i)=><article className={`case case-${i}`} id={i===1?'case-norda':undefined} key={c.title} data-reveal><div className="case-main"><div className="case-copy"><h3><CaseTitle title={c.title}/></h3><div className={`case-stat ${i===2?'stat-words':''}`}><strong>{c.stat}</strong>{c.label&&<span><Text value={c.label}/></span>}</div><p>{c.description}</p></div><div className="case-visual has-photo"><CasePhoto i={i}><span className="client-label">Кейс {i+1}</span>{CASE_PHOTOS[i].caption&&<span className="photo-caption" aria-hidden="true">{CASE_PHOTOS[i].caption}</span>}</CasePhoto></div></div><div className="case-details">{c.headings.map((h,k)=>{const cut=h.indexOf(':')+1;return <div key={h}><h4>{cut>0?<><span className={`case-step${h.startsWith('Сложность')?' is-risk':''}`}>{h.slice(0,cut)}</span> {(t=>t.charAt(0).toUpperCase()+t.slice(1))(h.slice(cut).trim())}</>:h}</h4><p>{c.paragraphs[k]}</p></div>})}</div></article>)}</div>
+        <nav className="cases-nav" aria-label="Кейсы">{cases.map((c,i)=><button type="button" key={c.title} aria-current={activeCase===i?'true':undefined} onClick={()=>goToCase(i)}>Кейс {i+1}</button>)}</nav>
+        <div className="case-list" data-v={casesV}>{cases.map((c,i)=><article className={`case case-${i}`} id={c.source?'case-norda':undefined} key={c.title} data-reveal><span className="case-dim" aria-hidden="true"/><div className="case-main"><div className="case-copy"><h3><CaseTitle title={c.title}/></h3><div className={`case-stat ${i===2?'stat-words':''}`}><strong>{c.stat}</strong>{c.label&&<span><Text value={c.label}/></span>}</div><p>{c.description}</p></div><div className="case-visual has-photo"><CasePhoto i={i}><span className="client-label">Кейс {i+1}</span>{CASE_PHOTOS[i].caption&&<span className="photo-caption" aria-hidden="true">{CASE_PHOTOS[i].caption}</span>}</CasePhoto></div></div><div className="case-details">{c.headings.map((h,k)=>{const cut=h.indexOf(':')+1;return <div key={h}><h4>{cut>0?<><span className={`case-step${h.startsWith('Сложность')?' is-risk':''}`}>{h.slice(0,cut)}</span> {(t=>t.charAt(0).toUpperCase()+t.slice(1))(h.slice(cut).trim())}</>:h}</h4><p>{c.paragraphs[k]}</p></div>})}</div></article>)}</div>
 
       </div></section>
 
