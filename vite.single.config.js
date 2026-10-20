@@ -19,5 +19,7 @@ export default defineConfig({
       transformIndexHtml:{order:'pre',handler:html=>inlineIcons(html.replace(/\s*<link rel="preload"[^>]*as="font"[^>]*>/g,''))},
     },
   ],
+  // published build: no settings page, so 3D and per-browser options are compiled out (see __HOSTING__ in App.jsx)
+  define:{__HOSTING__:'true'},
   build:{outDir:'docs',emptyOutDir:true,assetsInlineLimit:100_000_000,rollupOptions:{input:'index.html'}},
 });

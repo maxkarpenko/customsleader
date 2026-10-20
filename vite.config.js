@@ -4,5 +4,6 @@ import {defineConfig} from 'vite';
 export default defineConfig({
   // Repository pages are served below /<repository>/; local development stays at /.
   base:process.env.GITHUB_ACTIONS?`/${process.env.GITHUB_REPOSITORY.split('/')[1]}/`:'/',
+  define:{__HOSTING__:'false'},
   build:{rollupOptions:{input:{main:'index.html',scenes:'3d.html'}}},
 });

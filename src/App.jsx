@@ -7,10 +7,10 @@ import privacyPolicy from './legal/privacy-policy.md?raw';
 import personalDataPolicy from './legal/personal-data-policy.md?raw';
 import consentText from './legal/consent.md?raw';
 import cookiePolicy from './legal/cookie-policy.md?raw';
-import bottlingLine from './assets/media/bottling-line.webp';
 import bottlingLineInstalled from './assets/media/case-1-bottling-line.webp';
 import hvacTruck from './assets/media/hvac-truck.webp';
 import refrigerationPlant from './assets/media/case-3-refrigeration.webp';
+import mineMachinery from './assets/media/case-mine-machinery.webp';
 import miningComplex from './assets/media/mining-complex.webp';
 import routeConvoy from './assets/media/route-convoy.webp';
 import routeRain from './assets/media/route-rain.webp';
@@ -44,21 +44,22 @@ const scrollToRequest=()=>(document.querySelector('#request .form-detailed')||do
 
 // Illustrations: WebGL scenes or still photos, chosen once per page load (see src/siteConfig.js).
 const ScenesContext=createContext(SCENES_MODE);
-const scenesMode=(()=>{try{const v=localStorage.getItem(SCENES_KEY);if(v==='3d'||v==='images')return v;}catch{}return SCENES_MODE;})();
+// __HOSTING__ is true in the published single-file build: no settings page there, so 3D stays off and its
+// code (Three.js and the globe data) is left out of the file altogether
+const scenesMode=__HOSTING__?'images':(()=>{try{const v=localStorage.getItem(SCENES_KEY);if(v==='3d'||v==='images')return v;}catch{}return SCENES_MODE;})();
 const STILLS={
   hero:{src:routeConvoy,w:1600,h:1073,alt:'Колонна грузовиков с оборудованием на горной дороге'},
   container:{src:routeRain,w:1600,h:1073,alt:'Тягач с промышленной линией на открытом полуприцепе'},
   winter:{src:routeConvoy,w:1600,h:1073,alt:'Колонна грузовиков с оборудованием на горной дороге'},
   hvac:{src:hvacTruck,w:1600,h:893,alt:'Тягач с климатическим оборудованием в упаковочной плёнке'},
   turbine:{src:miningComplex,w:1280,h:851,alt:'Горнопроходческий комплекс в цехе завода'},
-  end:{src:bottlingLine,w:1600,h:1073,alt:'Тягач с оборудованием на трассе через тайгу'},
 };
 function Picture({src,w,h,alt,eager=false}){
   return <picture><img src={src} alt={alt} width={w} height={h} loading={eager?'eager':'lazy'} decoding="async"/></picture>;
 }
 function Scene(props){
   const mode=useContext(ScenesContext);
-  if(mode!=='images')return <Scene3D {...props}/>;
+  if(!__HOSTING__&&mode!=='images')return <Scene3D {...props}/>;
   const still=STILLS[props.kind];
   const framed=props.kind==='hero'||props.kind==='end';
   return <div className={`scene scene-still ${props.className||''}`}>
@@ -99,12 +100,13 @@ function Scene3D({kind='hero',className='',label='Иллюстрация пер�
 // values to paste back here. Which groups get a panel is switched on /3d.html.
 const CASE_PHOTOS=[
   {src:miningComplex,w:1280,h:851,alt:'Горнопроходческий комплекс в цехе завода перед отгрузкой'},
+  {src:mineMachinery,w:1280,h:960,alt:'Шахтная техника DERUI с подъёмной платформой у завода-изготовителя'},
   {src:bottlingLineInstalled,w:1280,h:592,alt:'Линия розлива в собранном виде на заводе клиента',caption:'Линия в собранном виде на заводе клиента'},
   {src:refrigerationPlant,w:1280,h:960,alt:'Компрессорная холодильная станция и шкафы управления'},
 ];
 const FRAME={width:100,height:375,ratio:'3/2',fit:'cover',zoom:1,posX:50,posY:50,offsetX:0,offsetY:0};
-const IMAGE_FRAMES={case0:{...FRAME},case1:{...FRAME},case2:{...FRAME,posY:0},hero:{...FRAME,ratio:'auto',height:360},end:{...FRAME,ratio:'auto',height:420},founder:{...FRAME,ratio:'4/5',posY:25}};
-const FRAME_LABELS={case0:'Кейс 1',case1:'Кейс 2',case2:'Кейс 3',hero:'Первый экран',end:'Финальный блок',founder:'Фото основателя'};
+const IMAGE_FRAMES={case0:{...FRAME},case1:{...FRAME},case2:{...FRAME},case3:{...FRAME,posY:0},hero:{...FRAME,ratio:'auto',height:360},end:{...FRAME,ratio:'auto',height:420},founder:{...FRAME,ratio:'4/5',posY:25}};
+const FRAME_LABELS={case0:'Кейс 1',case1:'Кейс 2',case2:'Кейс 3',case3:'Кейс 4',hero:'Первый экран',end:'Финальный блок',founder:'Фото основателя'};
 const FRAMES_KEY='image-frames';
 // Panels are opt-in: switched on per browser on /3d.html ('1'), hidden otherwise.
 const tweakOn=key=>{try{return localStorage.getItem(key)==='1';}catch{return false;}};
@@ -126,7 +128,7 @@ function FramedPicture({id,photo,className,eager=false,children}){
 const FOUNDER_PHOTO={src:founderPhoto,w:883,h:1280,alt:'Эдуард Хасанов, основатель КАСТОМС ЛИДЕР'};
 function CasePhoto({i,children}){return <FramedPicture id={`case${i}`} photo={CASE_PHOTOS[i]} className="case-photo">{children}</FramedPicture>;}
 function ImageTweaks(){
-  const targets=[...(TWEAK_GROUPS.cases?['case0','case1','case2']:[]),...(TWEAK_GROUPS.stills?['hero']:[]),...(TWEAK_GROUPS.founder?['founder']:[])];
+  const targets=[...(TWEAK_GROUPS.cases?['case0','case1','case2','case3']:[]),...(TWEAK_GROUPS.stills?['hero']:[]),...(TWEAK_GROUPS.founder?['founder']:[])];
   const {frames,setFrame}=useContext(FramesContext);
   const [open,setOpen]=useState(false),[copied,setCopied]=useState(false),[pick,setPick]=useState(targets[0]);
   if(!targets.length)return null;
@@ -562,7 +564,7 @@ export default function App(){
   const noticeTimer=useRef(null);
   // Temporary: picking how the cases are separated from each other
   // Case style is picked on the settings page (/3d.html); the site only reads it
-  const [casesV]=useState(()=>{try{const v=localStorage.getItem(CASES_STYLE_KEY);return ['stack','cover'].includes(v)?v:CASES_STYLE;}catch{return CASES_STYLE;}});
+  const [casesV]=useState(()=>{if(__HOSTING__)return CASES_STYLE;try{const v=localStorage.getItem(CASES_STYLE_KEY);return ['stack','cover'].includes(v)?v:CASES_STYLE;}catch{return CASES_STYLE;}});
   // Cases stack: each one pins once its bottom reaches the bottom of the screen, so the next case slides over it whole,
   // and the case underneath darkens as it is covered
   useEffect(()=>{
@@ -698,7 +700,7 @@ export default function App(){
       <section className="section cases"><div className="wrap"><h2 data-reveal><Text value={sourceTitle(4)}/></h2>
 
         <nav className="cases-nav" aria-label="Кейсы">{cases.map((c,i)=><button type="button" key={c.title} aria-current={activeCase===i?'true':undefined} onClick={()=>goToCase(i)}>Кейс {i+1}</button>)}</nav>
-        <div className="case-list" data-v={casesV}>{cases.map((c,i)=><article className={`case case-${i}`} id={c.source?'case-norda':undefined} key={c.title} data-reveal><span className="case-dim" aria-hidden="true"/><div className="case-main"><div className="case-copy"><h3><CaseTitle title={c.title}/></h3><div className={`case-stat ${i===2?'stat-words':''}`}><strong>{c.stat}</strong>{c.label&&<span><Text value={c.label}/></span>}</div><p>{c.description}</p></div><div className="case-visual has-photo"><CasePhoto i={i}><span className="client-label">Кейс {i+1}</span>{CASE_PHOTOS[i].caption&&<span className="photo-caption" aria-hidden="true">{CASE_PHOTOS[i].caption}</span>}</CasePhoto></div></div><div className="case-details">{c.headings.map((h,k)=>{const cut=h.indexOf(':')+1;return <div key={h}><h4>{cut>0?<><span className={`case-step${h.startsWith('Сложность')?' is-risk':''}`}>{h.slice(0,cut)}</span> {(t=>t.charAt(0).toUpperCase()+t.slice(1))(h.slice(cut).trim())}</>:h}</h4><p>{c.paragraphs[k]}</p></div>})}</div></article>)}</div>
+        <div className="case-list" data-v={casesV}>{cases.map((c,i)=><article className={`case case-${i}`} id={c.source?'case-norda':undefined} key={c.title} data-reveal><span className="case-dim" aria-hidden="true"/><div className="case-main"><div className="case-copy"><h3><CaseTitle title={c.title}/></h3><div className={`case-stat ${/^\d/.test(c.stat)?'':'stat-words'}`}><strong>{c.stat}</strong>{c.label&&<span><Text value={c.label}/></span>}</div><p>{c.description}</p></div><div className="case-visual has-photo"><CasePhoto i={i}><span className="client-label">Кейс {i+1}</span>{CASE_PHOTOS[i].caption&&<span className="photo-caption" aria-hidden="true">{CASE_PHOTOS[i].caption}</span>}</CasePhoto></div></div><div className="case-details">{c.headings.map((h,k)=>{const cut=h.indexOf(':')+1;return <div key={h}><h4>{cut>0?<><span className={`case-step${h.startsWith('Сложность')?' is-risk':''}`}>{h.slice(0,cut)}</span> {(t=>t.charAt(0).toUpperCase()+t.slice(1))(h.slice(cut).trim())}</>:h}</h4><p>{c.paragraphs[k]}</p></div>})}</div></article>)}</div>
 
       </div></section>
 

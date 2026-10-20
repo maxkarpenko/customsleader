@@ -536,7 +536,8 @@
 .case-list>.case,.case-list>.case:last-child{position:sticky;isolation:isolate;will-change:transform;margin:0;padding:72px 0;border:0}
 .case-list>.case::before{content:'';position:absolute;z-index:-1;top:0;bottom:0;left:calc(50% - 50vw);right:calc(50% - 50vw);background:var(--case-a)}
 .case-list>.case:nth-child(even)::before{background:var(--steel-900)}
-.case-list>.case+.case::before{box-shadow:0 -28px 56px -18px rgba(0,0,0,.5)}
+.case-list>.case+.case::before{box-shadow:0 -28px 56px -18px rgba(0,0,0,.5);clip-path:inset(-120px 0 0 0)}
+/* (the shadow falls only upward over the previous case; clipped so its blur never shows as a line below a band) */
 :root[data-tone="light"] .case-list>.case+.case::before{box-shadow:0 -24px 48px -20px rgba(22,32,38,.25)}
 /* the case underneath darkens while the next one slides over it (opacity set from JS) */
 .case-dim{position:absolute;z-index:3;top:0;bottom:0;left:calc(50% - 50vw);right:calc(50% - 50vw);background:#000;opacity:0;pointer-events:none;will-change:opacity}
