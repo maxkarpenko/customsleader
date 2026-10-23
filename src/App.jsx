@@ -2,11 +2,12 @@ import React, {useEffect, useId, useLayoutEffect, useRef, useState, createContex
 import {ArrowUpRight, ArrowRight, ArrowDown, ArrowUp, Sun, Moon, ArrowLeft, Check, Plus, Minus, X, Phone, ShieldCheck, PackageCheck, Route, Truck, FileCheck2, Globe2, MessageCircle, MessageSquare, Mail, UserRound, CircleCheck, Info, LoaderCircle, Send, Layers3, Settings2, SlidersHorizontal, RotateCcw, Copy, Download} from 'lucide-react';
 import content from './content.json';
 import SectionNav from './SectionNav.jsx';
-import {SCENES_MODE,SCENES_KEY,TWEAKS_CASES_KEY,TWEAKS_STILLS_KEY,TWEAKS_FOUNDER_KEY,CASES_STYLE_KEY,CASES_STYLE,THEME_KEY,THEME_SWITCHER,COOKIE_CONSENT_KEY,COOKIE_CONSENT_VERSION,YANDEX_METRIKA_ID,GOOGLE_ANALYTICS_ID} from './siteConfig.js';
+import {SCENES_MODE,SCENES_KEY,TWEAKS_CASES_KEY,TWEAKS_STILLS_KEY,TWEAKS_FOUNDER_KEY,CASES_STYLE_KEY,CASES_STYLE,THEME_KEY,THEME_SWITCHER,COOKIE_CONSENT_KEY,COOKIE_CONSENT_VERSION,YANDEX_METRIKA_ID} from './siteConfig.js';
 import privacyPolicy from './legal/privacy-policy.md?raw';
 import personalDataPolicy from './legal/personal-data-policy.md?raw';
 import consentText from './legal/consent.md?raw';
 import cookiePolicy from './legal/cookie-policy.md?raw';
+import analyticsConsent from './legal/analytics-consent.md?raw';
 import bottlingLineInstalled from './assets/media/case-1-bottling-line.webp';
 import hvacTruck from './assets/media/hvac-truck.webp';
 import refrigerationPlant from './assets/media/case-3-refrigeration.webp';
@@ -259,6 +260,7 @@ function Form({variant='short',id,chosen,setChosen,onLegal}){
     return ()=>{document.removeEventListener('pointerdown',away);document.removeEventListener('keydown',esc);};
   },[hintOpen]);
   const consentId=useId();const detailed=variant==='detailed',callback=variant==='callback',russia=variant==='russia';
+  const started=useRef(false);
   async function submit(e){
     e.preventDefault();setError('');
     const payload=Object.fromEntries(new FormData(e.currentTarget));payload.form=id||variant;if(detailed)payload.services=chosen;payload.page=location.href.split('#')[0];new URLSearchParams(location.search).forEach((v,k)=>{if(k.startsWith('utm_'))payload[k]=v;});
@@ -266,11 +268,11 @@ function Form({variant='short',id,chosen,setChosen,onLegal}){
     const endpoint=import.meta.env.VITE_LEAD_ENDPOINT;
     if(!endpoint){setStatus('demo');return;}
     setStatus('sending');
-    try{const r=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});if(!r.ok)throw new Error();const data=await r.json();if(data.ok!==true)throw new Error();setStatus('success');window.dispatchEvent(new CustomEvent('lead:success',{detail:{form:payload.form}}));}
-    catch{setStatus('idle');setError('Не удалось отправить заявку. Попробуйте ещё раз или позвоните: +7 (903) 879-20-20.');}
+    try{const r=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});if(!r.ok)throw new Error();const data=await r.json();if(data.ok!==true)throw new Error();setStatus('success');track('lead_success',{form:payload.form});track(`lead_${payload.form.replace(/-/g,'_')}`);window.dispatchEvent(new CustomEvent('lead:success',{detail:{form:payload.form}}));}
+    catch{setStatus('idle');track('form_error',{form:payload.form});setError('Не удалось отправить заявку. Попробуйте ещё раз или позвоните: +7 (903) 879-20-20.');}
   }
   if(status==='success')return <div className="success" role="status"><CircleCheck size={44}/><h3>Спасибо! Заявка отправлена</h3><p>Менеджер свяжется с вами в течение 1 часа</p></div>;
-  return <form ref={formRef} className={`lead-form form-${variant}`} onSubmit={submit} onInvalidCapture={e=>{if(detailed&&!cargoOpen&&e.target.closest('.cargo-body')){setCargoOpen(true);requestAnimationFrame(()=>formRef.current?.reportValidity());}}}>
+  return <form ref={formRef} className={`lead-form form-${variant} ym-hide-content ym-disable-keys`} onSubmit={submit} onFocusCapture={()=>{if(!started.current){started.current=true;track('form_start',{form:id||variant});}}} onInvalidCapture={e=>{if(detailed&&!cargoOpen&&e.target.closest('.cargo-body')){setCargoOpen(true);requestAnimationFrame(()=>formRef.current?.reportValidity());}}}>
     {!detailed&&!callback&&!russia&&<><p className="form-title">Получите стоимость<br/>и сроки доставки</p><p className="form-intro" ref={intro}>В предложении подготовим маршрут, срок, стоимость и состав платежей. <button type="button" className="estimate-toggle" aria-expanded={hintOpen} aria-controls={hintId} onClick={()=>setHintOpen(o=>!o)}><span>Что входит в расчёт</span><span className="estimate-q" aria-hidden="true">?</span></button><span className="estimate-note" id={hintId} hidden={!hintOpen}>Перевозка, таможенное оформление и платежи готовим в одном предложении.<br/>Фиксируем состав работ, а также возможные дополнительные расходы, условия возникновения которых, обозначаем отдельно</span></p></>}
     {detailed&&(
       <fieldset ref={services} className="service-choices" aria-describedby={serviceError?serviceErrorId:undefined}><legend>Выберите услугу</legend><div className="choice-grid">{selection.map((name,i)=>{const Icon=[Layers3,Truck,FileCheck2,MessageCircle][i];return <label key={name} className={chosen.includes(name)?'selected':''}><input type="radio" name="services" value={name} checked={chosen.includes(name)} onChange={()=>{setServiceError(false);setChosen([name]);}}/><Icon className="svc-icon" size={26} strokeWidth={1.5} aria-hidden="true"/><span><strong>{name}</strong><small>{['Поставка под ключ','Международная или по РФ','В том числе с вашим перевозчиком','Сложная ситуация или вопрос'][i]}</small></span><span className="svc-check" aria-hidden="true"><Check size={14} strokeWidth={2.6}/></span></label>})}</div>{serviceError&&<p className="form-error service-error" id={serviceErrorId} role="alert">Выберите услугу.</p>}</fieldset>
@@ -296,7 +298,7 @@ function Form({variant='short',id,chosen,setChosen,onLegal}){
 
 // Legal documents live as Markdown in src/legal/. The renderer covers what they use:
 // "##" headings, paragraphs, "- " lists, **bold**, `code` and [[placeholders]] still to be filled in.
-const LEGAL_DOCS={privacy:privacyPolicy,'personal-data':personalDataPolicy,consent:consentText,cookies:cookiePolicy};
+const LEGAL_DOCS={privacy:privacyPolicy,'personal-data':personalDataPolicy,consent:consentText,cookies:cookiePolicy,analytics:analyticsConsent};
 const inlineMd=text=>text.split(/(\*\*[^*]+\*\*|`[^`]+`|\[\[[\s\S]+?\]\])/g).map((part,i)=>
   part.startsWith('**')?<strong key={i}>{part.slice(2,-2)}</strong>
   :part.startsWith('`')?<code key={i}>{part.slice(1,-1)}</code>
@@ -314,6 +316,7 @@ function LegalDoc({source}){
 
 function Modal({type,onClose,onLegal}){
   const dialog=useRef(null);
+  useEffect(()=>{if(['hero','callback','russia'].includes(type))track(`open_${type}`);},[type]);
   useEffect(()=>{
     const d=dialog.current;d?.showModal();
     // Open with focus on the dialog itself, not on the close button, so no focus ring shows on arrival
@@ -329,7 +332,7 @@ function Modal({type,onClose,onLegal}){
     }
     return()=>{document.body.style.overflow=old;setThemeColor(oldColor);root.style.backgroundColor=oldBg[0];body.style.backgroundColor=oldBg[1];};
   },[]);
-  const titles={hero:'Получите стоимость и сроки доставки',callback:'Заказать звонок',russia:'Нужна перевозка по России?',consent:'Согласие на обработку персональных данных',privacy:'Политика конфиденциальности','personal-data':'Политика в отношении обработки персональных данных',cookies:'Политика использования cookie'};
+  const titles={hero:'Получите стоимость и сроки доставки',callback:'Заказать звонок',russia:'Нужна перевозка по России?',consent:'Согласие на обработку персональных данных',privacy:'Политика конфиденциальности','personal-data':'Политика в отношении обработки персональных данных',analytics:'Согласие на обработку данных для веб-аналитики',cookies:'Политика использования cookie'};
   const doc=LEGAL_DOCS[type];
   return <dialog ref={dialog} tabIndex={-1} className={`modal modal-${type}${doc?' modal-doc':''}`} onCancel={onClose} aria-labelledby={`modal-title-${type}`} onClick={e=>{if(e.target===dialog.current)onClose();}}><div className="modal-inner"><button className="close-button" onClick={onClose} aria-label="Закрыть окно"><X/></button><h2 id={`modal-title-${type}`}>{titles[type]}</h2>{type==='hero'?<Form id="hero-modal" onLegal={onLegal}/>:['callback','russia'].includes(type)?<Form variant={type} onLegal={onLegal}/>:<LegalDoc source={doc}/>}</div></dialog>;
 }
@@ -390,41 +393,52 @@ function Journey({onRequest}){
   </div></section>;
 }
 
-// Cookie consent: a versioned record in localStorage. Without analytics IDs the notice only informs
-// (the site sets no cookies); with YANDEX_METRIKA_ID / GOOGLE_ANALYTICS_ID it asks, and the counters
-// load only after "Принять все". The footer link "Настройки cookie" reopens it.
+// Cookie consent: a versioned record in localStorage. Without YANDEX_METRIKA_ID the notice only informs
+// (the site sets no cookies); with it, it asks, and Metrika loads only after "Принять все".
+// The footer link "Настройки cookie" reopens it.
 const readCookieConsent=()=>{try{const c=JSON.parse(localStorage.getItem(COOKIE_CONSENT_KEY)||'null');return c&&c.v===COOKIE_CONSENT_VERSION?c:null;}catch{return null;}};
+// Webvisor records how the page is used but never what is typed: forms carry ym-hide-content and
+// ym-disable-keys, and form recording is off in the counter settings
 function loadMetrika(id){
   if(!id||window.ym)return;
   window.ym=function(){(window.ym.a=window.ym.a||[]).push(arguments);};window.ym.l=Date.now();
   const script=document.createElement('script');script.async=true;script.src='https://mc.yandex.ru/metrika/tag.js';document.head.appendChild(script);
-  window.ym(id,'init',{clickmap:true,trackLinks:true,accurateTrackBounce:true});
+  window.ym(id,'init',{clickmap:true,trackLinks:true,accurateTrackBounce:true,webvisor:true});
 }
-function loadGoogleAnalytics(id){
-  if(!id||window.gtag)return;
-  window.dataLayer=window.dataLayer||[];window.gtag=function(){window.dataLayer.push(arguments);};
-  const script=document.createElement('script');script.async=true;script.src=`https://www.googletagmanager.com/gtag/js?id=${id}`;document.head.appendChild(script);
-  window.gtag('js',new Date());window.gtag('config',id);
+const ANALYTICS_ON=Boolean(YANDEX_METRIKA_ID);
+function loadAnalytics(){loadMetrika(YANDEX_METRIKA_ID);}
+// Metrika goals (JavaScript events). Nothing is sent until the visitor has agreed and the counter is loaded.
+function track(goal,params){if(YANDEX_METRIKA_ID&&window.ym)window.ym(YANDEX_METRIKA_ID,'reachGoal',goal,params);}
+function clearAnalyticsCookies(){document.cookie.split(';').map(c=>c.split('=')[0].trim()).filter(n=>n.startsWith('_ym')).forEach(n=>{document.cookie=`${n}=; Max-Age=0; path=/`;document.cookie=`${n}=; Max-Age=0; path=/; domain=.${location.hostname}`;});try{Object.keys(localStorage).filter(k=>k.startsWith('_ym')).forEach(k=>localStorage.removeItem(k));}catch{}}
+// Consent journal on the server (api/consent.php): the visitor's random ID, time, document version and choice,
+// so the operator can show when consent was given or withdrawn. Off where no endpoint is configured.
+const newConsentId=()=>crypto.randomUUID?.()??'10000000-1000-4000-8000-100000000000'.replace(/[018]/g,c=>(c^crypto.getRandomValues(new Uint8Array(1))[0]&15>>c/4).toString(16));
+function logConsent(record,before){
+  const endpoint=import.meta.env.VITE_CONSENT_ENDPOINT;if(!endpoint)return;
+  const body=JSON.stringify({id:record.id,version:record.v,choice:record.analytics?'all':'necessary',previous:before?(before.analytics?'all':'necessary'):''});
+  fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body,keepalive:true}).catch(()=>{});
 }
-const ANALYTICS_ON=Boolean(YANDEX_METRIKA_ID||GOOGLE_ANALYTICS_ID);
-function loadAnalytics(){loadMetrika(YANDEX_METRIKA_ID);loadGoogleAnalytics(GOOGLE_ANALYTICS_ID);}
-function clearAnalyticsCookies(){document.cookie.split(';').map(c=>c.split('=')[0].trim()).filter(n=>n.startsWith('_ym')||n.startsWith('_ga')).forEach(n=>{document.cookie=`${n}=; Max-Age=0; path=/`;document.cookie=`${n}=; Max-Age=0; path=/; domain=.${location.hostname}`;});}
-function CookieNotice({onClose,onPolicy}){
+function CookieNotice({onClose,onPolicy,onConsent}){
   const analytics=ANALYTICS_ON;
   function choose(allowAnalytics){
     const before=readCookieConsent();
-    try{localStorage.setItem(COOKIE_CONSENT_KEY,JSON.stringify({v:COOKIE_CONSENT_VERSION,analytics:allowAnalytics,at:new Date().toISOString()}));}catch{}
+    // the ID outlives policy versions, so one visitor's choices line up in the journal
+    let id;try{id=JSON.parse(localStorage.getItem(COOKIE_CONSENT_KEY)||'null')?.id;}catch{}
+    const record={v:COOKIE_CONSENT_VERSION,analytics:allowAnalytics,at:new Date().toISOString(),id:id||newConsentId()};
+    try{localStorage.setItem(COOKIE_CONSENT_KEY,JSON.stringify(record));}catch{}
+    if(analytics)logConsent(record,before);
     if(allowAnalytics)loadAnalytics();
     else if(before?.analytics){clearAnalyticsCookies();location.reload();return;}
     onClose();
   }
-  const policy=<button type="button" className="cookie-policy-link" onClick={onPolicy}>Политике использования cookie</button>;
+  // Links, not buttons: a button can't wrap across lines inside running text
+  const policy=<a href="#" role="button" className="cookie-policy-link" onClick={e=>{e.preventDefault();onPolicy();}}>Политике использования cookie</a>;
   // Fixed controls at the bottom of phones sit above the notice: publish its height
   const box=useRef(null);
   useEffect(()=>{const el=box.current;if(!el)return;const root=document.documentElement;const set=()=>root.style.setProperty('--cookie-h',`${el.offsetHeight+10}px`);set();const ro=new ResizeObserver(set);ro.observe(el);return()=>{ro.disconnect();root.style.removeProperty('--cookie-h');};},[]);
-  return <aside className="cookie-notice" aria-label="Уведомление о cookie" ref={box}>
+  return <aside className={`cookie-notice${analytics?' has-choice':''}`} aria-label="Уведомление о cookie" ref={box}>
     {analytics
-      ?<p>Мы сохраняем в браузере необходимые настройки и, с вашего согласия, используем аналитические cookie Яндекс Метрики и Google Analytics, чтобы оценивать посещаемость. Данные Google Analytics обрабатываются за рубежом. Подробнее — в {policy}.</p>
+      ?<p><strong className="cookie-lead">Помогите сделать сайт удобнее.</strong> Разрешите Яндекс Метрике собирать статистику посещений и записи действий на страницах (Вебвизор). То, что вы вводите в формы, не записывается. Подробнее — в {policy} и <a href="#" role="button" className="cookie-policy-link" onClick={e=>{e.preventDefault();onConsent();}}>Согласии на обработку данных для аналитики</a>.</p>
       :<p>Сайт не устанавливает cookie: в браузере сохраняются только необходимые настройки. Подробнее — в {policy}.</p>}
     <div className="cookie-actions">
       {analytics&&<button type="button" className="cookie-secondary" onClick={()=>choose(false)}>Только необходимые</button>}
@@ -560,6 +574,12 @@ export default function App(){
   const imageFrames=useImageFrames();
   const [cookieOpen,setCookieOpen]=useState(()=>!readCookieConsent());
   useEffect(()=>{try{localStorage.removeItem('customs-cookie-choice');}catch{}if(readCookieConsent()?.analytics)loadAnalytics();},[]);
+  // Contact and document goals, caught once for the whole page
+  useEffect(()=>{
+    const goals=[['a[href^="tel:"]','click_phone'],['a[href^="mailto:"]','click_email'],['a[href*="wa.me/"]','click_whatsapp'],['a[href*="t.me/"]','click_telegram'],['.messenger-max','click_max'],['.insurance-doc-page,.insurance-doc-download','open_insurance']];
+    const onClick=e=>{const hit=goals.find(([sel])=>e.target.closest?.(sel));if(hit)track(hit[1]);};
+    document.addEventListener('click',onClick);return()=>document.removeEventListener('click',onClick);
+  },[]);
   // Full-bleed hero photos extend under the header; keep its height in --header-h.
   useEffect(()=>{const h=document.querySelector('.header');if(!h)return;const set=()=>document.documentElement.style.setProperty('--header-h',`${h.offsetHeight}px`);set();const ro=new ResizeObserver(set);ro.observe(h);return()=>ro.disconnect();},[]);
   const noticeTimer=useRef(null);
@@ -730,7 +750,7 @@ export default function App(){
       <section className="section contact" data-reveal><div className="wrap contact-layout"><h2><Text value={sourceTitle(12)}/></h2><div className="contact-actions"><div className="messengers"><button className="messenger-max" onClick={()=>{const find='найдите нас в MAX по номеру +7 (903) 879-20-20';Promise.resolve(navigator.clipboard?.writeText('+79038792020')).then(()=>navigator.clipboard?notify(`Номер скопирован: ${find}.`):Promise.reject()).catch(()=>notify(`Чтобы написать, ${find}.`));}}><span className="messenger-main"><MessageSquare/>Написать в MAX</span><span className="messenger-go" aria-hidden="true"><ArrowUpRight size={18}/></span></button><a className="messenger-whatsapp" href="https://wa.me/79038792020" target="_blank" rel="noopener"><span className="messenger-main"><MessageCircle/>Написать в WhatsApp</span><span className="messenger-go" aria-hidden="true"><ArrowUpRight size={18}/></span></a><a className="messenger-telegram" href="https://t.me/+79038792020" target="_blank" rel="noopener"><span className="messenger-main"><Send/>Написать в Telegram</span><span className="messenger-go" aria-hidden="true"><ArrowUpRight size={18}/></span></a></div><p>Или позвоните по номеру:</p><a className="contact-phone" href="tel:+79038792020">+7 (903) 879-20-20</a><a className="contact-email" href="mailto:info@customsleader.ru">info@customsleader.ru</a></div></div></section>
     </main>
     <footer className="footer wrap"><div className="footer-top"><a href="#" className="wordmark" aria-label="КАСТОМС ЛИДЕР — в начало"><img className="logo-on-dark" src={logoOnDark} alt="КАСТОМС ЛИДЕР" width="960" height="113" loading="lazy"/><img className="logo-on-light" src={logoOnLight} alt="КАСТОМС ЛИДЕР" width="960" height="112" loading="lazy"/></a><p>Международная и внутренняя логистика промышленного горнодобывающего оборудования и негабарита.</p><p className="footer-address">Адрес: <a href="https://yandex.ru/maps/-/CXefnW0a" target="_blank" rel="noopener noreferrer">Иваново,<br/>ул. Степанова, 5,<br/>оф. 307А</a></p><div className="footer-contacts"><a href="tel:+79038792020">+7 (903) 879-20-20</a><a href="mailto:info@customsleader.ru">info@customsleader.ru</a><button onClick={()=>setModal('callback')}>Заказать звонок <ArrowUpRight size={16}/></button></div></div><div className="footer-bottom"><p>ООО «КАСТОМС ЛИДЕР» ИНН: 3702195282</p><p>Информация на сайте носит справочный характер и не является публичной офертой (ст. 437 ГК РФ). Стоимость и сроки определяются индивидуальным расчётом и договором.</p><div><button onClick={()=>setLegal('privacy')}>Политика конфиденциальности</button><button onClick={()=>setLegal('personal-data')}>Политика обработки персональных данных</button><button onClick={()=>setCookieOpen(true)}>Настройки cookie</button></div></div>{FOOTNOTE_SOURCE&&<ol className="footnotes" aria-label="Сноски"><li id="fn-1">Источник: <a href={FOOTNOTE_SOURCE} target="_blank" rel="noopener noreferrer">«Норникель» запустил уникальный проходческий комплекс NORDA</a> <a href="#fnref-1" className="footnote-back" aria-label="Вернуться к тексту">↩</a></li></ol>}</footer>
-    {!cookieOpen&&<ScrollTopButton/>}{cookieOpen&&<CookieNotice onClose={()=>setCookieOpen(false)} onPolicy={()=>setLegal('cookies')}/>}
+    {!cookieOpen&&<ScrollTopButton/>}{cookieOpen&&<CookieNotice onClose={()=>setCookieOpen(false)} onPolicy={()=>setLegal('cookies')} onConsent={()=>setLegal('analytics')}/>}
     {notice&&<div className="toast" role="status">{notice}<button aria-label="Закрыть уведомление" onClick={()=>setNotice('')}><X size={17}/></button></div>}
     {modal&&<Modal type={modal} onClose={()=>setModal(null)} onLegal={setLegal}/>}{legal&&<Modal type={legal} onClose={()=>setLegal(null)}/>} 
   </div></FramesContext.Provider></ScenesContext.Provider></MotionContext.Provider>;

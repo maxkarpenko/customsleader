@@ -14,9 +14,8 @@ export const CASES_STYLE='stack';
 export const THEME_KEY='site-theme';
 export const THEME_SWITCHER=true;
 // Cookie notice. Bump COOKIE_CONSENT_VERSION when the cookie policy changes so visitors are asked again.
-// Analytics loads only after "Принять все": set YANDEX_METRIKA_ID to the counter number (e.g. 12345678)
-// and GOOGLE_ANALYTICS_ID to the GA4 measurement ID (e.g. 'G-XXXXXXXXXX'). null keeps a service off.
+// Yandex Metrika (with Webvisor) loads only after "Принять все": set YANDEX_METRIKA_ID to the counter number
+// (e.g. 12345678); null keeps analytics off and the notice only informs.
 export const COOKIE_CONSENT_KEY='cookie-consent';
-export const COOKIE_CONSENT_VERSION='2026-10-05';
-export const YANDEX_METRIKA_ID=null;
-export const GOOGLE_ANALYTICS_ID=null;
+export const COOKIE_CONSENT_VERSION='2026-10-23';
+export const YANDEX_METRIKA_ID=113750114;

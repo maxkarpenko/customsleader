@@ -7,6 +7,8 @@ import {defineConfig} from 'vite';
 
 // Forms post to the PHP handler that ships next to the page (api/lead.php → Bitrix24); set another address to override
 process.env.VITE_LEAD_ENDPOINT ||= 'api/lead.php';
+// Cookie-notice choices are recorded by api/consent.php (consent journal)
+process.env.VITE_CONSENT_ENDPOINT ||= 'api/consent.php';
 
 const ROBOTS = 'User-agent: *\nAllow: /\n';
 
@@ -42,7 +44,7 @@ function releaseFiles(){
       this.emitFile({type:'asset', fileName:'robots.txt', source:ROBOTS});
       this.emitFile({type:'asset', fileName:'.htaccess', source:HTACCESS});
       // config.php with the webhook is created on the server from the example and never shipped
-      for(const [from, to] of [['lead.php', 'lead.php'], ['config.example.php', 'config.example.php'], ['htaccess-api', '.htaccess']])
+      for(const [from, to] of [['lead.php', 'lead.php'], ['consent.php', 'consent.php'], ['config.example.php', 'config.example.php'], ['htaccess-api', '.htaccess']])
         this.emitFile({type:'asset', fileName:`api/${to}`, source:readFileSync(`server/${from}`, 'utf8')});
     },
     // A module script is blocked when index.html is opened straight from disk (file://), so the page ships

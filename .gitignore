@@ -41,3 +41,6 @@ src/plugins/impeccable-live.client.ts
 
 release-candidate/site/
 release-candidate.zip
+
+# Yandex API kit: local only, never published
+yandex/
