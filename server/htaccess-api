@@ -1,0 +1,4 @@
+# Only lead.php is reachable from outside: the config with the webhook and the rate-limit file are not
+<FilesMatch "^(config\.php|config\.example\.php|\..*)$">
+  Require all denied
+</FilesMatch>

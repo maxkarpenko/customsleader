@@ -7,7 +7,8 @@
     "dev": "vite --host 127.0.0.1",
     "build": "vite build",
     "preview": "vite preview --host 127.0.0.1",
-    "build:single": "vite build --config vite.single.config.js"
+    "build:single": "vite build --config vite.single.config.js",
+    "build:release": "vite build --config vite.release.config.js"
   },
   "dependencies": {
     "lucide-react": "^0.468.0",
