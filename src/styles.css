@@ -653,3 +653,20 @@
 .page-case h2{font-size:var(--fs-sub);margin-bottom:8px}
 .page-content .legal-doc,.page-content .clients{margin-top:10px}
 @media(max-width:650px){.site-menu{order:6}}
+
+/* Desktop menu: an open bar under the header; lists drop down on hover or keyboard focus */
+.site-nav{position:relative;z-index:45;border-bottom:1px solid var(--line)}
+.site-nav>ul{display:flex;flex-wrap:wrap;gap:4px 30px;list-style:none;margin:0;padding:0}
+.site-nav>ul>li{position:relative}
+.site-nav>ul>li>a{display:inline-flex;align-items:center;gap:5px;padding:13px 0;font-size:var(--fs-meta);color:var(--steel-200)}
+.site-nav>ul>li>a svg{opacity:.7;transition:transform .2s}
+.site-nav a:hover,.site-nav a[aria-current=page]{color:var(--accent)}
+.site-nav-sub{position:absolute;top:100%;left:-18px;min-width:250px;display:none;flex-direction:column;gap:2px;list-style:none;margin:0;padding:10px 0;background:var(--steel-900);border:1px solid var(--line);border-radius:5px;box-shadow:0 14px 40px #0006}
+.site-nav-sub a{display:block;padding:8px 18px;font-size:var(--fs-meta);color:var(--text)}
+.has-sub:hover>.site-nav-sub,.has-sub:focus-within>.site-nav-sub{display:flex}
+.has-sub:hover>a svg,.has-sub:focus-within>a svg{transform:rotate(180deg)}
+:root[data-tone="light"] .site-nav-sub{background:var(--paper);box-shadow:0 14px 40px #0002}
+:root[data-tone="light"] .site-nav>ul>li>a{color:var(--ink-muted)}
+.site-menu{display:none}
+@media(max-width:900px){.site-nav{display:none}.site-menu{display:block}}
+.site-menu-panel p a{color:inherit}

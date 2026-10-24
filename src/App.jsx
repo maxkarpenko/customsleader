@@ -576,13 +576,27 @@ const oldImage=name=>OLD_IMAGES[`./assets/old-site/${name}`];
 const routeKey=p=>(p||'/').replace(/\.html$/,'').replace(/\/+$/,'').toLowerCase()||'/';
 const PAGES=Object.fromEntries(oldPages.map(p=>[routeKey(p.path),p]));
 const pageFromPath=()=>typeof location==='undefined'?null:PAGES[routeKey(location.pathname)]||null;
-export const SITE_MENU=[
-  ['О компании',[['О нас','/about'],['Отзывы и рекомендации','/otzyvy-i-rekomendacii'],['Клиенты и партнёры','/clients'],['Наши проекты','/category/nashi-proekty'],['Правоустанавливающие документы','/category/pravoustanavlivayuschie-dokumenty']]],
-  ['Услуги',[['Таможенное оформление','/tamozhennoe-oformlenie'],['Экспедирование и логистика','/i-logistika'],['Мультимодальные перевозки','/ekspedirovanie/multimodalnye-perevozki',1],['Авиаперевозки','/ekspedirovanie/aviaperevozki',1],['Автомобильные перевозки','/ekspedirovanie/avtomobilnye-perevozki',1],['Сборные перевозки','/ekspedirovanie/sbornye-perevozki',1],['Выпуск ЭЦП','/izgotovlenie-ecp'],['Селлерам','/category/selleram']]],
-  ['Контакты',[['Иваново','/contacts/ivanovo'],['Москва','/contacts/Moscow'],['Владимир','/contacts/Vladimir'],['Ярославль','/contacts/yaroslavl']]],
+// Site menu: the old site's pages grouped for search engines and people. Top items with a list open it on hover
+// (desktop bar under the header) or show it as a group (phone panel); every link is in the page's HTML either way.
+export const SITE_NAV=[
+  {label:'Услуги',href:'/#services',items:[['Таможенное оформление','/tamozhennoe-oformlenie'],['Экспедирование и логистика','/i-logistika'],['Выпуск ЭЦП','/izgotovlenie-ecp'],['Селлерам','/category/selleram']]},
+  {label:'Перевозки',href:'/i-logistika',items:[['Мультимодальные перевозки','/ekspedirovanie/multimodalnye-perevozki'],['Авиаперевозки','/ekspedirovanie/aviaperevozki'],['Автомобильные перевозки','/ekspedirovanie/avtomobilnye-perevozki'],['Сборные перевозки','/ekspedirovanie/sbornye-perevozki']]},
+  {label:'Проекты',href:'/category/nashi-proekty'},
+  {label:'Клиенты',href:'/clients'},
+  {label:'О компании',href:'/about',items:[['О нас','/about'],['Отзывы и рекомендации','/otzyvy-i-rekomendacii'],['Правоустанавливающие документы','/category/pravoustanavlivayuschie-dokumenty']]},
+  {label:'Контакты',href:'/#contacts',items:[['Иваново','/contacts/ivanovo'],['Москва','/contacts/Moscow'],['Владимир','/contacts/Vladimir'],['Ярославль','/contacts/yaroslavl']]},
 ];
-// Small header menu with the old site's structure. The links stay in the page's HTML while it is closed,
-// so search engines follow them from the main page.
+const isHere=(current,href)=>current&&routeKey(current)===routeKey(href);
+// Desktop: an open bar under the header
+function SiteNav({current}){
+  return <nav className="site-nav wrap" aria-label="Разделы сайта"><ul>
+    {SITE_NAV.map(n=><li key={n.label} className={n.items?'has-sub':undefined}>
+      <a href={n.href} aria-current={isHere(current,n.href)||n.items?.some(([,h])=>isHere(current,h))?'page':undefined}>{n.label}{n.items&&<ChevronDown size={14} aria-hidden="true"/>}</a>
+      {n.items&&<ul className="site-nav-sub">{n.items.map(([label,href])=><li key={href}><a href={href} aria-current={isHere(current,href)?'page':undefined}>{label}</a></li>)}</ul>}
+    </li>)}
+  </ul></nav>;
+}
+// Phones: a small "Меню" button in the header with the same structure
 function SiteMenu({current}){
   const [open,setOpen]=useState(false);const box=useRef(null);const id=useId();
   useEffect(()=>{
@@ -595,7 +609,7 @@ function SiteMenu({current}){
   return <div className={`site-menu${open?' is-open':''}`} ref={box}>
     <button type="button" className="site-menu-toggle" aria-expanded={open} aria-controls={id} onClick={()=>setOpen(o=>!o)}>Меню<ChevronDown size={15} aria-hidden="true"/></button>
     <nav className="site-menu-panel" id={id} aria-label="Разделы сайта" hidden={!open}>
-      {SITE_MENU.map(([group,links])=><div key={group}><p>{group}</p><ul>{links.map(([label,href,sub])=><li key={href} className={sub?'is-sub':undefined}><a href={href} aria-current={current&&routeKey(current)===routeKey(href)?'page':undefined}>{label}</a></li>)}</ul></div>)}
+      {SITE_NAV.map(n=><div key={n.label}><p><a href={n.href}>{n.label}</a></p>{n.items&&<ul>{n.items.map(([label,href])=><li key={href}><a href={href} aria-current={isHere(current,href)?'page':undefined}>{label}</a></li>)}</ul>}</div>)}
     </nav>
   </div>;
 }
@@ -783,6 +797,7 @@ export default function App({office=officeFromPath(),path}){
       <button className="header-callback" onClick={()=>setModal('callback')}>Заказать звонок <ArrowUpRight size={16}/></button>
       {THEME_SWITCHER&&<button type="button" className="theme-flip" onClick={()=>setTheme(t=>t==="graphite"?"steel":"graphite")} aria-label={theme==="graphite"?"Включить светлую тему":"Включить тёмную тему"} title={theme==="graphite"?"Светлая тема":"Тёмная тема"}>{theme==="graphite"?<Sun size={20}/>:<Moon size={20}/>}</button>}
     </header>
+    <SiteNav current={page?.path}/>
     <main id="main">
       {page?<SubPage page={page} office={here} setModal={setModal} setLegal={setLegal}/>:<>
       <section className="hero wrap">
