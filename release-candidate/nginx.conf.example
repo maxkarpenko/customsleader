@@ -17,8 +17,13 @@ server {
         add_header Cache-Control "no-cache";
     }
 
+    # Страницы старого сайта: /about отдаётся из about.html и т. д.
+    location ~* ^/contacts/moscow/?$ { if ($request_uri !~ ^/contacts/Moscow) { return 301 https://customsleader.ru/contacts/Moscow; } try_files /contacts/Moscow.html =404; }
+    location ~* ^/contacts/vladimir/?$ { if ($request_uri !~ ^/contacts/Vladimir) { return 301 https://customsleader.ru/contacts/Vladimir; } try_files /contacts/Vladimir.html =404; }
+    location ~* ^/(moscow|vladimir|yaroslavl)/?$ { return 301 https://customsleader.ru/contacts/$1; }
+
     location / {
-        try_files $uri $uri/ =404;
+        try_files $uri $uri.html $uri/ =404;
     }
 
     add_header X-Content-Type-Options "nosniff" always;

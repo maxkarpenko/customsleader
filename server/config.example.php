@@ -6,6 +6,13 @@ return [
   // Looks like https://your-company.bitrix24.ru/rest/1/abc123def456/
   'bitrix24_webhook' => '',
 
+  // Responsible for new leads: the employee's user ID in Bitrix24 — the number in their profile address,
+  // e.g. https://your-company.bitrix24.ru/company/personal/user/40/ → 40. Without this line: 40; empty: the webhook's owner.
+  'assigned_by_id' => '40',
+
   // If Bitrix24 does not answer, the lead is mailed here instead of being lost. Leave empty to turn off.
-  'fallback_email' => 'info@customsleader.ru',
+  'fallback_email' => 'analitik@customsleader.ru',
+
+  // Sender of that mail. The hosting server is allowed to send for customsleader.ru (SPF), so it should reach the inbox.
+  'mail_from' => 'leads@customsleader.ru',
 ];

@@ -44,3 +44,8 @@ release-candidate.zip
 
 # Yandex API kit: local only, never published
 yandex/
+
+# Build-time Node render of the page (scripts/prerender.mjs), removed after the build
+.prerender/
+release-candidate/staging/
+test-stand-noindex.zip

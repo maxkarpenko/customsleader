@@ -16,7 +16,9 @@ export default defineConfig({
     viteSingleFile({removeViteModuleLoader:true}),
     {
       name:'single-file-head',
-      transformIndexHtml:{order:'pre',handler:html=>inlineIcons(html.replace(/\s*<link rel="preload"[^>]*as="font"[^>]*>/g,''))},
+      transformIndexHtml:{order:'pre',handler:html=>inlineIcons(html.replace(/\s*<link rel="preload"[^>]*as="font"[^>]*>/g,''))
+        // a copy for previews and presentations: search engines index only https://customsleader.ru
+        .replace('</title>','</title>\n    <meta name="robots" content="noindex, nofollow" />')},
     },
   ],
   // published build: no settings page, so 3D and per-browser options are compiled out (see __HOSTING__ in App.jsx)

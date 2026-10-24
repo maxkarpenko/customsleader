@@ -106,6 +106,9 @@ $fields = [
   'SOURCE_DESCRIPTION' => $forms[$form],
 ];
 if($email !== '') $fields['EMAIL'] = [['VALUE' => $email, 'VALUE_TYPE' => 'WORK']];
+// Responsible employee: their user ID in Bitrix24. 40 unless config.php sets assigned_by_id ('' there: the webhook's owner)
+$assigned = array_key_exists('assigned_by_id', $config) ? (string)$config['assigned_by_id'] : '40';
+if(ctype_digit($assigned) && (int)$assigned > 0) $fields['ASSIGNED_BY_ID'] = (int)$assigned;
 foreach(['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term'] as $u)
   if(!empty($in[$u])) $fields[strtoupper($u)] = clean($in[$u], 200);
 
@@ -136,9 +139,17 @@ if(!is_array($data) || empty($data['result'])){
   $reason = is_array($data) && isset($data['error_description']) ? $data['error_description'] : 'no answer from Bitrix24';
   error_log('lead.php: Bitrix24 failed: ' . $reason);
   $mailed = false;
-  if(!empty($config['fallback_email'])){
+  // analitik@customsleader.ru unless config.php sets fallback_email ('' there turns the mail off)
+  $fallback = array_key_exists('fallback_email', $config) ? (string)$config['fallback_email'] : 'analitik@customsleader.ru';
+  if($fallback !== ''){
     $text = $fields['TITLE'] . "\nИмя: " . $name . "\nТелефон: " . $phone . ($email !== '' ? "\nПочта: " . $email : '') . "\n" . implode("\n", $lines);
-    $mailed = @mail($config['fallback_email'], '=?UTF-8?B?' . base64_encode($fields['TITLE']) . '?=', $text, "Content-Type: text/plain; charset=utf-8");
+    // From the site's own address: the hosting server is in customsleader.ru's SPF record, so the mail passes the check;
+    // a reply goes straight to the client when they left an e-mail
+    $from = array_key_exists('mail_from', $config) ? (string)$config['mail_from'] : 'leads@customsleader.ru';
+    $headers = "MIME-Version: 1.0\r\nContent-Type: text/plain; charset=utf-8\r\nContent-Transfer-Encoding: 8bit\r\n"
+      . 'From: =?UTF-8?B?' . base64_encode('Сайт КАСТОМС ЛИДЕР') . "?= <$from>"
+      . ($email !== '' ? "\r\nReply-To: $email" : '');
+    $mailed = @mail($fallback, '=?UTF-8?B?' . base64_encode($fields['TITLE']) . '?=', $text, $headers, '-f' . $from);
   }
   if(!$mailed) reply(502, ['ok' => false, 'error' => 'crm']);
 }

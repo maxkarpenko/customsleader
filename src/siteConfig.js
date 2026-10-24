@@ -19,3 +19,16 @@ export const THEME_SWITCHER=true;
 export const COOKIE_CONSENT_KEY='cookie-consent';
 export const COOKIE_CONSENT_VERSION='2026-10-23';
 export const YANDEX_METRIKA_ID=113750114;
+// Offices. The main page shows the head office; /moscow, /vladimir and /yaroslavl are the same page with that
+// city's office in the footer (they point search engines to the main page as the original). The keys are the paths.
+export const HEAD_OFFICE='ivanovo';
+export const OFFICES={
+  ivanovo:{city:'Иваново',region:'Ивановская область',postalCode:'153000',street:'ул. Степанова, д. 5, офис 307А',
+    address:'153000, Ивановская область, г.\u00a0Иваново, ул.\u00a0Степанова, д.\u00a05, офис\u00a0307А',map:'https://yandex.ru/maps/-/CXefnW0a'},
+  moscow:{city:'Москва',region:'Москва',street:'аллея Первой Маевки, д. 15, стр. 2',
+    address:'г.\u00a0Москва, аллея Первой Маевки, д.\u00a015, стр.\u00a02'},
+  vladimir:{city:'Владимир',region:'Владимирская область',street:'ул. Дзержинского, д. 9А',
+    address:'Владимирская область, г.\u00a0Владимир, ул.\u00a0Дзержинского, д.\u00a09А'},
+  yaroslavl:{city:'Ярославль',region:'Ярославская область',street:'ул. Свободы, д. 2/40',
+    address:'Ярославская область, г.\u00a0Ярославль, ул.\u00a0Свободы, д.\u00a02/40'},
+};

@@ -39,11 +39,8 @@
       "name": "release",
       "runtimeExecutable": "python3",
       "runtimeArgs": [
-        "-m",
-        "http.server",
-        "4190",
-        "--directory",
-        "release-candidate/site"
+        "scripts/serve-release.py",
+        "4190"
       ],
       "port": 4190
     }
