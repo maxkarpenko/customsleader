@@ -28,6 +28,4 @@
 
 ![Отзывы и рекомендации](https://customsleader.ru/static/uploads/thumbs/9e4e86a638dbbb9eb79d00383623d8ee.jpg)
 
-<button class="show-one-click">Обратный звонок</button>
-
 Пишите и мы свяжемся с вами в ближайшее время.

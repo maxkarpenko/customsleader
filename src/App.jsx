@@ -306,10 +306,12 @@ const inlineMd=text=>text.split(/(\*\*[^*]+\*\*|`[^`]+`|\[\[[\s\S]+?\]\])/g).map
   :part.startsWith('`')?<code key={i}>{part.slice(1,-1)}</code>
   :part.startsWith('[[')?<mark key={i} className="legal-todo">{part.slice(2,-2)}</mark>
   :part);
-function LegalDoc({source}){
+// Section headings are h3 in the popup (its title is the h2) and h2 on a page of their own, under its h1
+function LegalDoc({source,level=3}){
+  const H=`h${level}`;
   return <div className="legal-doc">{source.trim().split(/\n{2,}/).map((block,i)=>{
     if(block.startsWith('# '))return null;
-    if(block.startsWith('## '))return <h3 key={i}>{inlineMd(block.slice(3))}</h3>;
+    if(block.startsWith('## '))return <H key={i}>{inlineMd(block.slice(3))}</H>;
     const lines=block.split('\n');
     if(lines.every(l=>l.startsWith('- ')))return <ul key={i}>{lines.map((l,j)=><li key={j}>{inlineMd(l.slice(2))}</li>)}</ul>;
     return <p key={i}>{inlineMd(lines.join(' '))}</p>;
@@ -587,29 +589,37 @@ export const SITE_NAV=[
   {label:'Контакты',href:'/#contacts',items:[['Иваново','/contacts/ivanovo'],['Москва','/contacts/Moscow'],['Владимир','/contacts/Vladimir'],['Ярославль','/contacts/yaroslavl']]},
 ];
 const isHere=(current,href)=>current&&routeKey(current)===routeKey(href);
-// Desktop: an open bar under the header
+// Desktop: an open bar under the header, aligned to the right
 function SiteNav({current}){
-  return <nav className="site-nav wrap" aria-label="Разделы сайта"><ul>
-    {SITE_NAV.map(n=><li key={n.label} className={n.items?'has-sub':undefined}>
+  return <nav className="site-nav wrap" aria-label="Разделы сайта"><ul>{SITE_NAV.map(n=><NavItem key={n.label} n={n} current={current}/>)}</ul></nav>;
+}
+function NavItem({n,current}){
+  return <li className={n.items?'has-sub':undefined}>
       <a href={n.href} aria-current={isHere(current,n.href)||n.items?.some(([,h])=>isHere(current,h))?'page':undefined}>{n.label}{n.items&&<ChevronDown size={14} aria-hidden="true"/>}</a>
       {n.items&&<ul className="site-nav-sub">{n.items.map(([label,href])=><li key={href}><a href={href} aria-current={isHere(current,href)?'page':undefined}>{label}</a></li>)}</ul>}
-    </li>)}
-  </ul></nav>;
+    </li>;
 }
 // Phones: a small "Меню" button in the header with the same structure
-function SiteMenu({current}){
+function SiteMenu({current,theme,setTheme}){
   const [open,setOpen]=useState(false);const box=useRef(null);const id=useId();
+  // the close button takes the place of the "Меню" button: the panel's first row starts where that button is
+  const [top,setTop]=useState(18);
+  const toggle=()=>{if(!open){const r=box.current?.querySelector('.site-menu-toggle')?.getBoundingClientRect();if(r)setTop(Math.max(8,Math.round(r.top+r.height/2-22)));}setOpen(o=>!o);};
   useEffect(()=>{
     if(!open)return;
     const away=e=>{if(!box.current?.contains(e.target))setOpen(false);};
     const key=e=>{if(e.key==='Escape')setOpen(false);};
+    // full-screen on phones: the page underneath stays put while the menu is open
+    const old=document.body.style.overflow;document.body.style.overflow='hidden';document.documentElement.classList.add('site-menu-open');
     document.addEventListener('pointerdown',away);document.addEventListener('keydown',key);
-    return()=>{document.removeEventListener('pointerdown',away);document.removeEventListener('keydown',key);};
+    return()=>{document.body.style.overflow=old;document.documentElement.classList.remove('site-menu-open');document.removeEventListener('pointerdown',away);document.removeEventListener('keydown',key);};
   },[open]);
   return <div className={`site-menu${open?' is-open':''}`} ref={box}>
-    <button type="button" className="site-menu-toggle" aria-expanded={open} aria-controls={id} onClick={()=>setOpen(o=>!o)}>Меню<ChevronDown size={15} aria-hidden="true"/></button>
-    <nav className="site-menu-panel" id={id} aria-label="Разделы сайта" hidden={!open}>
-      {SITE_NAV.map(n=><div key={n.label}><p><a href={n.href}>{n.label}</a></p>{n.items&&<ul>{n.items.map(([label,href])=><li key={href}><a href={href} aria-current={isHere(current,href)?'page':undefined}>{label}</a></li>)}</ul>}</div>)}
+    <button type="button" className="site-menu-toggle" aria-expanded={open} aria-controls={id} onClick={toggle}>Меню<ChevronDown size={15} aria-hidden="true"/></button>
+    <nav className="site-menu-panel" id={id} aria-label="Разделы сайта" hidden={!open} style={{'--menu-top':`${top}px`}}>
+      <div className="site-menu-top"><button type="button" className="site-menu-close" aria-label="Закрыть меню" onClick={()=>setOpen(false)}><X size={22}/></button>
+      {THEME_SWITCHER&&setTheme&&<button type="button" className="site-menu-theme" onClick={()=>setTheme(t=>t==='graphite'?'steel':'graphite')}>{theme==='graphite'?<Sun size={18} aria-hidden="true"/>:<Moon size={18} aria-hidden="true"/>}{theme==='graphite'?'Светлая тема':'Тёмная тема'}</button>}</div>
+      {SITE_NAV.map(n=><div key={n.label}><p className={n.items?undefined:'solo'}><a href={n.href} aria-current={isHere(current,n.href)?'page':undefined}>{n.label}</a></p>{n.items&&<ul>{n.items.map(([label,href])=><li key={href}><a href={href} aria-current={isHere(current,href)?'page':undefined}>{label}</a></li>)}</ul>}</div>)}
     </nav>
   </div>;
 }
@@ -632,21 +642,24 @@ function PageBlocks({blocks}){
 }
 function SubPage({page,office,setModal,setLegal}){
   const contacts=page.path.toLowerCase().startsWith('/contacts/');
+  // the projects page shows the cases right on the first screen
+  const projects=page.path==='/category/nashi-proekty';
+  // the privacy policy is a document to read: no form, all on the dark background
+  const doc=page.path==='/confidentiality';
   // the first paragraph becomes the lead under the heading, as on the main page
   const first=page.blocks.findIndex(b=>b.t==='p');
   const lead=contacts?`Адрес: ${office.address.replace(/ /g,' ')}`:first>-1&&first<3?plain(page.blocks[first].html):page.description;
   const rest=contacts?[]:page.blocks.filter((_,i)=>i!==first||first>=3);
   return <>
-    <section className="hero wrap page-hero">
+    <section className={`hero wrap page-hero${doc?' page-hero-doc':''}`}>
       <div className="hero-layout"><div className="hero-backdrop"><img src={miningComplex} alt="" width="1280" height="851" fetchPriority="high"/></div>
-        <div className="hero-story"><nav className="crumbs" aria-label="Вы здесь"><a href="/">Главная</a><span aria-hidden="true">/</span><span>{page.h1}</span></nav><h1>{page.h1}</h1><p className="hero-lead">{lead}</p>
+        <div className="hero-story"><nav className="crumbs" aria-label="Вы здесь"><a href="/">Главная</a><span aria-hidden="true">/</span><span>{page.h1}</span></nav><h1>{page.h1}</h1>{projects?<div className="hero-projects">{cases.map(c=><article key={c.title}><h2>{plain(c.title.replace('[1]',''))}</h2></article>)}<p><a href="/#cases">Подробнее о кейсах на главной странице</a></p></div>:doc?null:<p className="hero-lead">{lead}</p>}
           {contacts&&<ul className="page-contacts"><li>Телефон: <a href="tel:+79038792020">+7 (903) 879-20-20</a></li><li>Почта: <a href="mailto:info@customsleader.ru">info@customsleader.ru</a></li></ul>}
-          <Button className="mobile-hero-action cta-quote" onClick={()=>setModal('hero')}>{shortCTA}</Button></div>
-        <div className="hero-form" id="hero-request"><Form id="hero" onLegal={setLegal}/></div></div>
+          {!doc&&<Button className="mobile-hero-action cta-quote" onClick={()=>setModal('hero')}>{shortCTA}</Button>}</div>
+        {!doc&&<div className="hero-form" id="hero-request"><Form id="hero" onLegal={setLegal}/></div>}</div>
     </section>
-    {(rest.length>0||page.path==='/category/nashi-proekty'||page.path==='/clients'||page.path==='/confidentiality')&&<section className="section page-body light"><div className="wrap page-content">
-      {page.path==='/confidentiality'?<LegalDoc source={privacyPolicy}/>:<PageBlocks blocks={rest}/>}
-      {page.path==='/category/nashi-proekty'&&<>{cases.map(c=><article className="page-case" key={c.title}><h2>{plain(c.title.replace('[1]',''))}</h2><p>{c.description}</p></article>)}<p><a href="/#cases">Подробнее о кейсах на главной странице</a></p></>}
+    {(rest.length>0||page.path==='/clients'||page.path==='/confidentiality')&&<section className={`section page-body${doc?' page-body-dark':' light'}`}><div className="wrap page-content">
+      {page.path==='/confidentiality'?<LegalDoc source={privacyPolicy} level={2}/>:<PageBlocks blocks={rest}/>}
       {page.path==='/clients'&&<ClientLogos/>}
     </div></section>}
   </>;
@@ -790,7 +803,7 @@ export default function App({office=officeFromPath(),path}){
       <a href={home} className="wordmark" aria-label="КАСТОМС ЛИДЕР — в начало"><img className="header-logo logo-on-dark" src={logoOnDark} alt="КАСТОМС ЛИДЕР" width="960" height="113"/><img className="header-logo logo-on-light" src={logoOnLight} alt="КАСТОМС ЛИДЕР" width="960" height="112"/></a>
 
       <p className="header-description">Международная и внутренняя логистика промышленного горнодобывающего оборудования и негабарита.</p>
-      <SiteMenu current={page?.path}/>
+      <SiteMenu current={page?.path} theme={theme} setTheme={setTheme}/>
 
       <button className="russia-link text-link" onClick={()=>setModal('russia')}><span className="russia-text"><span>Нужна перевозка</span> <span>по России?</span></span> <ArrowUpRight size={15}/></button>
       <div className="header-contacts"><a href="tel:+79038792020">+7 (903) 879-20-20</a><a href="mailto:info@customsleader.ru">info@customsleader.ru</a></div>

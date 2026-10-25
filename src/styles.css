@@ -58,13 +58,9 @@
 .route-stops i{transition:background-color .3s .15s}
 .route-stops span{transition:color .3s}.route-stops .passed{color:var(--steel-200)}
 .button>svg{transition:transform .25s var(--ease)}.button:hover>svg{transform:translate(3px,-3px)}
-@supports (interpolate-size:allow-keywords){
-  :root{interpolate-size:allow-keywords}
-  .faq-list details::details-content{height:0;overflow:clip;transition:height .4s var(--ease),content-visibility .4s allow-discrete}
-  .faq-list details[open]::details-content{height:auto}
-  .faq-list details>p{transition:opacity .35s .05s}
-  @starting-style{.faq-list details[open]>p{opacity:0}}
-}
+/* FAQ answers: the answer appears in place and slides in with opacity and transform only (no height animation) */
+.faq-list details>p{transition:opacity .35s var(--ease),transform .35s var(--ease)}
+@starting-style{.faq-list details[open]>p{opacity:0;transform:translateY(-6px)}}
 .modal[open]{animation:modal-in .38s var(--ease)}.modal[open]::backdrop{animation:backdrop-in .3s ease-out}
 @keyframes modal-in{from{opacity:0;transform:translateY(14px) scale(.985)}}
 @keyframes backdrop-in{from{opacity:0}}
@@ -136,7 +132,7 @@
 .modal-doc{width:min(820px,calc(100% - 32px))}
 .modal-doc .modal-inner{padding:40px 48px 44px}
 .legal-doc{color:var(--ink);font-size:var(--fs-body);line-height:1.65}
-.legal-doc h3{font-size:var(--fs-sub);font-weight:600;letter-spacing:-.015em;line-height:1.3;margin:30px 0 12px}
+.legal-doc :is(h2,h3){font-size:var(--fs-sub);font-weight:600;letter-spacing:-.015em;line-height:1.3;margin:30px 0 12px}
 .legal-doc p{margin:0 0 12px;max-width:72ch}
 .legal-doc ul{margin:0 0 14px;padding-left:22px;max-width:72ch}.legal-doc li{margin-bottom:6px}
 .legal-doc code{font-family:ui-monospace,Menlo,monospace;font-size:.88em;padding:1px 5px;border-radius:3px;background:var(--tint-300)}
@@ -634,7 +630,8 @@
 .page-hero h1{font-size:clamp(34px,3.6vw,54px)}
 .page-contacts{margin-top:18px;display:flex;flex-direction:column;gap:8px;font-size:var(--fs-lead);color:var(--steel-200)}
 .page-contacts a{color:var(--text)}
-.page-content{max-width:860px}
+/* the text keeps the page's left edge (as the breadcrumbs and heading), lines stay readable */
+.page-content>*{max-width:860px}
 .page-content>h2{font-size:var(--fs-h3);margin:40px 0 14px;line-height:1.2}
 .page-content>h2:first-child,.page-content>h3:first-child{margin-top:0}
 .page-content>h3{font-size:var(--fs-sub);margin:28px 0 10px}
@@ -649,8 +646,6 @@
 .page-gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px;margin:14px 0 26px}
 .page-gallery a{display:block;border:1px solid var(--line);border-radius:4px;overflow:hidden;background:#fff}
 .page-gallery img{display:block;width:100%;height:auto}
-.page-case{padding:18px 0;border-top:1px solid var(--line)}
-.page-case h2{font-size:var(--fs-sub);margin-bottom:8px}
 .page-content .legal-doc,.page-content .clients{margin-top:10px}
 @media(max-width:650px){.site-menu{order:6}}
 
@@ -670,3 +665,75 @@
 .site-menu{display:none}
 @media(max-width:900px){.site-nav{display:none}.site-menu{display:block}}
 .site-menu-panel p a{color:inherit}
+
+/* Menu bar without frame lines: neither its own nor the header line above it */
+.site-nav{border-bottom:0}
+@media(min-width:901px){.header{border-bottom:0}}
+
+/* Menu bar on the right, its lists open toward the right edge */
+.site-nav>ul{justify-content:flex-end;gap:4px 26px}
+.site-nav .site-nav-sub{left:auto;right:-18px}
+
+/* Phones and tablets: the theme switch lives in the menu instead of the header */
+.site-menu-theme{order:-1;grid-column:1 / -1;display:inline-flex;align-items:center;gap:10px;justify-self:start;padding:10px 14px;border:1px solid var(--line);border-radius:999px;font-size:var(--fs-meta)}
+@media(max-width:900px){.header .theme-flip{display:none}}
+
+/* Phones and tablets: the menu opens over the whole screen */
+.site-menu-top{order:-2;grid-column:1 / -1;display:flex;align-items:center;justify-content:space-between}
+.site-menu-top span{font-size:var(--fs-sub);font-weight:500}
+.site-menu-close{width:44px;height:44px;display:grid;place-items:center;border-radius:50%;border:1px solid var(--line)}
+@media(max-width:900px){
+  .site-menu-panel{position:fixed;inset:0;z-index:200;margin:0;max-height:none;height:100dvh;overflow-y:auto;overscroll-behavior:contain;border:0;border-radius:0;box-shadow:none;align-content:start;padding:18px 24px 48px;gap:26px;grid-template-columns:1fr 1fr;background:var(--ink)}
+  :root[data-tone="light"] .site-menu-panel{background:var(--paper)}
+  .site-menu-panel p a{font-size:var(--fs-micro)}
+  .site-menu-panel ul{gap:12px}
+  .site-menu-panel ul a{font-size:var(--fs-lead)}
+}
+@media(max-width:560px){.site-menu-panel{grid-template-columns:1fr;padding-inline:20px}}
+
+/* While the full-screen menu is open, the page's floating controls step aside */
+.site-menu-open :is(.section-dots,.section-menu-toggle,.scroll-top,.sticky-cta,.cookie-notice){visibility:hidden}
+.site-menu-panel p.solo{margin-bottom:0;text-transform:none;letter-spacing:0}
+.site-menu-panel p.solo a{font-size:var(--fs-lead);color:var(--text)}
+:root[data-tone="light"] .site-menu-panel p.solo a{color:var(--ink)}
+
+/* Close button where the "Меню" button was, the theme switch beside it */
+.site-menu-top{justify-content:flex-start;gap:12px}
+.site-menu-top .site-menu-theme{order:0;grid-column:auto}
+@media(max-width:900px){.site-menu-panel{padding-top:var(--menu-top,18px)}}
+
+/* "Меню" sits on the right of the header row; the close button takes its place, the theme switch to its left */
+@media(max-width:900px){
+  .header .site-menu{margin-left:auto}
+  .site-menu-top{justify-content:space-between}
+  .site-menu-top .site-menu-close{order:2}
+}
+
+/* Inner pages: breadcrumbs and heading start at the top, level with the form, right under the menu */
+.page-hero .hero-layout{align-items:start}
+.page-hero .hero-story{justify-content:flex-start}
+
+/* Projects page: the cases on the first screen */
+.hero-projects{margin-top:26px;max-width:640px}
+.hero-projects article{padding:18px 0;border-top:1px solid rgba(240,241,235,.16)}
+.hero-projects h2{font-size:var(--fs-sub);line-height:1.3;font-weight:500}
+.hero-projects article p{font-size:var(--fs-body);line-height:1.6;color:var(--steel-200)}
+.hero-projects>p{margin-top:14px}
+.hero-projects>p a{color:var(--accent);text-decoration:underline;text-underline-offset:3px}
+
+/* Breadcrumbs start level with the form, which drops a little on tall screens */
+@media(min-width:651px){.page-hero .hero-story{margin-top:clamp(0px,-400px + 50svh,60px)}}
+
+/* Privacy policy page: a single dark reading column, no form */
+.page-hero-doc .hero-layout{grid-template-columns:1fr;min-height:0}
+.page-hero-doc .hero-backdrop{display:none}
+.page-hero-doc .hero-story{margin-top:0;padding-bottom:0}
+.page-body-dark{padding-top:10px}
+.page-body-dark .legal-doc{color:var(--steel-200)}
+.page-body-dark .legal-doc :is(h2,h3){color:var(--text)}
+.page-body-dark .legal-doc a{color:var(--accent)}
+:root[data-tone="light"] .page-body-dark .legal-doc{color:var(--ink)}
+.page-body-dark .legal-doc :is(p,ul,h2,h3){max-width:70ch}
+
+/* Dropdowns: a soft elevation only, no hairline frame on top of it */
+.site-nav-sub,.site-menu-panel,.estimate-note,.cookie-notice{border:0}

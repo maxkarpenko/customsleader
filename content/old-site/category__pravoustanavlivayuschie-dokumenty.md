@@ -52,6 +52,4 @@
 
 ![Правоустанавливающие документы](https://customsleader.ru/static/uploads/thumbs/447d01060a7ebb46b9f908a00afa9068.jpg)
 
-<button class="show-one-click">Обратный звонок</button>
-
 Пишите и мы свяжемся с вами в ближайшее время.
