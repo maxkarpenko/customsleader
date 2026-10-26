@@ -427,9 +427,10 @@ function logConsent(record,before){
 }
 function CookieNotice({onClose,onPolicy,onConsent,startInSettings=false}){
   const analytics=ANALYTICS_ON;
-  // Settings: the necessary storage is always on; Yandex Metrica is off until the visitor switches it on
+  // Settings: the necessary storage is always on; the Yandex Metrica switch starts on (the owner's choice)
+  // until the visitor has saved a choice, then it shows that choice. Metrica still loads only after a button is pressed.
   const [settings,setSettings]=useState(startInSettings&&analytics);
-  const [metrica,setMetrica]=useState(()=>!!readCookieConsent()?.analytics);
+  const [metrica,setMetrica]=useState(()=>{const saved=readCookieConsent();return saved?!!saved.analytics:true;});
   function choose(allowAnalytics){
     const before=readCookieConsent();
     // the ID outlives policy versions, so one visitor's choices line up in the journal
@@ -452,7 +453,7 @@ function CookieNotice({onClose,onPolicy,onConsent,startInSettings=false}){
       :<p>Сайт не устанавливает cookie: в браузере сохраняются только необходимые настройки. Подробнее — в {policy}.</p>}
     {settings&&<div className="cookie-settings">
       <div className="cookie-option"><div><strong>Необходимые</strong><span>Сохраняют ваш выбор и настройки сайта. Без них сайт не работает, поэтому они включены всегда.</span></div><label className="cookie-switch" title="Включены всегда"><input type="checkbox" role="switch" checked disabled aria-label="Необходимые: включены всегда"/><i aria-hidden="true"/></label></div>
-      <div className="cookie-option"><div><strong>Яндекс Метрика</strong><span>Статистика посещений. Помогает нам делать сайт удобнее.</span></div><label className="cookie-switch"><input type="checkbox" role="switch" checked={metrica} onChange={e=>setMetrica(e.target.checked)} aria-label="Яндекс Метрика"/><i aria-hidden="true"/></label></div>
+      <div className="cookie-option"><div><strong>Яндекс Метрика</strong><span>Статистика, которая необходима для анализа поведения пользователей на сайте для улучшения сервиса. Сбор статистики происходит через Яндекс Метрика.</span></div><label className="cookie-switch"><input type="checkbox" role="switch" checked={metrica} onChange={e=>setMetrica(e.target.checked)} aria-label="Яндекс Метрика"/><i aria-hidden="true"/></label></div>
     </div>}
     <div className="cookie-actions">
       {analytics&&(settings
@@ -506,7 +507,7 @@ const CASE_LABEL="Смотреть кейс: 1'200 тонн и 160 метров,
 function CaseLink({className}){
   return <a className={`hp-case ${className}`} href="#case-norda" onClick={scrollToCase} aria-label={CASE_LABEL}><span className="hc-body"><span className="hc-figs"><b>1'200 тонн</b> и <b>160 метров</b></span><span className="hc-route">Китай → рудник Таймырский</span></span><span className="hc-more">Смотреть кейс<ArrowDown size={18} aria-hidden="true"/></span></a>;
 }
-// Footer: four labelled columns on one grid (company, office, contact, documents), then the small print
+// Footer: four labelled columns on one grid (company, address, contact, documents), then the small print
 function SiteFooter({showNote,home,here,setModal,setLegal,setCookieOpen}){
   const logo=<a href={home} className="wordmark ft-logo" aria-label="КАСТОМС ЛИДЕР — в начало"><img className="logo-on-dark" src={logoOnDark} alt="КАСТОМС ЛИДЕР" width="960" height="113" loading="lazy"/><img className="logo-on-light" src={logoOnLight} alt="КАСТОМС ЛИДЕР" width="960" height="112" loading="lazy"/></a>;
   const address=<a className="ft-address" href={mapLink(here)} target="_blank" rel="noopener noreferrer">{here.address}</a>;
@@ -517,7 +518,7 @@ function SiteFooter({showNote,home,here,setModal,setLegal,setCookieOpen}){
   const note=showNote&&FOOTNOTE_SOURCE&&<ol className="footnotes ft-small" aria-label="Сноски"><li id="fn-1">Источник: <a href={FOOTNOTE_SOURCE} target="_blank" rel="noopener noreferrer">«Норникель» запустил уникальный проходческий комплекс NORDA</a> <a href="#fnref-1" className="footnote-back" aria-label="Вернуться к тексту">↩</a></li></ol>;
   const label=t=><p className="ft-label">{t}</p>;
   return <footer className="footer wrap ft">
-    <div className="ft-grid"><div className="ft-col">{label('Компания')}{logo}<p className="ft-small">{company}</p></div><div className="ft-col">{label('Офис')}{address}</div><div className="ft-col">{label('Связаться')}{callback}</div><div className="ft-col">{label('Документы')}{links}</div></div>
+    <div className="ft-grid"><div className="ft-col">{label('Компания')}{logo}<p className="ft-small">{company}</p></div><div className="ft-col">{label('Адрес')}{address}</div><div className="ft-col">{label('Связаться')}{callback}</div><div className="ft-col">{label('Документы')}{links}</div></div>
     <div className="ft-row">{disclaimer}{note}</div>
   </footer>;
 }
