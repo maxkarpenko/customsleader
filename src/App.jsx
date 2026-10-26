@@ -2,6 +2,7 @@ import React, {useEffect, useId, useLayoutEffect, useRef, useState, createContex
 import {ChevronDown, ArrowUpRight, ArrowRight, ArrowDown, ArrowUp, Sun, Moon, Check, Plus, Minus, X, ShieldCheck, PackageCheck, Route, Truck, FileCheck2, Globe2, MessageCircle, MessageSquare, UserRound, CircleCheck, Info, LoaderCircle, Send, Layers3, Settings2, SlidersHorizontal, RotateCcw, Copy, Download} from 'lucide-react';
 import content from './content.json';
 import oldPages from './oldPages.json';
+import {ARTICLES,ARTICLES_INDEX,ARTICLES_PUBLISHED} from './articles.js';
 import SectionNav from './SectionNav.jsx';
 import {SCENES_MODE,SCENES_KEY,TWEAKS_CASES_KEY,TWEAKS_STILLS_KEY,TWEAKS_FOUNDER_KEY,CASES_STYLE_KEY,CASES_STYLE,THEME_KEY,THEME_SWITCHER,COOKIE_CONSENT_KEY,COOKIE_CONSENT_VERSION,YANDEX_METRIKA_ID,OFFICES,HEAD_OFFICE} from './siteConfig.js';
 import privacyPolicy from './legal/privacy-policy.md?raw';
@@ -576,7 +577,9 @@ function ScrollTopButton(){
 const OLD_IMAGES=import.meta.glob('./assets/old-site/*',{eager:true,import:'default'});
 const oldImage=name=>OLD_IMAGES[`./assets/old-site/${name}`];
 const routeKey=p=>(p||'/').replace(/\.html$/,'').replace(/\/+$/,'').toLowerCase()||'/';
-const PAGES=Object.fromEntries(oldPages.map(p=>[routeKey(p.path),p]));
+// every page besides the main one: the old site's pages, the articles contents and the articles
+export const ROUTES=[...oldPages,ARTICLES_INDEX,...ARTICLES];
+const PAGES=Object.fromEntries(ROUTES.map(p=>[routeKey(p.path),p]));
 const pageFromPath=()=>typeof location==='undefined'?null:PAGES[routeKey(location.pathname)]||null;
 // Site menu: the old site's pages grouped for search engines and people. Top items with a list open it on hover
 // (desktop bar under the header) or show it as a group (phone panel); every link is in the page's HTML either way.
@@ -585,8 +588,9 @@ export const SITE_NAV=[
   {label:'Перевозки',href:'/i-logistika',items:[['Мультимодальные перевозки','/ekspedirovanie/multimodalnye-perevozki'],['Авиаперевозки','/ekspedirovanie/aviaperevozki'],['Автомобильные перевозки','/ekspedirovanie/avtomobilnye-perevozki'],['Сборные перевозки','/ekspedirovanie/sbornye-perevozki']]},
   {label:'Проекты',href:'/category/nashi-proekty'},
   {label:'Клиенты',href:'/clients'},
+  {label:'Статьи',href:'/articles'},
   {label:'О компании',href:'/about',items:[['О нас','/about'],['Отзывы и рекомендации','/otzyvy-i-rekomendacii'],['Правоустанавливающие документы','/category/pravoustanavlivayuschie-dokumenty']]},
-  {label:'Контакты',href:'/#contacts',items:[['Иваново','/contacts/ivanovo'],['Москва','/contacts/Moscow'],['Владимир','/contacts/Vladimir'],['Ярославль','/contacts/yaroslavl']]},
+  {label:'Контакты',href:'/#contacts',items:[['Иваново','/contacts/ivanovo'],['Москва','/contacts/moscow'],['Владимир','/contacts/vladimir'],['Ярославль','/contacts/yaroslavl']]},
 ];
 const isHere=(current,href)=>current&&routeKey(current)===routeKey(href);
 // Desktop: an open bar under the header, aligned to the right
@@ -595,7 +599,7 @@ function SiteNav({current}){
 }
 function NavItem({n,current}){
   return <li className={n.items?'has-sub':undefined}>
-      <a href={n.href} aria-current={isHere(current,n.href)||n.items?.some(([,h])=>isHere(current,h))?'page':undefined}>{n.label}{n.items&&<ChevronDown size={14} aria-hidden="true"/>}</a>
+      <a href={n.href} aria-current={isHere(current,n.href)||n.items?.some(([,h])=>isHere(current,h))||(n.href==='/articles'&&current?.startsWith('/articles/'))?'page':undefined}>{n.label}{n.items&&<ChevronDown size={14} aria-hidden="true"/>}</a>
       {n.items&&<ul className="site-nav-sub">{n.items.map(([label,href])=><li key={href}><a href={href} aria-current={isHere(current,href)?'page':undefined}>{label}</a></li>)}</ul>}
     </li>;
 }
@@ -648,19 +652,24 @@ function SubPage({page,office,setModal,setLegal}){
   const doc=page.path==='/confidentiality';
   // the first paragraph becomes the lead under the heading, as on the main page
   const first=page.blocks.findIndex(b=>b.t==='p');
-  const lead=contacts?`Адрес: ${office.address.replace(/ /g,' ')}`:first>-1&&first<3?plain(page.blocks[first].html):page.description;
+  const lead=contacts?`Адрес: ${office.address.replace(/ /g,' ')}`:page.lead?page.lead:first>-1&&first<3?plain(page.blocks[first].html):page.description;
   const rest=contacts?[]:page.blocks.filter((_,i)=>i!==first||first>=3);
   return <>
     <section className={`hero wrap page-hero${doc?' page-hero-doc':''}`}>
       <div className="hero-layout"><div className="hero-backdrop"><img src={miningComplex} alt="" width="1280" height="851" fetchPriority="high"/></div>
-        <div className="hero-story"><nav className="crumbs" aria-label="Вы здесь"><a href="/">Главная</a><span aria-hidden="true">/</span><span>{page.h1}</span></nav><h1>{page.h1}</h1>{projects?<div className="hero-projects">{cases.map(c=><article key={c.title}><h2>{plain(c.title.replace('[1]',''))}</h2></article>)}<p><a href="/#cases">Подробнее о кейсах на главной странице</a></p></div>:doc?null:<p className="hero-lead">{lead}</p>}
+        <div className="hero-story"><nav className="crumbs" aria-label="Вы здесь"><a href="/">Главная</a><span aria-hidden="true">/</span>{page.kind==='article'&&<><a href="/articles">Статьи</a><span aria-hidden="true">/</span></>}<span>{page.kind==='articles'?'Статьи':page.h1}</span></nav><h1>{page.h1}</h1>{projects?<div className="hero-projects">{cases.map(c=><article key={c.title}><h2>{plain(c.title.replace('[1]',''))}</h2></article>)}<p><a href="/#cases">Подробнее о кейсах на главной странице</a></p></div>:doc?null:<p className="hero-lead">{lead}</p>}
           {contacts&&<ul className="page-contacts"><li>Телефон: <a href="tel:+79038792020">+7 (903) 879-20-20</a></li><li>Почта: <a href="mailto:info@customsleader.ru">info@customsleader.ru</a></li></ul>}
           {!doc&&<Button className="mobile-hero-action cta-quote" onClick={()=>setModal('hero')}>{shortCTA}</Button>}</div>
         {!doc&&<div className="hero-form" id="hero-request"><Form id="hero" onLegal={setLegal}/></div>}</div>
     </section>
-    {(rest.length>0||page.path==='/clients'||page.path==='/confidentiality')&&<section className={`section page-body${doc?' page-body-dark':' light'}`}><div className="wrap page-content">
+    {(rest.length>0||page.path==='/clients'||page.path==='/confidentiality'||page.kind==='articles')&&<section className={`section page-body${doc?' page-body-dark':' light'}`}><div className="wrap page-content">
       {page.path==='/confidentiality'?<LegalDoc source={privacyPolicy} level={2}/>:<PageBlocks blocks={rest}/>}
       {page.path==='/clients'&&<ClientLogos/>}
+      {page.kind==='articles'&&<ol className="article-list">{ARTICLES.map(a=><li key={a.path}><h2><a href={a.path}>{a.h1}</a></h2><p>{a.description}</p></li>)}</ol>}
+      {page.kind==='article'&&<>
+        <p className="article-meta">Опубликовано {new Date(ARTICLES_PUBLISHED).toLocaleDateString('ru-RU',{day:'numeric',month:'long',year:'numeric'})}. Материал справочный: требования к ввозу зависят от конкретного товара и условий сделки, поэтому перед поставкой их проверяют индивидуально.</p>
+        {page.related.length>0&&<aside className="article-related"><h2>Читайте также</h2><ul>{page.related.map(r=><li key={r.path}><a href={r.path}>{r.title}</a></li>)}</ul></aside>}
+      </>}
     </div></section>}
   </>;
 }

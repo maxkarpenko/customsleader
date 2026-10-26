@@ -47,15 +47,20 @@ AddType font/woff2 .woff2
   RewriteCond %{HTTP:X-Forwarded-Proto} !https
   RewriteRule ^ https://customsleader.ru%{REQUEST_URI} [R=301,L]
   # Pages of the old site live on at their old addresses (src/oldPages.json), so their search weight stays.
-  # Old office pages written in another letter case lead to the one address that is kept
-  RewriteCond %{REQUEST_URI} !^/contacts/Moscow/?$
-  RewriteRule ^contacts/moscow/?$ https://%{HTTP_HOST}/contacts/Moscow [R=301,L,NC]
-  RewriteCond %{REQUEST_URI} !^/contacts/Vladimir/?$
-  RewriteRule ^contacts/vladimir/?$ https://%{HTTP_HOST}/contacts/Vladimir [R=301,L,NC]
-  # Short office addresses and service pages of the old site that have no page of their own
-  RewriteRule ^(moscow)/?$ https://%{HTTP_HOST}/contacts/Moscow [R=301,L,NC]
-  RewriteRule ^(vladimir)/?$ https://%{HTTP_HOST}/contacts/Vladimir [R=301,L,NC]
-  RewriteRule ^(yaroslavl)/?$ https://%{HTTP_HOST}/contacts/yaroslavl [R=301,L,NC]
+  # Addresses are lower case: the old site's /contacts/Moscow, /contacts/Vladimir (and any other letter case
+  # of an office page) lead to /contacts/moscow etc.
+  RewriteCond %{REQUEST_URI} !^/contacts/moscow$
+  RewriteRule ^contacts/moscow/?$ https://%{HTTP_HOST}/contacts/moscow [R=301,L,NC]
+  RewriteCond %{REQUEST_URI} !^/contacts/vladimir$
+  RewriteRule ^contacts/vladimir/?$ https://%{HTTP_HOST}/contacts/vladimir [R=301,L,NC]
+  RewriteCond %{REQUEST_URI} !^/contacts/yaroslavl$
+  RewriteRule ^contacts/yaroslavl/?$ https://%{HTTP_HOST}/contacts/yaroslavl [R=301,L,NC]
+  RewriteCond %{REQUEST_URI} !^/contacts/ivanovo$
+  RewriteRule ^contacts/ivanovo/?$ https://%{HTTP_HOST}/contacts/ivanovo [R=301,L,NC]
+  # Short office addresses of the earlier version
+  RewriteRule ^moscow/?$ https://%{HTTP_HOST}/contacts/moscow [R=301,L,NC]
+  RewriteRule ^vladimir/?$ https://%{HTTP_HOST}/contacts/vladimir [R=301,L,NC]
+  RewriteRule ^yaroslavl/?$ https://%{HTTP_HOST}/contacts/yaroslavl [R=301,L,NC]
   RewriteRule ^form/?$ https://%{HTTP_HOST}/#request [R=301,L,NE]
   # Folders of the old structure have no page of their own: the matching block of the main page
   RewriteRule ^contacts/?$ https://%{HTTP_HOST}/#contacts [R=301,L,NE]

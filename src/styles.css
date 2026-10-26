@@ -737,3 +737,20 @@
 
 /* Dropdowns: a soft elevation only, no hairline frame on top of it */
 .site-nav-sub,.site-menu-panel,.estimate-note,.cookie-notice{border:0}
+
+/* Articles: contents list and the end of an article */
+.article-list{list-style:none;padding:0;margin:0;counter-reset:art}
+.article-list li{padding:22px 0;border-top:1px solid var(--line);counter-increment:art}
+.article-list li:first-child{border-top:0;padding-top:0}
+.article-list h2{font-size:var(--fs-sub);line-height:1.3;margin:0 0 8px}
+.article-list h2 a{color:inherit;text-decoration:none}
+.article-list h2 a:hover{color:var(--green-deep)}
+.article-list p{color:var(--ink-muted);line-height:1.6}
+.article-meta{margin-top:30px;font-size:var(--fs-small);color:var(--ink-muted)}
+.article-related{margin-top:34px;padding-top:24px;border-top:1px solid var(--line)}
+.article-related h2{font-size:var(--fs-sub);margin:0 0 12px}
+.article-related ul{list-style:none;padding:0;display:flex;flex-direction:column;gap:10px}
+
+/* Light theme: menu items turn green on hover and for the current section, as in the dark theme */
+:root[data-tone="light"] .site-nav a:hover,:root[data-tone="light"] .site-nav a[aria-current=page],:root[data-tone="light"] .has-sub:focus-within>a{color:var(--green)}
+.page-content>ol.article-list{list-style:none;padding-left:0}

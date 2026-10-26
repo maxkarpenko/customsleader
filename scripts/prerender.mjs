@@ -14,7 +14,7 @@ const saved = {'cookie-consent': JSON.stringify({v: consentVersion, analytics: f
 Object.defineProperty(globalThis, 'localStorage', {configurable: true, value: {getItem: k => saved[k] ?? null, setItem(){}, removeItem(){}}});
 globalThis.matchMedia = () => ({matches: false, addEventListener(){}, removeEventListener(){}});
 
-const {render} = await import(new URL('../.prerender/entry-server.js', import.meta.url));
+const {render, ROUTES} = await import(new URL('../.prerender/entry-server.js', import.meta.url));
 // The Node build writes asset addresses from the root (/assets/…); the site uses relative ones so it also works in a subfolder
 const renderPage = (office, path) => {
   const html = render(office, path).replace(/(src|href|srcset)="\/assets\//g, '$1="./assets/');
@@ -22,8 +22,9 @@ const renderPage = (office, path) => {
   return html;
 };
 const body = renderPage();
-// Pages kept from the old site (src/oldPages.json) at their old addresses
-const oldPages = JSON.parse(readFileSync('src/oldPages.json', 'utf8'));
+// Every other page: the old site's pages at their old addresses, the articles contents and the articles
+const routes = ROUTES;
+const ARTICLES_PUBLISHED = readFileSync('src/articles.js', 'utf8').match(/ARTICLES_PUBLISHED = '([^']+)'/)[1];
 
 // Offices from the site config (plain data, read without running the browser bundle)
 const {OFFICES, HEAD_OFFICE} = await import(new URL('../src/siteConfig.js', import.meta.url));
@@ -135,16 +136,22 @@ const write = ({path, title: t, description: d, content: c, graph: g}) => {
   return url;
 };
 const urls = [write({path: '/', title, description, content: body, graph})];
-for(const p of oldPages){
+for(const p of routes){
   const url = SITE + p.path.slice(1);
   const office = p.path.toLowerCase().startsWith('/contacts/') ? p.path.split('/').pop().toLowerCase() : undefined;
   const content = renderPage(office, p.path);
   if(!content.includes(p.h1.replace(/&/g, '&amp;').slice(0, 20))) throw new Error(`Prerender: ${p.path} is missing its heading`);
   const d = p.description && p.description.length > 40 ? p.description : `${p.h1} — КАСТОМС ЛИДЕР: таможенное оформление и доставка грузов из Китая и других стран.`;
+  const crumbs = [{name: 'Главная', item: SITE}];
+  if(p.kind === 'article') crumbs.push({name: 'Статьи', item: `${SITE}articles`});
+  crumbs.push({name: p.kind === 'articles' ? 'Статьи' : p.h1, item: url});
+  const page = p.kind === 'article'
+    ? {'@type': 'Article', '@id': `${url}#article`, mainEntityOfPage: url, url, headline: p.h1, name: p.title, description: d, inLanguage: 'ru-RU',
+       datePublished: ARTICLES_PUBLISHED, dateModified: ARTICLES_PUBLISHED, author: {'@id': ORG}, publisher: {'@id': ORG}, image: `${SITE}og-image.jpg`, isPartOf: {'@id': `${SITE}#website`}}
+    : {'@type': p.kind === 'articles' ? 'CollectionPage' : 'WebPage', '@id': `${url}#webpage`, url, name: p.title, description: d, inLanguage: 'ru-RU', isPartOf: {'@id': `${SITE}#website`}, about: {'@id': ORG}};
   urls.push(write({path: p.path, title: p.title, description: d, content, graph: [
-    graph[0], graph[2],
-    {'@type': 'WebPage', '@id': `${url}#webpage`, url, name: p.title, description: d, inLanguage: 'ru-RU', isPartOf: {'@id': `${SITE}#website`}, about: {'@id': ORG}},
-    {'@type': 'BreadcrumbList', itemListElement: [{'@type': 'ListItem', position: 1, name: 'Главная', item: SITE}, {'@type': 'ListItem', position: 2, name: p.h1, item: url}]},
+    graph[0], graph[2], page,
+    {'@type': 'BreadcrumbList', itemListElement: crumbs.map((c, i) => ({'@type': 'ListItem', position: i + 1, ...c}))},
   ]}));
 }
 

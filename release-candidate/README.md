@@ -11,6 +11,7 @@ site/
 ├── index.html            страница сайта
 ├── about.html, tamozhennoe-oformlenie.html, …   страницы старого сайта на старых адресах (/about и т. д.)
 ├── contacts/, ekspedirovanie/, category/         такие же страницы во вложенных адресах
+├── articles.html, articles/                       статьи (/articles и /articles/<адрес>)
 ├── assets/               скрипт, стили, шрифты, фото, PDF договора страхования
 │                         (имена с хэшем: при изменениях меняется имя, кэш не мешает)
 ├── favicon-16x16.png
@@ -60,8 +61,9 @@ site/
 - **Индексируется только https://customsleader.ru.** На любом другом адресе (тестовый домен и т. п.) сервер отдаёт заголовок `X-Robots-Tag: noindex`. Копия на GitHub Pages закрыта мета-тегом `noindex`.
 - **Один адрес:** `www.customsleader.ru` и `http://` перенаправляются на `https://customsleader.ru` (301).
 - **Старые страницы** перенаправляются (301) на нужный блок новой: `/tamozhennoe-oformlenie`, `/i-logistika`, `/ekspedirovanie/*` → услуги; `/clients`, `/otzyvy-i-rekomendacii` → клиенты; `/about`, `/category/pravoustanavlivayuschie-dokumenty` → главная. `/form` → форма на главной, `/front/login` → главная, папки `/contacts`, `/ekspedirovanie`, `/category` → блоки главной.
-- **Страницы старого сайта** (18 адресов: `/about`, `/tamozhennoe-oformlenie`, `/ekspedirovanie/…`, `/contacts/Moscow` и др.) живут на прежних адресах с прежними title и текстом, оформлены как первый экран главной. Так при замене сайта поисковики сохранят их вес. У каждой свой canonical, все они в sitemap. Тексты и SEO-данные старого сайта сохранены в `content/old-site/*.md`.
-- **Офисы:** `/contacts/Moscow`, `/contacts/Vladimir`, `/contacts/yaroslavl`, `/contacts/ivanovo` — в подвале адрес своего офиса. Короткие `/moscow` и т. д. перенаправляются на них. Эти ссылки удобно ставить в карточках офисов в Яндекс Бизнесе и 2ГИС.
+- **Страницы старого сайта** (18 адресов: `/about`, `/tamozhennoe-oformlenie`, `/ekspedirovanie/…`, `/contacts/moscow` и др.) живут на прежних адресах с прежними title и текстом, оформлены как первый экран главной. Так при замене сайта поисковики сохранят их вес. У каждой свой canonical, все они в sitemap. Тексты и SEO-данные старого сайта сохранены в `content/old-site/*.md`.
+- **Офисы:** `/contacts/moscow`, `/contacts/vladimir`, `/contacts/yaroslavl`, `/contacts/ivanovo` — в подвале адрес своего офиса. Адреса только строчными: старые `/contacts/Moscow`, `/contacts/Vladimir` и короткие `/moscow` и т. д. перенаправляются (301).
+- **Статьи:** `/articles` (оглавление) и `/articles/<адрес>` — 10 статей из `articles/seo/*.md`. Правка `.md` попадает на сайт при следующей сборке. Эти ссылки удобно ставить в карточках офисов в Яндекс Бизнесе и 2ГИС.
 - **При переносе на customsleader.ru** старый `.htaccess` WordPress заменяется новым. Перед заменой сохраните копию старого сайта.
 
 ## Тестовый стенд
