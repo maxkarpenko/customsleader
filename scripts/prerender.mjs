@@ -27,7 +27,9 @@ const routes = ROUTES;
 const ARTICLES_PUBLISHED = readFileSync('src/articles.js', 'utf8').match(/ARTICLES_PUBLISHED = '([^']+)'/)[1];
 
 // Offices from the site config (plain data, read without running the browser bundle)
-const {OFFICES, HEAD_OFFICE} = await import(new URL('../src/siteConfig.js', import.meta.url));
+const {OFFICES, HEAD_OFFICE, OFFICE_HOURS} = await import(new URL('../src/siteConfig.js', import.meta.url));
+// every office works daily on the same hours
+const hours = {'@type': 'OpeningHoursSpecification', dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'], opens: OFFICE_HOURS.opens, closes: OFFICE_HOURS.closes};
 const branches = Object.keys(OFFICES).filter(k => k !== HEAD_OFFICE);
 
 // Schema.org: the company, its founder, services and FAQ, taken from the same content the page shows
@@ -53,6 +55,7 @@ const graph = [
     taxID: '3702195282',
     foundingDate: '2018',
     address: postal(OFFICES[HEAD_OFFICE]),
+    openingHoursSpecification: hours,
     areaServed: {'@type': 'Country', name: 'Россия'},
     // the offices in other cities, as branches of the company
     department: branches.map(k => ({
@@ -63,6 +66,7 @@ const graph = [
       telephone: '+7 903 879-20-20',
       email: 'info@customsleader.ru',
       address: postal(OFFICES[k]),
+      openingHoursSpecification: hours,
       parentOrganization: {'@id': ORG},
     })),
     contactPoint: {'@type': 'ContactPoint', telephone: '+7 903 879-20-20', email: 'info@customsleader.ru', contactType: 'customer service', availableLanguage: 'ru'},
@@ -119,7 +123,7 @@ const boot = `<meta name="viewport" content="width=device-width, initial-scale=1
 
 // One HTML file per address. A page at /a/b is served from a/b.html (see .htaccess), so its relative paths
 // climb back to the site root: ./assets/… becomes ../assets/…
-const write = ({path, title: t, description: d, content: c, graph: g}) => {
+const write = ({path, title: t, description: d, content: c, graph: g, notFound = false}) => {
   const url = path === '/' ? SITE : SITE + path.slice(1);
   const depth = path === '/' ? 0 : path.split('/').length - 2;
   let html = page
@@ -130,6 +134,12 @@ const write = ({path, title: t, description: d, content: c, graph: g}) => {
     .replace('<div id="root"></div>', `<div id="root" data-prerendered>${c}</div>`);
   if(!html.includes('data-prerendered>') || !html.includes('prerender-wait')) throw new Error(`Prerender: ${path} did not get the expected shape`);
   if(depth) html = html.replace(/(src|href)="\.\//g, `$1="${'../'.repeat(depth)}`);
+  // 404.html is served at whatever address was missing, so its files are linked from the site root,
+  // it is kept out of the index, and it tells the script which page it is
+  if(notFound) html = html.replace(/(src|href)="\.\//g, '$1="/')
+    .replace('<meta charset="UTF-8" />', '<meta charset="UTF-8" />\n    <meta name="robots" content="noindex" />')
+    .replace('<div id="root" data-prerendered>', '<div id="root" data-prerendered data-route="/404">')
+    .replace(/\n    <link rel="canonical"[^\n]*/, '');
   const file = path === '/' ? `${OUT}/index.html` : `${OUT}${path}.html`;
   mkdirSync(dirname(file), {recursive: true});
   writeFileSync(file, html);
@@ -144,16 +154,40 @@ for(const p of routes){
   const d = p.description && p.description.length > 40 ? p.description : `${p.h1} — КАСТОМС ЛИДЕР: таможенное оформление и доставка грузов из Китая и других стран.`;
   const crumbs = [{name: 'Главная', item: SITE}];
   if(p.kind === 'article') crumbs.push({name: 'Статьи', item: `${SITE}articles`});
-  if(p.kind === 'case') crumbs.push({name: 'Наши проекты', item: `${SITE}category/nashi-proekty`});
-  crumbs.push({name: p.kind === 'articles' ? 'Статьи' : p.h1, item: url});
+  if(p.kind === 'case') crumbs.push({name: 'Наши проекты', item: `${SITE}cases`});
+  crumbs.push({name: p.kind === 'articles' ? 'Статьи' : p.crumb || p.h1, item: url});
   const page = p.kind === 'article' || p.kind === 'case'
     ? {'@type': 'Article', '@id': `${url}#article`, mainEntityOfPage: url, url, headline: p.h1, name: p.title, description: d, inLanguage: 'ru-RU',
        datePublished: ARTICLES_PUBLISHED, dateModified: ARTICLES_PUBLISHED, author: {'@id': ORG}, publisher: {'@id': ORG}, image: `${SITE}og-image.jpg`, isPartOf: {'@id': `${SITE}#website`}}
     : {'@type': p.kind === 'articles' ? 'CollectionPage' : 'WebPage', '@id': `${url}#webpage`, url, name: p.title, description: d, inLanguage: 'ru-RU', isPartOf: {'@id': `${SITE}#website`}, about: {'@id': ORG}};
+  // An office page describes that office as a place of its own: address, map, page; the company stays its parent
+  const officeKey = office && OFFICES[office] ? office : null;
+  const officeId = officeKey && `${SITE}#office-${officeKey}`;
+  const mapUrl = o => o.map || `https://yandex.ru/maps/?text=${encodeURIComponent(o.address.replace(/\u00a0/g, ' ').replace(/,\s*офис\s*\S+$/, ''))}`;
+  const officeNode = officeKey ? [{
+    '@type': 'LocalBusiness', '@id': officeId, name: `КАСТОМС ЛИДЕР — ${OFFICES[officeKey].city}${officeKey === HEAD_OFFICE ? ', головной офис' : ''}`,
+    url, image: `${SITE}og-image.jpg`, telephone: '+7 903 879-20-20', email: 'info@customsleader.ru',
+    address: postal(OFFICES[officeKey]), openingHoursSpecification: hours, hasMap: mapUrl(OFFICES[officeKey]), parentOrganization: {'@id': ORG},
+  }] : [];
+  // on an office page the company lists its offices by reference, the full node is the office's own
+  const company = officeKey ? {...graph[0], department: graph[0].department.map(d => ({'@id': d['@id']}))} : graph[0];
+  if(officeKey) page.about = {'@id': officeId};
+  // a questions section on the page (H2 with "вопрос", H3 questions, paragraph answers) goes into FAQPage markup
+  const qa = [];
+  const faqAt = (p.blocks || []).findIndex(b => b.t === 'h2' && /вопрос/i.test(b.text));
+  if(faqAt > -1) for(let i = faqAt + 1; i < p.blocks.length && p.blocks[i].t !== 'h2'; i++){
+    if(p.blocks[i].t !== 'h3') continue;
+    // the answer is every paragraph up to the next question
+    const answer = [];
+    for(let j = i + 1; j < p.blocks.length && p.blocks[j].t === 'p'; j++) answer.push(text(p.blocks[j].html));
+    if(answer.length) qa.push({'@type': 'Question', name: p.blocks[i].text, acceptedAnswer: {'@type': 'Answer', text: answer.join(' ')}});
+  }
+  const faq = qa.length ? [{'@type': 'FAQPage', '@id': `${url}#faq`, mainEntity: qa}] : [];
   // service pages also describe the service itself
   const service = p.kind === 'service' ? [{'@type': 'Service', '@id': `${url}#service`, name: p.h1, description: d, provider: {'@id': ORG}, areaServed: {'@type': 'Country', name: 'Россия'}, url}] : [];
+  if(p.kind === 'notfound'){ write({path: p.path, title: p.title, description: d, content, graph: [graph[0], graph[2]], notFound: true}); continue; }
   urls.push(write({path: p.path, title: p.title, description: d, content, graph: [
-    graph[0], graph[2], page, ...service,
+    company, graph[2], page, ...officeNode, ...service, ...faq,
     {'@type': 'BreadcrumbList', itemListElement: crumbs.map((c, i) => ({'@type': 'ListItem', position: i + 1, ...c}))},
   ]}));
 }

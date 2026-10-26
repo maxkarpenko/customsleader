@@ -21,6 +21,8 @@ export const COOKIE_CONSENT_VERSION='2026-10-23';
 export const YANDEX_METRIKA_ID=113750114;
 // Offices. The main page shows the head office; /moscow, /vladimir and /yaroslavl are the same page with that
 // city's office in the footer (they point search engines to the main page as the original). The keys are the paths.
+// Opening hours of every office: shown on the office pages and in the Schema.org markup
+export const OFFICE_HOURS={days:'ежедневно',opens:'09:00',closes:'21:00'};
 export const HEAD_OFFICE='ivanovo';
 export const OFFICES={
   ivanovo:{city:'Иваново',region:'Ивановская область',postalCode:'153000',street:'ул. Степанова, д. 5, офис 307А',

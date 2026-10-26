@@ -28,6 +28,8 @@ Sitemap: ${SITE_URL}sitemap.xml
 // Apache: hashed files in assets/ never change, so they are cached for a year; the page itself is always revalidated
 const HTACCESS = `Options -Indexes
 DirectorySlash Off
+# Addresses that do not exist get the site's own 404 page (with the 404 status)
+ErrorDocument 404 /404.html
 
 AddType application/manifest+json .webmanifest
 AddType image/webp .webp
@@ -61,12 +63,22 @@ AddType font/woff2 .woff2
   RewriteRule ^moscow/?$ https://%{HTTP_HOST}/contacts/moscow [R=301,L,NC]
   RewriteRule ^vladimir/?$ https://%{HTTP_HOST}/contacts/vladimir [R=301,L,NC]
   RewriteRule ^yaroslavl/?$ https://%{HTTP_HOST}/contacts/yaroslavl [R=301,L,NC]
-  RewriteRule ^form/?$ https://%{HTTP_HOST}/#request [R=301,L,NE]
+  # The old request form has a page of its own: the calculation request
+  RewriteRule ^form(/|\\.html)?$ https://%{HTTP_HOST}/request [R=301,L,NC]
+  # Service pages moved to short addresses: the old ones lead there for good
+  RewriteRule ^category/nashi-proekty(/|\\.html)?$ https://%{HTTP_HOST}/cases [R=301,L,NC]
+  RewriteRule ^proekty/([a-z0-9-]+)(/|\\.html)?$ https://%{HTTP_HOST}/cases/$1 [R=301,L,NC]
+  RewriteRule ^category/pravoustanavlivayuschie-dokumenty(/|\\.html)?$ https://%{HTTP_HOST}/documents [R=301,L,NC]
+  RewriteRule ^otzyvy-i-rekomendacii(/|\\.html)?$ https://%{HTTP_HOST}/reviews [R=301,L,NC]
+  RewriteRule ^confidentiality(/|\\.html)?$ https://%{HTTP_HOST}/policy/privacy [R=301,L,NC]
+  RewriteRule ^politika-obrabotki-personalnyh-dannyh(/|\\.html)?$ https://%{HTTP_HOST}/policy/personal-data [R=301,L,NC]
+  RewriteRule ^policy/?$ https://%{HTTP_HOST}/policy/privacy [R=301,L,NC]
   # Folders of the old structure have no page of their own: the transport folder leads to the logistics page,
   # the others to the matching block of the main page
   RewriteRule ^contacts/?$ https://%{HTTP_HOST}/#contacts [R=301,L,NE]
   RewriteRule ^ekspedirovanie/?$ https://%{HTTP_HOST}/i-logistika [R=301,L,NC]
   RewriteRule ^category/?$ https://%{HTTP_HOST}/#services [R=301,L,NE]
+  # The old client area is not used any more: its addresses lead to the main page
   RewriteRule ^front/ https://%{HTTP_HOST}/ [R=301,L]
   # Clean addresses: /about is served from about.html; /about/ and /about.html lead to /about
   RewriteCond %{ENV:REDIRECT_STATUS} ^$

@@ -22,7 +22,7 @@ const inline = s => esc(s)
     return /^https?:/.test(to) ? `<a href="${esc(to)}" target="_blank" rel="noopener">${t}</a>` : `<a href="${esc(to)}">${t}</a>`;
   });
 
-// Markdown blocks → the same block shapes the old-site pages use (h2, h3, p, ul, ol)
+// Markdown blocks → the same block shapes the old-site pages use (h2, h3, p, ul, ol, table)
 function blocks(md){
   const out = [];
   for(const chunk of md.trim().split(/\n{2,}/)){
@@ -30,6 +30,11 @@ function blocks(md){
     if(chunk.startsWith('# ')) continue;
     if(chunk.startsWith('### ')) out.push({t: 'h3', text: chunk.slice(4).trim()});
     else if(chunk.startsWith('## ')) out.push({t: 'h2', text: chunk.slice(3).trim()});
+    else if(lines.every(l => /^\|/.test(l))){
+      // a Markdown table: header row, separator row, then the rows
+      const cells = l => l.replace(/^\||\|$/g, '').split('|').map(c => c.trim());
+      out.push({t: 'table', head: cells(lines[0]), rows: lines.slice(2).map(l => cells(l).map(inline))});
+    }
     else if(lines.every(l => /^- /.test(l))) out.push({t: 'ul', items: lines.map(l => inline(l.slice(2)))});
     else if(lines.every(l => /^\d+\. /.test(l))) out.push({t: 'ol', items: lines.map(l => inline(l.replace(/^\d+\. /, '')))});
     else out.push({t: 'p', html: inline(lines.join(' '))});

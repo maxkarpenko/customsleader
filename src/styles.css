@@ -888,3 +888,58 @@
 .cookie-switch input:disabled{cursor:not-allowed}
 .cookie-switch input:disabled+i{opacity:.55}
 .cookie-switch input:focus-visible+i{outline:2px solid var(--green-deep);outline-offset:2px}
+/* Desktop dropdowns take the width of their longest item: every item on one line */
+.site-nav-sub{width:max-content;min-width:0}
+.site-nav-sub a{white-space:nowrap}
+/* Dropdown text starts on the left edge of its menu item (the links have 18px of padding) */
+.site-nav .site-nav-sub{left:-18px;right:auto}
+.site-nav li[data-align=end]>.site-nav-sub{left:auto;right:-18px}
+.site-nav li[data-align=end]>.site-nav-sub a{text-align:right}
+/* 404: a full-screen photo that also runs under the header and a short message */
+.nf{position:relative;isolation:isolate;min-height:calc(100svh - var(--header-h,112px));display:flex}
+.nf-photos{position:absolute;z-index:-1;left:50%;width:100vw;transform:translateX(-50%);top:calc(0px - var(--header-h,112px));bottom:0;overflow:hidden;background:var(--ink)}
+.nf-photos img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.nf-photos::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,#171b1dd9 0,#171b1d66 var(--header-h,112px),transparent calc(var(--header-h,112px) + 160px)),linear-gradient(0deg,#171b1dcc 0,transparent 45%)}
+.nf-inner{position:relative;display:flex;flex-direction:column;justify-content:flex-end;gap:28px;padding-block:48px 40px}
+.nf-card{max-width:520px;padding:28px 30px;border-radius:6px;background:color-mix(in srgb,#171b1d 82%,transparent);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);color:#f0f1eb}
+.nf-code{font-size:var(--fs-micro);letter-spacing:.08em;text-transform:uppercase;color:#2faf6b;margin-bottom:10px}
+.nf-card h1{font-size:clamp(26px,2.6vw,36px);line-height:1.15;letter-spacing:-.03em;font-weight:500}
+.nf-card h1+p{margin-top:12px;font-size:var(--fs-body);line-height:1.6;color:#bdc7c6}
+.nf-home{margin-top:22px;display:inline-flex}
+@media(max-width:650px){.nf{min-height:calc(100svh - var(--header-h,90px))}.nf-photos{top:0}.nf-card{padding:22px 20px}}
+.nf .nf-home{width:auto;gap:12px}
+:root[data-tone="light"] .nf-photos::after{background:linear-gradient(180deg,color-mix(in srgb,var(--bg) 94%,transparent) 0,color-mix(in srgb,var(--bg) 70%,transparent) var(--header-h,112px),transparent calc(var(--header-h,112px) + 160px)),linear-gradient(0deg,#171b1dcc 0,transparent 45%)}
+@media(max-width:650px){.nf-photos img{object-position:64% 50%}}
+/* phones: the message right under the header, the arrows stay at the bottom of the screen */
+.nf-home-bottom{display:none!important}
+@media(max-width:650px){.nf-inner{justify-content:flex-start;padding-top:20px}.nf-card .nf-home{display:none}.nf-home-bottom{display:inline-flex!important;margin-top:auto;align-self:center}}
+/* Reviews: one card per letter, the scan opens full screen */
+.review-list{list-style:none;margin:8px 0 0;padding:0;display:flex;flex-direction:column;gap:14px}
+.review{display:grid;grid-template-columns:132px minmax(0,1fr);gap:24px;align-items:start;padding:20px;border-radius:6px;background:color-mix(in srgb,var(--steel-900) 94%,transparent)}
+.review>a{display:block;border-radius:4px;overflow:hidden;background:#fff;cursor:zoom-in;box-shadow:0 4px 14px #0003}
+.review>a img{display:block;width:100%;height:auto}
+.page-content .review-text h2{margin:0 0 4px;font-size:var(--fs-sub);line-height:1.3}
+.review-meta{margin:0 0 12px;font-size:var(--fs-micro);color:var(--muted)}
+.review blockquote{margin:0;font-size:var(--fs-body);line-height:1.6;color:var(--text)}
+.review-sign{margin:10px 0 0;font-size:var(--fs-micro);color:var(--muted)}
+:root[data-tone="light"] .review{background:color-mix(in srgb,var(--bg) 94%,transparent)}
+.page-inline .page-content>.review-list{max-width:none}
+@media(max-width:560px){.review{grid-template-columns:84px minmax(0,1fr);gap:16px;padding:16px}}
+.page-content>ul.review-list{list-style:none;padding-left:0}
+.page-content .review-list>li{margin:0}
+.ft-request{margin-top:12px;font-size:var(--fs-meta);color:var(--steel-300);text-decoration:underline;text-decoration-color:var(--steel-600);text-underline-offset:4px}
+.ft-request:hover{color:var(--text)}
+/* Tables with a header row (documents for customs clearance) */
+.page-table thead th{border:1px solid var(--line);padding:10px 12px;text-align:left;vertical-align:bottom;font-weight:600;color:var(--text);background:color-mix(in srgb,var(--text) 6%,transparent)}
+.page-table:has(thead) td:first-child{font-weight:500;color:var(--text)}
+@media(max-width:560px){.page-table:has(thead) table{min-width:520px}}
+/* Office pages: opening hours under the address */
+.page-hours{margin-top:10px;font-size:var(--fs-meta);color:var(--steel-300)}
+:root[data-tone="light"] .page-hours{color:var(--ink-muted)}
+/* Key figures of a service page, in one row on the first screen */
+.page-content>.page-stats{list-style:none;padding:0;margin:24px 0;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:16px;max-width:none}
+.page-stats li{display:flex;flex-direction:column;gap:4px;margin:0}
+.page-stats strong{font-size:clamp(22px,2.2vw,30px);font-weight:500;line-height:1.1;color:var(--accent);white-space:nowrap}
+.page-stats span{font-size:var(--fs-micro);line-height:1.4;color:var(--muted)}
+@media(max-width:900px){.page-content>.page-stats{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:560px){.page-content>.page-stats{grid-template-columns:repeat(2,minmax(0,1fr))}}

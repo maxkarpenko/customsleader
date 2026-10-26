@@ -6,7 +6,7 @@ import oldPages from './oldPages.json';
 import {ARTICLES,ARTICLES_INDEX,ARTICLES_PUBLISHED} from './articles.js';
 import {SERVICE_PAGES} from './servicePages.js';
 import SectionNav from './SectionNav.jsx';
-import {SCENES_MODE,SCENES_KEY,TWEAKS_CASES_KEY,TWEAKS_STILLS_KEY,TWEAKS_FOUNDER_KEY,CASES_STYLE_KEY,CASES_STYLE,THEME_KEY,THEME_SWITCHER,COOKIE_CONSENT_KEY,COOKIE_CONSENT_VERSION,YANDEX_METRIKA_ID,OFFICES,HEAD_OFFICE} from './siteConfig.js';
+import {SCENES_MODE,SCENES_KEY,TWEAKS_CASES_KEY,TWEAKS_STILLS_KEY,TWEAKS_FOUNDER_KEY,CASES_STYLE_KEY,CASES_STYLE,THEME_KEY,THEME_SWITCHER,COOKIE_CONSENT_KEY,COOKIE_CONSENT_VERSION,YANDEX_METRIKA_ID,OFFICES,HEAD_OFFICE,OFFICE_HOURS} from './siteConfig.js';
 import privacyPolicy from './legal/privacy-policy.md?raw';
 import personalDataPolicy from './legal/personal-data-policy.md?raw';
 import consentText from './legal/consent.md?raw';
@@ -17,6 +17,7 @@ import hvacTruck from './assets/media/hvac-truck.webp';
 import refrigerationPlant from './assets/media/case-3-refrigeration.webp';
 import mineMachinery from './assets/media/case-mine-machinery.webp';
 import miningComplex from './assets/media/mining-complex.webp';
+import nfDesertHaze from './assets/media/404-desert-haze.webp';
 import routeConvoy from './assets/media/route-convoy.webp';
 import routeRain from './assets/media/route-rain.webp';
 import logoOnDark from './assets/media/logo-on-dark.webp';
@@ -514,11 +515,11 @@ function SiteFooter({showNote,home,here,setModal,setLegal,setCookieOpen}){
   const callback=<button className="ft-callback" onClick={()=>setModal('callback')}>Заказать звонок <ArrowUpRight size={16}/></button>;
   const company=<span>ООО «КАСТОМС ЛИДЕР», ИНН 3702195282</span>;
   const disclaimer=<p className="ft-small">Информация на сайте носит справочный характер и не является публичной офертой (ст. 437 ГК РФ). Стоимость и сроки определяются индивидуальным расчётом и договором.</p>;
-  const links=<div className="ft-links"><a href="/confidentiality" onClick={e=>{e.preventDefault();setLegal('privacy');}}>Политика конфиденциальности</a><a href={POLICY_PATH} onClick={e=>{e.preventDefault();setLegal('personal-data');}}>Политика обработки персональных данных</a><button onClick={()=>setCookieOpen('settings')}>Настройки cookie</button></div>;
+  const links=<div className="ft-links"><a href="/policy/privacy" onClick={e=>{e.preventDefault();setLegal('privacy');}}>Политика конфиденциальности</a><a href={POLICY_PATH} onClick={e=>{e.preventDefault();setLegal('personal-data');}}>Политика обработки персональных данных</a><button onClick={()=>setCookieOpen('settings')}>Настройки cookie</button></div>;
   const note=showNote&&FOOTNOTE_SOURCE&&<ol className="footnotes ft-small" aria-label="Сноски"><li id="fn-1">Источник: <a href={FOOTNOTE_SOURCE} target="_blank" rel="noopener noreferrer">«Норникель» запустил уникальный проходческий комплекс NORDA</a> <a href="#fnref-1" className="footnote-back" aria-label="Вернуться к тексту">↩</a></li></ol>;
   const label=t=><p className="ft-label">{t}</p>;
   return <footer className="footer wrap ft">
-    <div className="ft-grid"><div className="ft-col">{label('Компания')}{logo}<p className="ft-small">{company}</p></div><div className="ft-col">{label('Адрес')}{address}</div><div className="ft-col">{label('Связаться')}{callback}</div><div className="ft-col">{label('Документы')}{links}</div></div>
+    <div className="ft-grid"><div className="ft-col">{label('Компания')}{logo}<p className="ft-small">{company}</p></div><div className="ft-col">{label('Адрес')}{address}</div><div className="ft-col">{label('Связаться')}{callback}<a className="ft-request" href="/request">Расчёт поставки</a></div><div className="ft-col">{label('Документы')}{links}</div></div>
     <div className="ft-row">{disclaimer}{note}</div>
   </footer>;
 }
@@ -604,39 +605,49 @@ function ScrollTopButton(){
 const OLD_IMAGES=import.meta.glob('./assets/old-site/*',{eager:true,import:'default'});
 const oldImage=name=>OLD_IMAGES[`./assets/old-site/${name}`];
 const routeKey=p=>(p||'/').replace(/\.html$/,'').replace(/\/+$/,'').toLowerCase()||'/';
-// Each case also has a page of its own at /proekty/<slug>, so search engines can show it for its own queries
+// Each case also has a page of its own at /cases/<slug>, so search engines can show it for its own queries
 const CASE_SEO=[
   {slug:'dostavka-kompleksa-norda-na-taymyr',title:'Доставка комплекса Norda из Китая на Таймыр — КАСТОМС ЛИДЕР',description:'Как доставили горнопроходческий комплекс Norda длиной 160 м из Китая на рудник Таймырский: 1 200 тонн, 11 000 км, 3 недели, растаможка 58 машин за 1 час.'},
   {slug:'dostavka-shahtnoy-tehniki-na-taymyr',title:'Доставка шахтной техники из Китая на Таймыр — КАСТОМС ЛИДЕР',description:'Как в летний пик речных перевозок доставили шахтную технику DERUI из Китая на рудник Таймырский: баржа от Красноярска до Дудинки за 7 дней.'},
   {slug:'dostavka-linii-rozliva-vody',title:'Доставка линии розлива воды из Китая — КАСТОМС ЛИДЕР',description:'Поставщик отказался везти линию розлива автотранспортом. Купили контейнеры в Китае, упаковали оборудование и доставили 16 машинами без повреждений и в бюджет.'},
   {slug:'oformlenie-klimaticheskoy-tehniki',title:'Таможенное оформление климатической техники — КАСТОМС ЛИДЕР',description:'Оборудование купили на рынке в Китае, документы не соответствовали товару, другие брокеры отказались. Собрали документальную базу и добились выпуска груза.'},
 ];
-export const CASE_PAGES=cases.map((c,i)=>({kind:'case',i,path:`/proekty/${CASE_SEO[i].slug}`,title:CASE_SEO[i].title,description:CASE_SEO[i].description,h1:c.title.replace('[1]',''),blocks:[{t:'p',html:c.description}]}));
+export const CASE_PAGES=cases.map((c,i)=>({kind:'case',i,path:`/cases/${CASE_SEO[i].slug}`,title:CASE_SEO[i].title,description:CASE_SEO[i].description,h1:c.title.replace('[1]',''),blocks:[{t:'p',html:c.description}]}));
 // The personal data policy also has an address of its own (152-FZ asks for it to be published); on the site it still opens over the page
-export const POLICY_PATH='/politika-obrabotki-personalnyh-dannyh';
+export const POLICY_PATH='/policy/personal-data';
+// The request page: the old /form address leads here; the detailed form follows the text
+const REQUEST_PAGE={"kind": "request", "path": "/request", "h1": "Расчёт поставки", "crumb": "Расчёт поставки", "title": "Расчёт стоимости доставки и таможенного оформления — КАСТОМС ЛИДЕР", "description": "Заявка на расчёт поставки: маршрут, срок, стоимость перевозки и таможенных платежей в одном предложении. Свяжемся в течение часа, расчёт — от 1 рабочего дня.", "blocks": [{"t": "p", "html": "Расскажите о грузе — подготовим маршрут, срок, стоимость перевозки и состав таможенных платежей в одном предложении. Менеджер свяжется с вами в течение 1 часа, расчёт — от 1 рабочего дня."}, {"t": "p", "html": "Коротко опишите задачу в форме справа или заполните <a href=\"#request\">подробную заявку</a> ниже."}, {"t": "h2", "text": "Как мы готовим расчёт"}, {"t": "ol", "items": ["Менеджер свяжется с вами в течение 1 часа после заявки и уточнит параметры груза.", "Таможенный аналитик определит код ТН ВЭД: от него зависят таможенные платежи и список разрешительных документов.", "Логист сформирует 1–3 маршрута — по сроку, стоимости и надёжности — и сравнит авиа, авто, ЖД и море.", "Вы получите предложение от 1 рабочего дня с окончательной ставкой от склада до склада."]}, {"t": "h2", "text": "Что входит в расчёт"}, {"t": "ul", "items": ["маршрут и полный срок до вашего склада или объекта;", "стоимость перевозки, включая перегрузки по маршруту;", "таможенные платежи и стоимость оформления;", "состав работ — фиксируем в предложении, а возможные дополнительные расходы и условия их возникновения обозначаем отдельно."]}, {"t": "h2", "text": "Что подготовить для заявки"}, {"t": "p", "html": "Достаточно того, что уже известно:"}, {"t": "ul", "items": ["откуда забрать груз и куда доставить;", "что везём: наименование и назначение оборудования;", "вес и объём, для негабарита — габариты и массу каждого места;", "когда груз нужен на месте;", "инвойс, спецификацию или коммерческое предложение поставщика, если они есть."]}, {"t": "p", "html": "Нет документов или поставщик не отвечает? Выберите в заявке «Нужна консультация»: мы сами запросим у поставщика инвойс, спецификацию и сведения об оборудовании."}, {"t": "p", "html": "Подробнее — в статьях «<a href=\"/articles/dokumenty-dlya-vvoza-oborudovaniya\">Документы для ввоза промышленного оборудования</a>» и «<a href=\"/articles/stoimost-vvoza-oborudovaniya\">Стоимость ввоза оборудования из Китая</a>»."}]};
+// Page for addresses that no longer exist: the server answers 404 with 404.html (ErrorDocument in .htaccess)
+const NOT_FOUND={kind:'notfound',path:'/404',h1:'К сожалению, эта страница больше недоступна',title:'Страница не найдена — КАСТОМС ЛИДЕР',description:'Страница не найдена: возможно, её перенесли или удалили. Перейдите на главную страницу КАСТОМС ЛИДЕР.',blocks:[]};
 const LEGAL_PAGES=[{kind:'legal',path:POLICY_PATH,h1:'Политика обработки персональных данных',title:'Политика обработки персональных данных — КАСТОМС ЛИДЕР',description:'Политика ООО «КАСТОМС ЛИДЕР» в отношении обработки персональных данных: правовые основания, цели, сроки, меры безопасности и права субъектов персональных данных.',blocks:[]}];
 // every page besides the main one: the old site's pages, the service pages, the cases, the articles contents, the articles and the policy
-export const ROUTES=[...oldPages,...SERVICE_PAGES,...CASE_PAGES,ARTICLES_INDEX,...ARTICLES,...LEGAL_PAGES];
+export const ROUTES=[...oldPages,...SERVICE_PAGES,...CASE_PAGES,ARTICLES_INDEX,...ARTICLES,...LEGAL_PAGES,REQUEST_PAGE,NOT_FOUND];
 const PAGES=Object.fromEntries(ROUTES.map(p=>[routeKey(p.path),p]));
-const pageFromPath=()=>typeof location==='undefined'?null:PAGES[routeKey(location.pathname)]||null;
+const pageFromPath=()=>{if(typeof location==='undefined')return null;const forced=document.getElementById('root')?.dataset.route;return PAGES[routeKey(forced||location.pathname)]||null;};
 // Site menu: the old site's pages grouped for search engines and people. Top items with a list open it on hover
 // (desktop bar under the header) or show it as a group (phone panel); every link is in the page's HTML either way.
 export const SITE_NAV=[
-  {label:'Услуги',items:[['Доставка оборудования из Китая','/uslugi/dostavka-oborudovaniya'],['Негабаритные грузы','/uslugi/negabaritnye-gruzy'],['Таможенное оформление','/tamozhennoe-oformlenie'],['Экспедирование и логистика','/i-logistika'],['Выпуск ЭЦП','/izgotovlenie-ecp'],['Селлерам','/category/selleram']]},
+  {label:'Услуги',items:[['Доставка оборудования из Китая','/uslugi/dostavka-oborudovaniya'],['Негабаритные грузы','/uslugi/negabaritnye-gruzy'],['Доставка на Крайний Север','/uslugi/dostavka-na-krayniy-sever'],['Таможенное оформление','/tamozhennoe-oformlenie'],['Экспедирование и логистика','/i-logistika'],['Выпуск ЭЦП','/izgotovlenie-ecp'],['Селлерам','/category/selleram']]},
   {label:'Перевозки',href:'/i-logistika',items:[['Мультимодальные перевозки','/ekspedirovanie/multimodalnye-perevozki'],['Авиаперевозки','/ekspedirovanie/aviaperevozki'],['Автомобильные перевозки','/ekspedirovanie/avtomobilnye-perevozki'],['Сборные перевозки','/ekspedirovanie/sbornye-perevozki']]},
-  {label:'Проекты',href:'/category/nashi-proekty'},
+  {label:'Проекты',href:'/cases'},
   {label:'Клиенты',href:'/clients'},
   {label:'Статьи',href:'/articles'},
-  {label:'О компании',href:'/about',items:[['О нас','/about'],['Отзывы и рекомендации','/otzyvy-i-rekomendacii'],['Правоустанавливающие документы','/category/pravoustanavlivayuschie-dokumenty']]},
-  {label:'Контакты',href:'/#contacts',items:[['Иваново','/contacts/ivanovo'],['Москва','/contacts/moscow'],['Владимир','/contacts/vladimir'],['Ярославль','/contacts/yaroslavl']]},
+  {label:'О компании',items:[['О нас','/about'],['Отзывы и рекомендации','/reviews'],['Правоустанавливающие документы','/documents']]},
+  {label:'Контакты',items:[['Иваново','/contacts/ivanovo'],['Москва','/contacts/moscow'],['Владимир','/contacts/vladimir'],['Ярославль','/contacts/yaroslavl']]},
 ];
 const isHere=(current,href)=>current&&routeKey(current)===routeKey(href);
 // Desktop: an open bar under the header, aligned to the right
 function SiteNav({current}){
   return <nav className="site-nav wrap" aria-label="Разделы сайта"><ul>{SITE_NAV.map(n=><NavItem key={n.label} n={n} current={current}/>)}</ul></nav>;
 }
+// A list opens under its item, text on the same left edge; near the right edge of the screen it opens leftwards instead
+function fitSub(li){
+  const sub=li.querySelector('.site-nav-sub');if(!sub)return;
+  delete li.dataset.align;
+  if(sub.getBoundingClientRect().right>document.documentElement.clientWidth-16)li.dataset.align='end';
+}
 function NavItem({n,current}){
-  return <li className={n.items?'has-sub':undefined}>
+  return <li className={n.items?'has-sub':undefined} onMouseEnter={n.items?e=>fitSub(e.currentTarget):undefined} onFocus={n.items?e=>fitSub(e.currentTarget):undefined}>
       {n.href?<a href={n.href} aria-current={isHere(current,n.href)||n.items?.some(([,h])=>isHere(current,h))||(n.href==='/articles'&&current?.startsWith('/articles/'))?'page':undefined}>{n.label}{n.items&&<ChevronDown size={14} aria-hidden="true"/>}</a>
         // a group without a page of its own only opens its list
         :<button type="button" className="site-nav-label" aria-haspopup="true" data-current={n.items?.some(([,h])=>isHere(current,h))||undefined}>{n.label}<ChevronDown size={14} aria-hidden="true"/></button>}
@@ -670,7 +681,8 @@ function SiteMenu({current,theme,setTheme}){
 const plain=html=>(html||'').replace(/<br>/g,' ').replace(/<[^>]+>/g,'').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&amp;/g,'&').trim();
 // Scans and letters: thumbnails that open full-screen over the page (arrows, Esc, a click on the dark area closes).
 // The links stay real, so the full files are reachable without scripts too.
-function Gallery({items}){
+// Scans as thumbnails, or (cards) one card per letter: thumbnail, who wrote it, a quote and the signature
+function Gallery({items,cards=false}){
   const [at,setAt]=useState(-1);const open=at>-1;
   useEffect(()=>{
     if(!open)return;
@@ -681,7 +693,10 @@ function Gallery({items}){
   },[open,items.length]);
   const im=items[at];
   return <>
-    <div className="page-gallery">{items.map((it,k)=><a key={it.src} href={oldImage(it.full||it.src)} onClick={e=>{e.preventDefault();setAt(k);}} aria-label={`Открыть: ${it.alt||'документ'} ${k+1} из ${items.length}`}><img src={oldImage(it.src)} alt={it.alt||''} loading="lazy"/></a>)}</div>
+    {(()=>{const thumb=(it,k)=><a href={oldImage(it.full||it.src)} onClick={e=>{e.preventDefault();setAt(k);}} aria-label={`Открыть: ${it.alt||'документ'} ${k+1} из ${items.length}`}><img src={oldImage(it.src)} alt={it.alt||''} loading="lazy"/></a>;
+      return cards
+        ?<ul className="review-list">{items.map((it,k)=><li key={it.src} className="review">{thumb(it,k)}<div className="review-text"><h2>{it.company}, {it.city}</h2><p className="review-meta">{it.about} · {it.kind}{it.date&&`, ${it.date}`}</p><blockquote>{it.quote}</blockquote><p className="review-sign">{it.signer}, ООО «{it.company}»</p></div></li>)}</ul>
+        :<div className="page-gallery">{items.map((it,k)=><React.Fragment key={it.src}>{thumb(it,k)}</React.Fragment>)}</div>;})()}
     {open&&createPortal(<div className="viewer" role="dialog" aria-modal="true" aria-label={im.alt||'Документ'} onClick={e=>{if(e.target===e.currentTarget)setAt(-1);}}>
       <img src={oldImage(im.full||im.src)} alt={im.alt||''}/>
       <button type="button" className="viewer-close" aria-label="Закрыть" onClick={()=>setAt(-1)} autoFocus><X size={24}/></button>
@@ -695,6 +710,8 @@ function PageBlocks({blocks}){
   const out=[];
   for(let i=0;i<blocks.length;i++){
     const b=blocks[i];
+    if(b.t==='stats'){out.push(<ul className="page-stats" key={i}>{b.items.map(([v,l])=><li key={v}><strong>{v}</strong><span>{l}</span></li>)}</ul>);continue;}
+    if(b.t==='reviews'){out.push(<Gallery key={i} items={b.items} cards/>);continue;}
     if(b.t==='img'){
       const run=[];while(blocks[i]?.t==='img')run.push(blocks[i++]);i--;
       out.push(<Gallery key={i} items={run}/>);
@@ -705,25 +722,35 @@ function PageBlocks({blocks}){
     else if(b.t==='p')out.push(<p key={i} dangerouslySetInnerHTML={{__html:b.html}}/>);
     else if(b.t==='ul'||b.t==='ol'){const L=b.t;out.push(<L key={i}>{b.items.map((it,k)=><li key={k} dangerouslySetInnerHTML={{__html:it}}/>)}</L>);}
     else if(b.t==='table'&&b.kv)out.push(<div className={`page-table page-table-kv${b.price?' page-table-price':''}`} key={i}><table><tbody>{b.rows.map(([k,v])=><tr key={k}><th scope="row">{k}</th><td>{v}</td></tr>)}</tbody></table></div>);
-    else if(b.t==='table')out.push(<div className="page-table" key={i}><table><tbody>{b.rows.map((r,k)=><tr key={k}>{r.map((c,j)=><td key={j} dangerouslySetInnerHTML={{__html:c}}/>)}</tr>)}</tbody></table></div>);
+    else if(b.t==='table')out.push(<div className="page-table" key={i}><table>{b.head&&<thead><tr>{b.head.map(h=><th key={h} scope="col">{h}</th>)}</tr></thead>}<tbody>{b.rows.map((r,k)=><tr key={k}>{r.map((c,j)=><td key={j} dangerouslySetInnerHTML={{__html:c}}/>)}</tr>)}</tbody></table></div>);
   }
   return out;
 }
+// 404: a short message over a full-screen photo
+function NotFound({page}){
+  return <section className="nf">
+    <div className="nf-photos"><img src={nfDesertHaze} alt="Пустой контейнер в пустыне под тёмным небом" width="1672" height="941" fetchPriority="high" decoding="async"/></div>
+    <div className="wrap nf-inner">
+      <div className="nf-card"><p className="nf-code">Ошибка 404</p><h1>{page.h1}</h1><p>Возможно, её перенесли или удалили. Всё о доставке и таможенном оформлении — на главной странице.</p><a className="button cta-quote nf-home" href="/">На главную <ArrowRight size={18} aria-hidden="true"/></a></div>
+      {/* phones: the message stays at the top, the button sits at the bottom in the middle */}
+      <a className="button cta-quote nf-home nf-home-bottom" href="/">На главную <ArrowRight size={18} aria-hidden="true"/></a>
+    </div>
+  </section>;
+}
 function SubPage({page,office,setModal,setLegal}){
+  const [chosen,setChosen]=useState([selection[0]]);
   const contacts=page.path.toLowerCase().startsWith('/contacts/');
   // the projects page shows the cases right on the first screen
-  const projects=page.path==='/category/nashi-proekty';
+  const projects=page.path==='/cases';
   // the privacy policy is a document to read: no form, all on the dark background
-  const doc=page.path==='/confidentiality'||page.kind==='legal';
+  const doc=page.path==='/policy/privacy'||page.kind==='legal';
   // the first paragraph becomes the lead under the heading, as on the main page
   const first=page.blocks.findIndex(b=>b.t==='p');
-  const lead=contacts?`Адрес: ${office.address.replace(/ /g,' ')}`:page.lead?page.lead:first>-1&&first<3?plain(page.blocks[first].html):page.description;
-  // the reviews page shows its letters right on the first screen
-  const reviews=page.path==='/otzyvy-i-rekomendacii';
+  const lead=page.lead?page.lead:first>-1&&first<3?plain(page.blocks[first].html):page.description;
   // "О нас": the whole text continues on the first screen, right after the introduction
-  const inline=page.path==='/about'||page.path==='/category/pravoustanavlivayuschie-dokumenty'||page.path==='/clients'||page.path.startsWith('/ekspedirovanie/')||page.path==='/i-logistika'||page.path==='/category/selleram'||page.path==='/izgotovlenie-ecp'||page.path==='/tamozhennoe-oformlenie'||page.kind==='articles'||page.kind==='article'||page.kind==='case'||page.kind==='service';
+  const inline=contacts||page.path==='/about'||page.path==='/reviews'||page.path==='/documents'||page.path==='/clients'||page.path.startsWith('/ekspedirovanie/')||page.path==='/i-logistika'||page.path==='/category/selleram'||page.path==='/izgotovlenie-ecp'||page.path==='/tamozhennoe-oformlenie'||page.kind==='articles'||page.kind==='article'||page.kind==='case'||page.kind==='service'||page.kind==='request';
   const theCase=page.kind==='case'?cases[page.i]:null;
-  const body=contacts||reviews?[]:page.blocks.filter((_,i)=>i!==first||first>=3);
+  const body=page.blocks.filter((_,i)=>i!==first||first>=3);
   const rest=inline?[]:body;
   // the articles contents list, or the end of an article (date, note, related reading)
   const extras=<>
@@ -731,6 +758,7 @@ function SubPage({page,office,setModal,setLegal}){
       <div className={`case-stat page-case-stat ${/^\d/.test(theCase.stat)?'':'stat-words'}`}><strong>{theCase.stat}</strong>{theCase.label&&<span><Text value={theCase.label}/></span>}</div>
       <CasePhoto i={page.i}>{CASE_PHOTOS[page.i].caption&&<span className="photo-caption" aria-hidden="true">{CASE_PHOTOS[page.i].caption}</span>}</CasePhoto>
       {theCase.headings.map((h,k)=>{const cut=h.indexOf(':')+1;return <React.Fragment key={h}><h2><span className={`case-step${h.startsWith('Сложность')?' is-risk':''}`}>{h.slice(0,cut)}</span> {(t=>t.charAt(0).toUpperCase()+t.slice(1))(h.slice(cut).trim())}</h2><p>{theCase.paragraphs[k]}</p></React.Fragment>;})}
+      {page.i<2&&<p className="article-meta">Как мы возим на Таймыр и по зимникам — <a href="/uslugi/dostavka-na-krayniy-sever">доставка на Крайний Север</a>.</p>}
       <aside className="article-related"><h2>Другие проекты</h2><ul>{CASE_PAGES.filter(c=>c.path!==page.path).map(c=><li key={c.path}><a href={c.path}>{c.h1}</a></li>)}</ul></aside>
     </>}
     {page.kind==='articles'&&<ol className="article-list">{ARTICLES.map(a=><li key={a.path}><h2><a href={a.path}>{a.h1}</a></h2><p>{a.description}</p></li>)}</ol>}
@@ -741,13 +769,14 @@ function SubPage({page,office,setModal,setLegal}){
   </>;
   return <>
     <section className={`hero wrap page-hero${doc?' page-hero-doc':''}${inline?' page-hero-long':''}`}>
-      <div className="hero-layout"><div className="hero-backdrop"><img src={miningComplex} alt="" width="1280" height="851" fetchPriority="high"/></div>
-        <div className="hero-story"><nav className="crumbs" aria-label="Вы здесь"><a href="/">Главная</a><span aria-hidden="true">/</span>{page.kind==='article'&&<><a href="/articles">Статьи</a><span aria-hidden="true">/</span></>}{theCase&&<><a href="/category/nashi-proekty">Наши проекты</a><span aria-hidden="true">/</span></>}<span>{page.kind==='articles'?'Статьи':contacts?page.crumb||page.title:page.h1}</span></nav><h1>{theCase?<CaseTitle title={theCase.title}/>:page.h1}</h1>{contacts&&<h2 className="page-address"><span>Адрес:</span><a className="page-address-line" href={mapLink(office)} target="_blank" rel="noopener noreferrer">{office.address}</a></h2>}{projects?<div className="hero-projects">{CASE_PAGES.map(c=><article key={c.path}><h2><a href={c.path}>{c.h1}</a></h2><a className="hero-projects-more" href={c.path}>Как мы это сделали →</a></article>)}</div>:doc||contacts?null:reviews?<div className="hero-reviews"><PageBlocks blocks={page.blocks.filter(b=>b.t==='img')}/></div>:<>{!(inline&&page.blocks[0]?.t!=='p')&&<p className="hero-lead">{lead}</p>}{inline&&<div className="page-body-dark page-inline"><div className="page-content"><PageBlocks blocks={body}/>{extras}</div></div>}</>}
+      <div className="hero-layout"><div className="hero-backdrop"><img src={miningComplex} alt="Горнопроходческий комплекс NORDA в цехе завода перед отгрузкой" width="1280" height="851" fetchPriority="high"/></div>
+        <div className="hero-story"><nav className="crumbs" aria-label="Вы здесь"><a href="/">Главная</a><span aria-hidden="true">/</span>{page.kind==='article'&&<><a href="/articles">Статьи</a><span aria-hidden="true">/</span></>}{theCase&&<><a href="/cases">Наши проекты</a><span aria-hidden="true">/</span></>}<span>{page.kind==='articles'?'Статьи':page.crumb||(contacts?page.title:page.h1)}</span></nav><h1>{theCase?<CaseTitle title={theCase.title}/>:page.h1}</h1>{contacts&&<h2 className="page-address"><span>Адрес:</span><a className="page-address-line" href={mapLink(office)} target="_blank" rel="noopener noreferrer">{office.address}</a></h2>}{contacts&&<p className="page-hours">График работы: {OFFICE_HOURS.days}, {OFFICE_HOURS.opens}–{OFFICE_HOURS.closes}</p>}{projects?<div className="hero-projects">{CASE_PAGES.map(c=><article key={c.path}><h2><a href={c.path}>{c.h1}</a></h2><a className="hero-projects-more" href={c.path}>Как мы это сделали →</a></article>)}</div>:doc?null:<>{!(inline&&page.blocks[0]?.t!=='p')&&<p className="hero-lead">{lead}</p>}{inline&&<div className="page-body-dark page-inline"><div className="page-content"><PageBlocks blocks={body}/>{extras}</div></div>}</>}
           {!doc&&<Button className="mobile-hero-action cta-quote" onClick={()=>setModal('hero')}>{shortCTA}</Button>}</div>
         {!doc&&<div className="hero-form" id="hero-request"><Form id="hero" onLegal={setLegal}/></div>}</div>
     </section>
     {/* the same logo block as on the landing page, right after the text */}
     {page.path==='/clients'&&<section className="section clients-section page-clients" data-reveal><div className="wrap"><ClientLogos/></div></section>}
+    {page.kind==='request'&&<section className="section request light" id="request"><div className="wrap"><div className="section-heading"><div><h2>Подробная заявка на расчёт</h2><p className="lead">Укажите, что уже известно. Если не определились с услугой или есть сложность, выберите консультацию, специалист поможет разобраться.</p></div></div><Form id="detailed" variant="detailed" chosen={chosen} setChosen={setChosen} onLegal={setLegal}/></div></section>}
     {(rest.length>0||doc)&&<section className={`section page-body page-body-dark${doc?' page-body-doc':''}`}><div className="wrap page-content">
       {doc?<LegalDoc source={page.kind==='legal'?personalDataPolicy:privacyPolicy} level={2}/>:<PageBlocks blocks={rest}/>}
     </div></section>}
@@ -905,7 +934,7 @@ export default function App({office=officeFromPath(),path}){
     </header>
     <SiteNav current={page?.path}/>
     <main id="main">
-      {page?<SubPage page={page} office={here} setModal={setModal} setLegal={setLegal}/>:<>
+      {page?.kind==='notfound'?<NotFound page={page}/>:page?<SubPage page={page} office={here} setModal={setModal} setLegal={setLegal}/>:<>
       <section className="hero wrap">
         <div className="hero-layout"><div className="hero-backdrop"><img src={miningComplex} alt="Горнопроходческий комплекс NORDA в цехе завода перед отгрузкой" width="1280" height="851" fetchPriority="high"/><CaseLink className="hp-case-photo"/></div><div className="hero-story"><h1>Доставим станки, линии и негабарит из Китая «в белую», даже на <span>Крайний Север</span></h1><p className="hero-lead"><Text value={S[1].LEAD}/></p><Button className="mobile-hero-action cta-quote" onClick={()=>setModal('hero')}>{shortCTA}</Button><HeroProof/></div><div className="hero-form" id="hero-request"><Form id="hero" onLegal={setLegal}/></div></div>
       </section>
