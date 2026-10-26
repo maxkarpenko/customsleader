@@ -4,9 +4,10 @@
 .section-dot{display:flex;align-items:center;gap:10px;padding:4px 0;border:0;background:none;color:var(--fg);font:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}
 .section-dot i{display:block;width:6px;height:calc(6px + 18px * var(--m));border-radius:3px;background:currentColor;opacity:calc(.4 + .6 * var(--m))}
 .section-dot[aria-current] i{background:var(--acc);opacity:1}
-.section-dot span{padding:4px 9px;border-radius:4px;background:rgba(var(--glass),.9);font-size:13px;font-weight:500;white-space:nowrap;opacity:0;transform:translateX(-6px);transition:opacity .2s,transform .2s}
+.section-dot span{padding:4px 9px;border-radius:4px;background:rgba(var(--glass),.9);font-size:13px;font-weight:500;white-space:nowrap;opacity:0;transform:translateX(-6px);transition:opacity .2s,transform .2s,color .15s}
 .section-dot[aria-current] span,.section-dots:hover .section-dot span,.section-dots:has(.section-dot:focus-visible) .section-dot span{opacity:1;transform:none}
-.section-dots:hover .section-dot:not([aria-current]):not(:hover) span{color:color-mix(in srgb,var(--fg) 72%,transparent)}
+.section-dots:hover .section-dot:not([aria-current]):not(:hover) span{color:color-mix(in srgb,var(--fg) 42%,transparent)}
+.section-dots:hover .section-dot:not([aria-current]):not(:hover) i{opacity:calc(.25 + .4 * var(--m))}
 .section-dot:not([aria-current]):hover span{color:var(--acc)}
 .section-dot:focus-visible{outline:2px solid var(--acc);outline-offset:3px;border-radius:3px}
 @media(max-width:900px){.section-dots{left:7px}.section-dot span{display:none}}

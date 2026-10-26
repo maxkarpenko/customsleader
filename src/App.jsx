@@ -1,8 +1,10 @@
 import React, {useEffect, useId, useLayoutEffect, useRef, useState, createContext, useContext} from 'react';
-import {ChevronDown, ArrowUpRight, ArrowRight, ArrowDown, ArrowUp, Sun, Moon, Check, Plus, Minus, X, ShieldCheck, PackageCheck, Route, Truck, FileCheck2, Globe2, MessageCircle, MessageSquare, UserRound, CircleCheck, Info, LoaderCircle, Send, Layers3, Settings2, SlidersHorizontal, RotateCcw, Copy, Download} from 'lucide-react';
+import {ChevronDown, ArrowLeft, ArrowUpRight, ArrowRight, ArrowDown, ArrowUp, Sun, Moon, Check, Plus, Minus, X, ShieldCheck, PackageCheck, Route, Truck, FileCheck2, Globe2, MessageCircle, MessageSquare, UserRound, CircleCheck, Info, LoaderCircle, Send, Layers3, Settings2, SlidersHorizontal, RotateCcw, Copy, Download} from 'lucide-react';
+import {createPortal} from 'react-dom';
 import content from './content.json';
 import oldPages from './oldPages.json';
 import {ARTICLES,ARTICLES_INDEX,ARTICLES_PUBLISHED} from './articles.js';
+import {SERVICE_PAGES} from './servicePages.js';
 import SectionNav from './SectionNav.jsx';
 import {SCENES_MODE,SCENES_KEY,TWEAKS_CASES_KEY,TWEAKS_STILLS_KEY,TWEAKS_FOUNDER_KEY,CASES_STYLE_KEY,CASES_STYLE,THEME_KEY,THEME_SWITCHER,COOKIE_CONSENT_KEY,COOKIE_CONSENT_VERSION,YANDEX_METRIKA_ID,OFFICES,HEAD_OFFICE} from './siteConfig.js';
 import privacyPolicy from './legal/privacy-policy.md?raw';
@@ -290,7 +292,7 @@ function Form({variant='short',id,chosen,setChosen,onLegal}){
         {russia&&<><div className="field-pair"><Field label="Откуда забрать?" name="origin" placeholder="Например: Тула"/><Field label="Куда доставить?" name="destination" placeholder="Например: Казань"/></div><Field label="Тип груза / задачи" name="cargo" placeholder="Например: линия розлива"/><Field label="Компания" name="company" placeholder="Название вашей организации"/></>}
         <input className="hp-field" type="text" name="website" tabIndex={-1} autoComplete="off" aria-hidden="true"/>
         <div className="consent"><input id={consentId} type="checkbox" name="consent" required/><label htmlFor={consentId}>Я даю <a href="#" className="consent-link" role="button" onClick={e=>{e.preventDefault();onLegal('consent');}}>согласие на обработку персональных данных</a></label></div>
-        <Button type="submit" className={callback?'':'cta-quote'} disabled={status==='sending'}>{status==='sending'?<><LoaderCircle className="spinner" size={18}/>Отправка…</>:callback?'Заказать звонок':detailed?<span>Получить стоимость и сроки<span className="btn-break"> по моей задаче</span></span>:shortCTA}</Button><p className="form-legal">Нажимая на кнопку, вы подтверждаете, что ознакомлены с <a href="#" className="consent-link" role="button" onClick={e=>{e.preventDefault();onLegal('personal-data');}}>Политикой обработки персональных данных</a></p>
+        <Button type="submit" className={callback?'':'cta-quote'} disabled={status==='sending'}>{status==='sending'?<><LoaderCircle className="spinner" size={18}/>Отправка…</>:callback?'Заказать звонок':detailed?<span>Получить стоимость и сроки<span className="btn-break"> по моей задаче</span></span>:shortCTA}</Button><p className="form-legal">Нажимая на кнопку, вы подтверждаете, что ознакомлены с <a href={POLICY_PATH} className="consent-link" onClick={e=>{e.preventDefault();onLegal('personal-data');}}>Политикой обработки персональных данных</a></p>
         {status==='demo'&&<p className="form-feedback" role="status">Форма заполнена. В локальной версии отправка ещё не подключена. Свяжитесь с нами: <a href="tel:+79038792020">+7 (903) 879-20-20</a>.</p>}
         {error&&<p className="form-error" role="alert">{error}</p>}
       </fieldset>
@@ -389,7 +391,7 @@ function Journey({onRequest}){
     const place=()=>{const dot=el.querySelectorAll('i')[active];if(!dot||!el.clientWidth)return;const d=dot.getBoundingClientRect(),r=el.getBoundingClientRect();el.style.setProperty('--route-fill',((d.left+d.width/2-r.left)/r.width).toFixed(4));};
     place();const ro=new ResizeObserver(place);ro.observe(el);return()=>ro.disconnect();
   },[active]);
-  return <section className="section journey" data-reveal><div className="wrap"><h2>{clean(sourceTitle(6))}</h2><div className="tabs" role="tablist" aria-label="Этапы поставки" style={{'--active':active}}><span className="tab-indicator" aria-hidden="true"/>{tabs.map((tab,i)=><button key={tab.label} role="tab" id={`tab-${i}`} aria-controls={`panel-${i}`} aria-selected={active===i} tabIndex={active===i?0:-1} onClick={()=>setActive(i)} onKeyDown={e=>{let n=i;if(e.key==='ArrowRight')n=(i+1)%4;else if(e.key==='ArrowLeft')n=(i+3)%4;else if(e.key==='Home')n=0;else if(e.key==='End')n=3;else return;e.preventDefault();setActive(n);document.getElementById(`tab-${n}`).focus();}}><span className="tab-dot"/>{tab.label}<ArrowRight size={18}/></button>)}</div><div className="journey-panel" id={`panel-${active}`} role="tabpanel" aria-labelledby={`tab-${active}`} tabIndex={0}><div key={active} className="journey-copy"><h3>{item.title}</h3><p>{item.text}</p><Bullets items={item.list}/><p className="note"><Info size={19}/>{item.note}</p><Button className="cta-quote" onClick={onRequest}>{shortCTA}</Button></div><div className="journey-visual"><Scene key={active} kind={['container','winter','hvac','turbine'][active]}/><div className="route-stops" ref={stops}><span className="route-fill" aria-hidden="true"/>{tabs.map((t,i)=><span key={i} className={i<=active?'passed':''}><i/>{t.label}</span>)}</div></div></div>
+  return <section className="section journey" data-reveal><div className="wrap"><h2>{clean(sourceTitle(6))}</h2><div className="tabs" role="tablist" aria-label="Этапы поставки" style={{'--active':active}}><span className="tab-indicator" aria-hidden="true"/>{tabs.map((tab,i)=><button key={tab.label} role="tab" id={`tab-${i}`} aria-controls={`panel-${i}`} aria-selected={active===i} tabIndex={active===i?0:-1} onClick={()=>setActive(i)} onKeyDown={e=>{let n=i;if(e.key==='ArrowRight')n=(i+1)%4;else if(e.key==='ArrowLeft')n=(i+3)%4;else if(e.key==='Home')n=0;else if(e.key==='End')n=3;else return;e.preventDefault();setActive(n);document.getElementById(`tab-${n}`).focus();}}><span className="tab-dot"/>{tab.label}<ArrowRight size={18}/></button>)}</div><div className="journey-panel" id={`panel-${active}`} role="tabpanel" aria-labelledby={`tab-${active}`} tabIndex={0}><div key={active} className="journey-copy"><p className="journey-title">{item.title}</p><p>{item.text}</p><Bullets items={item.list}/><p className="note"><Info size={19}/>{item.note}</p><Button className="cta-quote" onClick={onRequest}>{shortCTA}</Button></div><div className="journey-visual"><Scene key={active} kind={['container','winter','hvac','turbine'][active]}/><div className="route-stops" ref={stops}><span className="route-fill" aria-hidden="true"/>{tabs.map((t,i)=><span key={i} className={i<=active?'passed':''}><i/>{t.label}</span>)}</div></div></div>
     {/* Phones: the four stages as swipeable text cards, each headed by its stage name; the CTA sticks to the screen bottom */}
     <div className="journey-cards" role="list" aria-label="Этапы поставки">{tabs.map((tab,i)=><article className="journey-card" role="listitem" key={tab.label}>
       <p className="journey-stage"><span className="journey-stage-step">{i+1} / {tabs.length}</span><span className="journey-stage-name">{tab.label}</span></p>
@@ -423,8 +425,11 @@ function logConsent(record,before){
   const body=JSON.stringify({id:record.id,version:record.v,choice:record.analytics?'all':'necessary',previous:before?(before.analytics?'all':'necessary'):''});
   fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body,keepalive:true}).catch(()=>{});
 }
-function CookieNotice({onClose,onPolicy,onConsent}){
+function CookieNotice({onClose,onPolicy,onConsent,startInSettings=false}){
   const analytics=ANALYTICS_ON;
+  // Settings: the necessary storage is always on; Yandex Metrica is off until the visitor switches it on
+  const [settings,setSettings]=useState(startInSettings&&analytics);
+  const [metrica,setMetrica]=useState(()=>!!readCookieConsent()?.analytics);
   function choose(allowAnalytics){
     const before=readCookieConsent();
     // the ID outlives policy versions, so one visitor's choices line up in the journal
@@ -445,8 +450,14 @@ function CookieNotice({onClose,onPolicy,onConsent}){
     {analytics
       ?<p><strong className="cookie-lead">Помогите сделать сайт удобнее.</strong> Разрешите собирать статистику посещений и записи действий на страницах. Подробнее — в {policy} и <a href="#" role="button" className="cookie-policy-link" onClick={e=>{e.preventDefault();onConsent();}}>Согласии на обработку данных для аналитики</a>.</p>
       :<p>Сайт не устанавливает cookie: в браузере сохраняются только необходимые настройки. Подробнее — в {policy}.</p>}
+    {settings&&<div className="cookie-settings">
+      <div className="cookie-option"><div><strong>Необходимые</strong><span>Сохраняют ваш выбор и настройки сайта. Без них сайт не работает, поэтому они включены всегда.</span></div><label className="cookie-switch" title="Включены всегда"><input type="checkbox" role="switch" checked disabled aria-label="Необходимые: включены всегда"/><i aria-hidden="true"/></label></div>
+      <div className="cookie-option"><div><strong>Яндекс Метрика</strong><span>Статистика посещений. Помогает нам делать сайт удобнее.</span></div><label className="cookie-switch"><input type="checkbox" role="switch" checked={metrica} onChange={e=>setMetrica(e.target.checked)} aria-label="Яндекс Метрика"/><i aria-hidden="true"/></label></div>
+    </div>}
     <div className="cookie-actions">
-      {analytics&&<button type="button" className="cookie-secondary" onClick={()=>choose(false)}>Только необходимые</button>}
+      {analytics&&(settings
+        ?<button type="button" className="cookie-secondary" onClick={()=>choose(metrica)}>Сохранить</button>
+        :<button type="button" className="cookie-secondary" aria-expanded="false" onClick={()=>setSettings(true)}>Настройки</button>)}
       <button type="button" className="cookie-accept" onClick={()=>choose(analytics)}>{analytics?'Принять все':'Понятно'} <Check size={15}/></button>
     </div>
   </aside>;
@@ -458,7 +469,7 @@ const CLIENT_FILES=import.meta.glob('./assets/clients/*.png',{eager:true,import:
 const CLIENT_NAMES=[['01','Рек-Таймс'],['02','КИП Сервис'],['03','Ünteks Group'],['04','ТМ'],['05','Виват'],['06','Stellini'],['07','ПромЭксперт'],['08','Welltex'],['09','IMER Concrete'],['10','Вологодский текстильный комбинат'],['11','Национальный центр здоровья'],['12','ВДК — Владимирская дверная компания'],['13','Оптима Дорс'],['14','Импэкс, фабрика дверей'],['15','MaxDoors'],['16','Walsta'],['17','ASSTRA'],['18','ITCOM'],['20','РеалЭкспорт'],['21','Пари, страховая компания'],['22','Campanini'],['23','FESCO'],['24','Транзит'],['25','Lorus SCM'],['26','ВТП Сервис Групп']];
 const CLIENTS=CLIENT_NAMES.map(([n,name])=>({n,name,src:CLIENT_FILES[`./assets/clients/${n}.png`]}));
 function ClientLogos(){
-  return <div className="clients"><h2>Среди наших клиентов</h2><ul className="clients-grid">{CLIENTS.map(({n,name,src})=><li key={n} data-name={name}><img src={src} alt={name} loading="lazy" decoding="async"/></li>)}</ul></div>;
+  return <div className="clients"><h2>Наши клиенты и партнёры</h2><ul className="clients-grid">{CLIENTS.map(({n,name,src})=><li key={n} data-name={name}><img src={src} alt={name} loading="lazy" decoding="async"/></li>)}</ul></div>;
 }
 
 // Hero proof under the H1: the three benefits and a link to the NORDA case further down the page.
@@ -494,6 +505,21 @@ const CASE_LABEL="Смотреть кейс: 1'200 тонн и 160 метров,
 // The case link appears twice: under the benefits on desktop, over the photo on phones (CSS shows one).
 function CaseLink({className}){
   return <a className={`hp-case ${className}`} href="#case-norda" onClick={scrollToCase} aria-label={CASE_LABEL}><span className="hc-body"><span className="hc-figs"><b>1'200 тонн</b> и <b>160 метров</b></span><span className="hc-route">Китай → рудник Таймырский</span></span><span className="hc-more">Смотреть кейс<ArrowDown size={18} aria-hidden="true"/></span></a>;
+}
+// Footer: four labelled columns on one grid (company, office, contact, documents), then the small print
+function SiteFooter({showNote,home,here,setModal,setLegal,setCookieOpen}){
+  const logo=<a href={home} className="wordmark ft-logo" aria-label="КАСТОМС ЛИДЕР — в начало"><img className="logo-on-dark" src={logoOnDark} alt="КАСТОМС ЛИДЕР" width="960" height="113" loading="lazy"/><img className="logo-on-light" src={logoOnLight} alt="КАСТОМС ЛИДЕР" width="960" height="112" loading="lazy"/></a>;
+  const address=<a className="ft-address" href={mapLink(here)} target="_blank" rel="noopener noreferrer">{here.address}</a>;
+  const callback=<button className="ft-callback" onClick={()=>setModal('callback')}>Заказать звонок <ArrowUpRight size={16}/></button>;
+  const company=<span>ООО «КАСТОМС ЛИДЕР», ИНН 3702195282</span>;
+  const disclaimer=<p className="ft-small">Информация на сайте носит справочный характер и не является публичной офертой (ст. 437 ГК РФ). Стоимость и сроки определяются индивидуальным расчётом и договором.</p>;
+  const links=<div className="ft-links"><a href="/confidentiality" onClick={e=>{e.preventDefault();setLegal('privacy');}}>Политика конфиденциальности</a><a href={POLICY_PATH} onClick={e=>{e.preventDefault();setLegal('personal-data');}}>Политика обработки персональных данных</a><button onClick={()=>setCookieOpen('settings')}>Настройки cookie</button></div>;
+  const note=showNote&&FOOTNOTE_SOURCE&&<ol className="footnotes ft-small" aria-label="Сноски"><li id="fn-1">Источник: <a href={FOOTNOTE_SOURCE} target="_blank" rel="noopener noreferrer">«Норникель» запустил уникальный проходческий комплекс NORDA</a> <a href="#fnref-1" className="footnote-back" aria-label="Вернуться к тексту">↩</a></li></ol>;
+  const label=t=><p className="ft-label">{t}</p>;
+  return <footer className="footer wrap ft">
+    <div className="ft-grid"><div className="ft-col">{label('Компания')}{logo}<p className="ft-small">{company}</p></div><div className="ft-col">{label('Офис')}{address}</div><div className="ft-col">{label('Связаться')}{callback}</div><div className="ft-col">{label('Документы')}{links}</div></div>
+    <div className="ft-row">{disclaimer}{note}</div>
+  </footer>;
 }
 function HeroProof(){
   return <div className="hero-proof">
@@ -577,14 +603,25 @@ function ScrollTopButton(){
 const OLD_IMAGES=import.meta.glob('./assets/old-site/*',{eager:true,import:'default'});
 const oldImage=name=>OLD_IMAGES[`./assets/old-site/${name}`];
 const routeKey=p=>(p||'/').replace(/\.html$/,'').replace(/\/+$/,'').toLowerCase()||'/';
-// every page besides the main one: the old site's pages, the articles contents and the articles
-export const ROUTES=[...oldPages,ARTICLES_INDEX,...ARTICLES];
+// Each case also has a page of its own at /proekty/<slug>, so search engines can show it for its own queries
+const CASE_SEO=[
+  {slug:'dostavka-kompleksa-norda-na-taymyr',title:'Доставка комплекса Norda из Китая на Таймыр — КАСТОМС ЛИДЕР',description:'Как доставили горнопроходческий комплекс Norda длиной 160 м из Китая на рудник Таймырский: 1 200 тонн, 11 000 км, 3 недели, растаможка 58 машин за 1 час.'},
+  {slug:'dostavka-shahtnoy-tehniki-na-taymyr',title:'Доставка шахтной техники из Китая на Таймыр — КАСТОМС ЛИДЕР',description:'Как в летний пик речных перевозок доставили шахтную технику DERUI из Китая на рудник Таймырский: баржа от Красноярска до Дудинки за 7 дней.'},
+  {slug:'dostavka-linii-rozliva-vody',title:'Доставка линии розлива воды из Китая — КАСТОМС ЛИДЕР',description:'Поставщик отказался везти линию розлива автотранспортом. Купили контейнеры в Китае, упаковали оборудование и доставили 16 машинами без повреждений и в бюджет.'},
+  {slug:'oformlenie-klimaticheskoy-tehniki',title:'Таможенное оформление климатической техники — КАСТОМС ЛИДЕР',description:'Оборудование купили на рынке в Китае, документы не соответствовали товару, другие брокеры отказались. Собрали документальную базу и добились выпуска груза.'},
+];
+export const CASE_PAGES=cases.map((c,i)=>({kind:'case',i,path:`/proekty/${CASE_SEO[i].slug}`,title:CASE_SEO[i].title,description:CASE_SEO[i].description,h1:c.title.replace('[1]',''),blocks:[{t:'p',html:c.description}]}));
+// The personal data policy also has an address of its own (152-FZ asks for it to be published); on the site it still opens over the page
+export const POLICY_PATH='/politika-obrabotki-personalnyh-dannyh';
+const LEGAL_PAGES=[{kind:'legal',path:POLICY_PATH,h1:'Политика обработки персональных данных',title:'Политика обработки персональных данных — КАСТОМС ЛИДЕР',description:'Политика ООО «КАСТОМС ЛИДЕР» в отношении обработки персональных данных: правовые основания, цели, сроки, меры безопасности и права субъектов персональных данных.',blocks:[]}];
+// every page besides the main one: the old site's pages, the service pages, the cases, the articles contents, the articles and the policy
+export const ROUTES=[...oldPages,...SERVICE_PAGES,...CASE_PAGES,ARTICLES_INDEX,...ARTICLES,...LEGAL_PAGES];
 const PAGES=Object.fromEntries(ROUTES.map(p=>[routeKey(p.path),p]));
 const pageFromPath=()=>typeof location==='undefined'?null:PAGES[routeKey(location.pathname)]||null;
 // Site menu: the old site's pages grouped for search engines and people. Top items with a list open it on hover
 // (desktop bar under the header) or show it as a group (phone panel); every link is in the page's HTML either way.
 export const SITE_NAV=[
-  {label:'Услуги',href:'/#services',items:[['Таможенное оформление','/tamozhennoe-oformlenie'],['Экспедирование и логистика','/i-logistika'],['Выпуск ЭЦП','/izgotovlenie-ecp'],['Селлерам','/category/selleram']]},
+  {label:'Услуги',items:[['Доставка оборудования из Китая','/uslugi/dostavka-oborudovaniya'],['Негабаритные грузы','/uslugi/negabaritnye-gruzy'],['Таможенное оформление','/tamozhennoe-oformlenie'],['Экспедирование и логистика','/i-logistika'],['Выпуск ЭЦП','/izgotovlenie-ecp'],['Селлерам','/category/selleram']]},
   {label:'Перевозки',href:'/i-logistika',items:[['Мультимодальные перевозки','/ekspedirovanie/multimodalnye-perevozki'],['Авиаперевозки','/ekspedirovanie/aviaperevozki'],['Автомобильные перевозки','/ekspedirovanie/avtomobilnye-perevozki'],['Сборные перевозки','/ekspedirovanie/sbornye-perevozki']]},
   {label:'Проекты',href:'/category/nashi-proekty'},
   {label:'Клиенты',href:'/clients'},
@@ -599,7 +636,9 @@ function SiteNav({current}){
 }
 function NavItem({n,current}){
   return <li className={n.items?'has-sub':undefined}>
-      <a href={n.href} aria-current={isHere(current,n.href)||n.items?.some(([,h])=>isHere(current,h))||(n.href==='/articles'&&current?.startsWith('/articles/'))?'page':undefined}>{n.label}{n.items&&<ChevronDown size={14} aria-hidden="true"/>}</a>
+      {n.href?<a href={n.href} aria-current={isHere(current,n.href)||n.items?.some(([,h])=>isHere(current,h))||(n.href==='/articles'&&current?.startsWith('/articles/'))?'page':undefined}>{n.label}{n.items&&<ChevronDown size={14} aria-hidden="true"/>}</a>
+        // a group without a page of its own only opens its list
+        :<button type="button" className="site-nav-label" aria-haspopup="true" data-current={n.items?.some(([,h])=>isHere(current,h))||undefined}>{n.label}<ChevronDown size={14} aria-hidden="true"/></button>}
       {n.items&&<ul className="site-nav-sub">{n.items.map(([label,href])=><li key={href}><a href={href} aria-current={isHere(current,href)?'page':undefined}>{label}</a></li>)}</ul>}
     </li>;
 }
@@ -623,23 +662,48 @@ function SiteMenu({current,theme,setTheme}){
     <nav className="site-menu-panel" id={id} aria-label="Разделы сайта" hidden={!open} style={{'--menu-top':`${top}px`}}>
       <div className="site-menu-top"><button type="button" className="site-menu-close" aria-label="Закрыть меню" onClick={()=>setOpen(false)}><X size={22}/></button>
       {THEME_SWITCHER&&setTheme&&<button type="button" className="site-menu-theme" onClick={()=>setTheme(t=>t==='graphite'?'steel':'graphite')}>{theme==='graphite'?<Sun size={18} aria-hidden="true"/>:<Moon size={18} aria-hidden="true"/>}{theme==='graphite'?'Светлая тема':'Тёмная тема'}</button>}</div>
-      {SITE_NAV.map(n=><div key={n.label}><p className={n.items?undefined:'solo'}><a href={n.href} aria-current={isHere(current,n.href)?'page':undefined}>{n.label}</a></p>{n.items&&<ul>{n.items.map(([label,href])=><li key={href}><a href={href} aria-current={isHere(current,href)?'page':undefined}>{label}</a></li>)}</ul>}</div>)}
+      {SITE_NAV.map(n=><div key={n.label}><p className={n.items?undefined:'solo'}>{n.href?<a href={n.href} aria-current={isHere(current,n.href)?'page':undefined}>{n.label}</a>:n.label}</p>{n.items&&<ul>{n.items.map(([label,href])=><li key={href}><a href={href} aria-current={isHere(current,href)?'page':undefined}>{label}</a></li>)}</ul>}</div>)}
     </nav>
   </div>;
 }
 const plain=html=>(html||'').replace(/<br>/g,' ').replace(/<[^>]+>/g,'').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&amp;/g,'&').trim();
+// Scans and letters: thumbnails that open full-screen over the page (arrows, Esc, a click on the dark area closes).
+// The links stay real, so the full files are reachable without scripts too.
+function Gallery({items}){
+  const [at,setAt]=useState(-1);const open=at>-1;
+  useEffect(()=>{
+    if(!open)return;
+    const key=e=>{if(e.key==='Escape')setAt(-1);else if(e.key==='ArrowRight')setAt(i=>(i+1)%items.length);else if(e.key==='ArrowLeft')setAt(i=>(i-1+items.length)%items.length);};
+    const old=document.body.style.overflow;document.body.style.overflow='hidden';document.documentElement.classList.add('site-menu-open');
+    addEventListener('keydown',key);
+    return()=>{removeEventListener('keydown',key);document.body.style.overflow=old;document.documentElement.classList.remove('site-menu-open');};
+  },[open,items.length]);
+  const im=items[at];
+  return <>
+    <div className="page-gallery">{items.map((it,k)=><a key={it.src} href={oldImage(it.full||it.src)} onClick={e=>{e.preventDefault();setAt(k);}} aria-label={`Открыть: ${it.alt||'документ'} ${k+1} из ${items.length}`}><img src={oldImage(it.src)} alt={it.alt||''} loading="lazy"/></a>)}</div>
+    {open&&createPortal(<div className="viewer" role="dialog" aria-modal="true" aria-label={im.alt||'Документ'} onClick={e=>{if(e.target===e.currentTarget)setAt(-1);}}>
+      <img src={oldImage(im.full||im.src)} alt={im.alt||''}/>
+      <button type="button" className="viewer-close" aria-label="Закрыть" onClick={()=>setAt(-1)} autoFocus><X size={24}/></button>
+      {items.length>1&&<><button type="button" className="viewer-prev" aria-label="Предыдущий" onClick={()=>setAt(i=>(i-1+items.length)%items.length)}><ArrowLeft size={24}/></button>
+      <button type="button" className="viewer-next" aria-label="Следующий" onClick={()=>setAt(i=>(i+1)%items.length)}><ArrowRight size={24}/></button>
+      <span className="viewer-count">{at+1} / {items.length}</span></>}
+    </div>,document.body)}
+  </>;
+}
 function PageBlocks({blocks}){
   const out=[];
   for(let i=0;i<blocks.length;i++){
     const b=blocks[i];
     if(b.t==='img'){
       const run=[];while(blocks[i]?.t==='img')run.push(blocks[i++]);i--;
-      out.push(<div className="page-gallery" key={i}>{run.map(im=><a key={im.src} href={oldImage(im.full||im.src)} target="_blank" rel="noopener"><img src={oldImage(im.src)} alt={im.alt||''} loading="lazy"/></a>)}</div>);
+      out.push(<Gallery key={i} items={run}/>);
     }
-    else if(b.t==='h2')out.push(<h2 key={i}>{b.text}</h2>);
+    else if(b.t==='h2')out.push(<h2 key={i} id={b.id}>{b.text}</h2>);
     else if(b.t==='h3')out.push(<h3 key={i}>{b.text}</h3>);
+    else if(b.t==='h4')out.push(<h4 key={i}>{b.text}</h4>);
     else if(b.t==='p')out.push(<p key={i} dangerouslySetInnerHTML={{__html:b.html}}/>);
     else if(b.t==='ul'||b.t==='ol'){const L=b.t;out.push(<L key={i}>{b.items.map((it,k)=><li key={k} dangerouslySetInnerHTML={{__html:it}}/>)}</L>);}
+    else if(b.t==='table'&&b.kv)out.push(<div className={`page-table page-table-kv${b.price?' page-table-price':''}`} key={i}><table><tbody>{b.rows.map(([k,v])=><tr key={k}><th scope="row">{k}</th><td>{v}</td></tr>)}</tbody></table></div>);
     else if(b.t==='table')out.push(<div className="page-table" key={i}><table><tbody>{b.rows.map((r,k)=><tr key={k}>{r.map((c,j)=><td key={j} dangerouslySetInnerHTML={{__html:c}}/>)}</tr>)}</tbody></table></div>);
   }
   return out;
@@ -649,39 +713,57 @@ function SubPage({page,office,setModal,setLegal}){
   // the projects page shows the cases right on the first screen
   const projects=page.path==='/category/nashi-proekty';
   // the privacy policy is a document to read: no form, all on the dark background
-  const doc=page.path==='/confidentiality';
+  const doc=page.path==='/confidentiality'||page.kind==='legal';
   // the first paragraph becomes the lead under the heading, as on the main page
   const first=page.blocks.findIndex(b=>b.t==='p');
   const lead=contacts?`Адрес: ${office.address.replace(/ /g,' ')}`:page.lead?page.lead:first>-1&&first<3?plain(page.blocks[first].html):page.description;
-  const rest=contacts?[]:page.blocks.filter((_,i)=>i!==first||first>=3);
+  // the reviews page shows its letters right on the first screen
+  const reviews=page.path==='/otzyvy-i-rekomendacii';
+  // "О нас": the whole text continues on the first screen, right after the introduction
+  const inline=page.path==='/about'||page.path==='/category/pravoustanavlivayuschie-dokumenty'||page.path==='/clients'||page.path.startsWith('/ekspedirovanie/')||page.path==='/i-logistika'||page.path==='/category/selleram'||page.path==='/izgotovlenie-ecp'||page.path==='/tamozhennoe-oformlenie'||page.kind==='articles'||page.kind==='article'||page.kind==='case'||page.kind==='service';
+  const theCase=page.kind==='case'?cases[page.i]:null;
+  const body=contacts||reviews?[]:page.blocks.filter((_,i)=>i!==first||first>=3);
+  const rest=inline?[]:body;
+  // the articles contents list, or the end of an article (date, note, related reading)
+  const extras=<>
+    {theCase&&<>
+      <div className={`case-stat page-case-stat ${/^\d/.test(theCase.stat)?'':'stat-words'}`}><strong>{theCase.stat}</strong>{theCase.label&&<span><Text value={theCase.label}/></span>}</div>
+      <CasePhoto i={page.i}>{CASE_PHOTOS[page.i].caption&&<span className="photo-caption" aria-hidden="true">{CASE_PHOTOS[page.i].caption}</span>}</CasePhoto>
+      {theCase.headings.map((h,k)=>{const cut=h.indexOf(':')+1;return <React.Fragment key={h}><h2><span className={`case-step${h.startsWith('Сложность')?' is-risk':''}`}>{h.slice(0,cut)}</span> {(t=>t.charAt(0).toUpperCase()+t.slice(1))(h.slice(cut).trim())}</h2><p>{theCase.paragraphs[k]}</p></React.Fragment>;})}
+      <aside className="article-related"><h2>Другие проекты</h2><ul>{CASE_PAGES.filter(c=>c.path!==page.path).map(c=><li key={c.path}><a href={c.path}>{c.h1}</a></li>)}</ul></aside>
+    </>}
+    {page.kind==='articles'&&<ol className="article-list">{ARTICLES.map(a=><li key={a.path}><h2><a href={a.path}>{a.h1}</a></h2><p>{a.description}</p></li>)}</ol>}
+    {page.kind==='article'&&<>
+      <p className="article-meta">Опубликовано {new Date(ARTICLES_PUBLISHED).toLocaleDateString('ru-RU',{day:'numeric',month:'long',year:'numeric'})}. Материал справочный: требования к ввозу зависят от конкретного товара и условий сделки, поэтому перед поставкой их проверяют индивидуально.</p>
+      {page.related.length>0&&<aside className="article-related"><h2>Читайте также</h2><ul>{page.related.map(r=><li key={r.path}><a href={r.path}>{r.title}</a></li>)}</ul></aside>}
+    </>}
+  </>;
   return <>
-    <section className={`hero wrap page-hero${doc?' page-hero-doc':''}`}>
+    <section className={`hero wrap page-hero${doc?' page-hero-doc':''}${inline?' page-hero-long':''}`}>
       <div className="hero-layout"><div className="hero-backdrop"><img src={miningComplex} alt="" width="1280" height="851" fetchPriority="high"/></div>
-        <div className="hero-story"><nav className="crumbs" aria-label="Вы здесь"><a href="/">Главная</a><span aria-hidden="true">/</span>{page.kind==='article'&&<><a href="/articles">Статьи</a><span aria-hidden="true">/</span></>}<span>{page.kind==='articles'?'Статьи':page.h1}</span></nav><h1>{page.h1}</h1>{projects?<div className="hero-projects">{cases.map(c=><article key={c.title}><h2>{plain(c.title.replace('[1]',''))}</h2></article>)}<p><a href="/#cases">Подробнее о кейсах на главной странице</a></p></div>:doc?null:<p className="hero-lead">{lead}</p>}
-          {contacts&&<ul className="page-contacts"><li>Телефон: <a href="tel:+79038792020">+7 (903) 879-20-20</a></li><li>Почта: <a href="mailto:info@customsleader.ru">info@customsleader.ru</a></li></ul>}
+        <div className="hero-story"><nav className="crumbs" aria-label="Вы здесь"><a href="/">Главная</a><span aria-hidden="true">/</span>{page.kind==='article'&&<><a href="/articles">Статьи</a><span aria-hidden="true">/</span></>}{theCase&&<><a href="/category/nashi-proekty">Наши проекты</a><span aria-hidden="true">/</span></>}<span>{page.kind==='articles'?'Статьи':contacts?page.crumb||page.title:page.h1}</span></nav><h1>{theCase?<CaseTitle title={theCase.title}/>:page.h1}</h1>{contacts&&<h2 className="page-address"><span>Адрес:</span><a className="page-address-line" href={mapLink(office)} target="_blank" rel="noopener noreferrer">{office.address}</a></h2>}{projects?<div className="hero-projects">{CASE_PAGES.map(c=><article key={c.path}><h2><a href={c.path}>{c.h1}</a></h2><a className="hero-projects-more" href={c.path}>Как мы это сделали →</a></article>)}</div>:doc||contacts?null:reviews?<div className="hero-reviews"><PageBlocks blocks={page.blocks.filter(b=>b.t==='img')}/></div>:<>{!(inline&&page.blocks[0]?.t!=='p')&&<p className="hero-lead">{lead}</p>}{inline&&<div className="page-body-dark page-inline"><div className="page-content"><PageBlocks blocks={body}/>{extras}</div></div>}</>}
           {!doc&&<Button className="mobile-hero-action cta-quote" onClick={()=>setModal('hero')}>{shortCTA}</Button>}</div>
         {!doc&&<div className="hero-form" id="hero-request"><Form id="hero" onLegal={setLegal}/></div>}</div>
     </section>
-    {(rest.length>0||page.path==='/clients'||page.path==='/confidentiality'||page.kind==='articles')&&<section className={`section page-body${doc?' page-body-dark':' light'}`}><div className="wrap page-content">
-      {page.path==='/confidentiality'?<LegalDoc source={privacyPolicy} level={2}/>:<PageBlocks blocks={rest}/>}
-      {page.path==='/clients'&&<ClientLogos/>}
-      {page.kind==='articles'&&<ol className="article-list">{ARTICLES.map(a=><li key={a.path}><h2><a href={a.path}>{a.h1}</a></h2><p>{a.description}</p></li>)}</ol>}
-      {page.kind==='article'&&<>
-        <p className="article-meta">Опубликовано {new Date(ARTICLES_PUBLISHED).toLocaleDateString('ru-RU',{day:'numeric',month:'long',year:'numeric'})}. Материал справочный: требования к ввозу зависят от конкретного товара и условий сделки, поэтому перед поставкой их проверяют индивидуально.</p>
-        {page.related.length>0&&<aside className="article-related"><h2>Читайте также</h2><ul>{page.related.map(r=><li key={r.path}><a href={r.path}>{r.title}</a></li>)}</ul></aside>}
-      </>}
+    {/* the same logo block as on the landing page, right after the text */}
+    {page.path==='/clients'&&<section className="section clients-section page-clients" data-reveal><div className="wrap"><ClientLogos/></div></section>}
+    {(rest.length>0||doc)&&<section className={`section page-body page-body-dark${doc?' page-body-doc':''}`}><div className="wrap page-content">
+      {doc?<LegalDoc source={page.kind==='legal'?personalDataPolicy:privacyPolicy} level={2}/>:<PageBlocks blocks={rest}/>}
     </div></section>}
   </>;
 }
 
 // Which office the footer shows: /moscow → Moscow, anything else → the head office
 const officeFromPath=()=>{const key=typeof location==='undefined'?'':location.pathname.replace(/\.html$|\/$/g,'').split('/').pop().toLowerCase();return OFFICES[key]?key:HEAD_OFFICE;};
-const mapLink=o=>o.map||`https://yandex.ru/maps/?text=${encodeURIComponent(o.address.replace(/\u00a0/g,' '))}`;
+// Yandex Maps search for the building: the office number is left out of the query
+const mapLink=o=>o.map||`https://yandex.ru/maps/?text=${encodeURIComponent(o.address.replace(/\u00a0/g,' ').replace(/,\s*офис\s*\S+$/,''))}`;
 
 export default function App({office=officeFromPath(),path}){
   const here=OFFICES[office]||OFFICES[HEAD_OFFICE];
   const page=path!==undefined?PAGES[routeKey(path)]||null:pageFromPath();
   const home=page?'/':'#';
+  // the source footnote belongs to the pages that show the case title with its marker: the main page and the case page
+  const showNote=!page||(page.kind==='case'&&!!cases[page.i]?.source);
   const [theme,setTheme]=useState(readTheme);
   useLayoutEffect(()=>{applyTheme(theme);try{if(THEME_SWITCHER)localStorage.setItem(THEME_KEY,theme);}catch{}},[theme]);
   const [modal,setModal]=useState(null),[legal,setLegal]=useState(null),[selected,setSelected]=useState([selection[0]]),[notice,setNotice]=useState('');
@@ -695,8 +777,9 @@ export default function App({office=officeFromPath(),path}){
     const onClick=e=>{const hit=goals.find(([sel])=>e.target.closest?.(sel));if(hit)track(hit[1]);};
     document.addEventListener('click',onClick);return()=>document.removeEventListener('click',onClick);
   },[]);
-  // Full-bleed hero photos extend under the header; keep its height in --header-h.
-  useEffect(()=>{const h=document.querySelector('.header');if(!h)return;const set=()=>document.documentElement.style.setProperty('--header-h',`${h.offsetHeight}px`);set();const ro=new ResizeObserver(set);ro.observe(h);return()=>ro.disconnect();},[]);
+  // Full-bleed hero photos extend under the header; keep its height in --header-h,
+  // together with the menu bar under it on desktop (hidden on phones)
+  useEffect(()=>{const h=document.querySelector('.header');if(!h)return;const nav=document.querySelector('.site-nav');const set=()=>{const last=nav&&nav.offsetParent?nav:h;document.documentElement.style.setProperty('--header-h',`${Math.round(last.getBoundingClientRect().bottom-h.getBoundingClientRect().top)}px`);};set();const ro=new ResizeObserver(set);ro.observe(h);if(nav)ro.observe(nav);return()=>ro.disconnect();},[]);
   const noticeTimer=useRef(null);
   // Temporary: picking how the cases are separated from each other
   // Case style is picked on the settings page (/3d.html); the site only reads it
@@ -853,7 +936,7 @@ export default function App({office=officeFromPath(),path}){
 
       <section className="section founder light" data-reveal><div className="wrap"><h2><Text value={sourceTitle(9)}/></h2><div className="founder-layout"><div className="founder-media"><FramedPicture id="founder" photo={FOUNDER_PHOTO} className="founder-photo"/></div>
 
-        <div className="founder-copy"><h3>Хасанов<br/>Эдуард Ряфхатович</h3>
+        <div className="founder-copy"><h3>Хасанов <br/>Эдуард Ряфхатович</h3>
           <p className="founder-path">Основатель и <mark>руководитель компании</mark></p>
           <p><Text value={entries(9,'P')[0]}/></p><ul className="founder-facts"><li><strong>13 лет</strong><span>в таможенных органах</span></li><li><strong>9 лет</strong><span>развивал таможенное и логистическое направление других компаний</span></li><li><strong>8 лет</strong><span>строит собственную компанию</span></li><li><FileCheck2 size={29}/><span>Юридическое образование</span></li></ul></div>
 
@@ -869,8 +952,8 @@ export default function App({office=officeFromPath(),path}){
 
       <section className="section contact" id="contacts" data-reveal><div className="wrap contact-layout"><h2><Text value={sourceTitle(12)}/></h2><div className="contact-actions"><div className="messengers"><button className="messenger-max" onClick={()=>{const find='найдите нас в MAX по номеру +7 (903) 879-20-20';Promise.resolve(navigator.clipboard?.writeText('+79038792020')).then(()=>navigator.clipboard?notify(`Номер скопирован: ${find}.`):Promise.reject()).catch(()=>notify(`Чтобы написать, ${find}.`));}}><span className="messenger-main"><MessageSquare/>Написать в MAX</span><span className="messenger-go" aria-hidden="true"><ArrowUpRight size={18}/></span></button><a className="messenger-whatsapp" href="https://wa.me/79038792020" target="_blank" rel="noopener"><span className="messenger-main"><MessageCircle/>Написать в WhatsApp</span><span className="messenger-go" aria-hidden="true"><ArrowUpRight size={18}/></span></a><a className="messenger-telegram" href="https://t.me/+79038792020" target="_blank" rel="noopener"><span className="messenger-main"><Send/>Написать в Telegram</span><span className="messenger-go" aria-hidden="true"><ArrowUpRight size={18}/></span></a></div><p>Или позвоните по номеру:</p><a className="contact-phone" href="tel:+79038792020">+7 (903) 879-20-20</a><a className="contact-email" href="mailto:info@customsleader.ru">info@customsleader.ru</a></div></div></section>
     </main>
-    <footer className="footer wrap"><div className="footer-top"><a href={home} className="wordmark" aria-label="КАСТОМС ЛИДЕР — в начало"><img className="logo-on-dark" src={logoOnDark} alt="КАСТОМС ЛИДЕР" width="960" height="113" loading="lazy"/><img className="logo-on-light" src={logoOnLight} alt="КАСТОМС ЛИДЕР" width="960" height="112" loading="lazy"/></a><p>Международная и внутренняя логистика промышленного горнодобывающего оборудования и негабарита.</p><p className="footer-address">Адрес:<br/><a href={mapLink(here)} target="_blank" rel="noopener noreferrer">{here.address}</a></p><div className="footer-contacts"><button onClick={()=>setModal('callback')}>Заказать звонок <ArrowUpRight size={16}/></button></div></div><div className="footer-bottom"><p>ООО «КАСТОМС ЛИДЕР» ИНН: 3702195282</p><p>Информация на сайте носит справочный характер и не является публичной офертой (ст. 437 ГК РФ). Стоимость и сроки определяются индивидуальным расчётом и договором.</p><div><button onClick={()=>setLegal('privacy')}>Политика конфиденциальности</button><button onClick={()=>setLegal('personal-data')}>Политика обработки персональных данных</button><button onClick={()=>setCookieOpen(true)}>Настройки cookie</button></div></div>{FOOTNOTE_SOURCE&&<ol className="footnotes" aria-label="Сноски"><li id="fn-1">Источник: <a href={FOOTNOTE_SOURCE} target="_blank" rel="noopener noreferrer">«Норникель» запустил уникальный проходческий комплекс NORDA</a> <a href="#fnref-1" className="footnote-back" aria-label="Вернуться к тексту">↩</a></li></ol>}</footer>
-    {!cookieOpen&&<ScrollTopButton/>}{cookieOpen&&<CookieNotice onClose={()=>setCookieOpen(false)} onPolicy={()=>setLegal('cookies')} onConsent={()=>setLegal('analytics')}/>}
+    <SiteFooter showNote={showNote} home={home} here={here} setModal={setModal} setLegal={setLegal} setCookieOpen={setCookieOpen}/>
+    {!cookieOpen&&<ScrollTopButton/>}{cookieOpen&&<CookieNotice startInSettings={cookieOpen==='settings'} onClose={()=>setCookieOpen(false)} onPolicy={()=>setLegal('cookies')} onConsent={()=>setLegal('analytics')}/>}
     {notice&&<div className="toast" role="status">{notice}<button aria-label="Закрыть уведомление" onClick={()=>setNotice('')}><X size={17}/></button></div>}
     {modal&&<Modal type={modal} onClose={()=>setModal(null)} onLegal={setLegal}/>}{legal&&<Modal type={legal} onClose={()=>setLegal(null)}/>} 
   </div></FramesContext.Provider></ScenesContext.Provider></MotionContext.Provider>;

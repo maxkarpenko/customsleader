@@ -62,9 +62,11 @@ AddType font/woff2 .woff2
   RewriteRule ^vladimir/?$ https://%{HTTP_HOST}/contacts/vladimir [R=301,L,NC]
   RewriteRule ^yaroslavl/?$ https://%{HTTP_HOST}/contacts/yaroslavl [R=301,L,NC]
   RewriteRule ^form/?$ https://%{HTTP_HOST}/#request [R=301,L,NE]
-  # Folders of the old structure have no page of their own: the matching block of the main page
+  # Folders of the old structure have no page of their own: the transport folder leads to the logistics page,
+  # the others to the matching block of the main page
   RewriteRule ^contacts/?$ https://%{HTTP_HOST}/#contacts [R=301,L,NE]
-  RewriteRule ^(ekspedirovanie|category)/?$ https://%{HTTP_HOST}/#services [R=301,L,NE]
+  RewriteRule ^ekspedirovanie/?$ https://%{HTTP_HOST}/i-logistika [R=301,L,NC]
+  RewriteRule ^category/?$ https://%{HTTP_HOST}/#services [R=301,L,NE]
   RewriteRule ^front/ https://%{HTTP_HOST}/ [R=301,L]
   # Clean addresses: /about is served from about.html; /about/ and /about.html lead to /about
   RewriteCond %{ENV:REDIRECT_STATUS} ^$

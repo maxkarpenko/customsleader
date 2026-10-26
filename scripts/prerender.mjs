@@ -22,7 +22,7 @@ const renderPage = (office, path) => {
   return html;
 };
 const body = renderPage();
-// Every other page: the old site's pages at their old addresses, the articles contents and the articles
+// Every other page: the old site's pages at their old addresses, the cases, the articles contents and the articles
 const routes = ROUTES;
 const ARTICLES_PUBLISHED = readFileSync('src/articles.js', 'utf8').match(/ARTICLES_PUBLISHED = '([^']+)'/)[1];
 
@@ -144,13 +144,16 @@ for(const p of routes){
   const d = p.description && p.description.length > 40 ? p.description : `${p.h1} — КАСТОМС ЛИДЕР: таможенное оформление и доставка грузов из Китая и других стран.`;
   const crumbs = [{name: 'Главная', item: SITE}];
   if(p.kind === 'article') crumbs.push({name: 'Статьи', item: `${SITE}articles`});
+  if(p.kind === 'case') crumbs.push({name: 'Наши проекты', item: `${SITE}category/nashi-proekty`});
   crumbs.push({name: p.kind === 'articles' ? 'Статьи' : p.h1, item: url});
-  const page = p.kind === 'article'
+  const page = p.kind === 'article' || p.kind === 'case'
     ? {'@type': 'Article', '@id': `${url}#article`, mainEntityOfPage: url, url, headline: p.h1, name: p.title, description: d, inLanguage: 'ru-RU',
        datePublished: ARTICLES_PUBLISHED, dateModified: ARTICLES_PUBLISHED, author: {'@id': ORG}, publisher: {'@id': ORG}, image: `${SITE}og-image.jpg`, isPartOf: {'@id': `${SITE}#website`}}
     : {'@type': p.kind === 'articles' ? 'CollectionPage' : 'WebPage', '@id': `${url}#webpage`, url, name: p.title, description: d, inLanguage: 'ru-RU', isPartOf: {'@id': `${SITE}#website`}, about: {'@id': ORG}};
+  // service pages also describe the service itself
+  const service = p.kind === 'service' ? [{'@type': 'Service', '@id': `${url}#service`, name: p.h1, description: d, provider: {'@id': ORG}, areaServed: {'@type': 'Country', name: 'Россия'}, url}] : [];
   urls.push(write({path: p.path, title: p.title, description: d, content, graph: [
-    graph[0], graph[2], page,
+    graph[0], graph[2], page, ...service,
     {'@type': 'BreadcrumbList', itemListElement: crumbs.map((c, i) => ({'@type': 'ListItem', position: i + 1, ...c}))},
   ]}));
 }

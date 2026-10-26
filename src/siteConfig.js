@@ -24,9 +24,9 @@ export const YANDEX_METRIKA_ID=113750114;
 export const HEAD_OFFICE='ivanovo';
 export const OFFICES={
   ivanovo:{city:'Иваново',region:'Ивановская область',postalCode:'153000',street:'ул. Степанова, д. 5, офис 307А',
-    address:'153000, Ивановская область, г.\u00a0Иваново, ул.\u00a0Степанова, д.\u00a05, офис\u00a0307А',map:'https://yandex.ru/maps/-/CXefnW0a'},
-  moscow:{city:'Москва',region:'Москва',street:'аллея Первой Маевки, д. 15, стр. 2',
-    address:'г.\u00a0Москва, аллея Первой Маевки, д.\u00a015, стр.\u00a02'},
+    address:'Ивановская область, г.\u00a0Иваново, ул.\u00a0Степанова, д.\u00a05, офис\u00a0307А',map:'https://yandex.ru/maps/-/CXefnW0a'},
+  moscow:{city:'Москва',region:'Москва',street:'Ленинградский проспект, д. 39А, офис 715',
+    address:'г.\u00a0Москва, Ленинградский проспект, д.\u00a039А, офис\u00a0715'},
   vladimir:{city:'Владимир',region:'Владимирская область',street:'ул. Дзержинского, д. 9А',
     address:'Владимирская область, г.\u00a0Владимир, ул.\u00a0Дзержинского, д.\u00a09А'},
   yaroslavl:{city:'Ярославль',region:'Ярославская область',street:'ул. Свободы, д. 2/40',
