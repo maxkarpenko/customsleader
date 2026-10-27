@@ -17,13 +17,15 @@ server {
         add_header Cache-Control "no-cache";
     }
 
-    # Страницы старого сайта: /about отдаётся из about.html и т. д.
+    # Страницы: /about отдаётся из pages/about.html и т. д., папка pages/ сама адресом не служит
+    error_page 404 /pages/404.html;
+    location ^~ /pages/ { rewrite ^/pages/(.+?)(\.html)?$ /$1 permanent; }
     location ~ ^/contacts/Moscow/?$ { return 301 https://customsleader.ru/contacts/moscow; }
     location ~ ^/contacts/Vladimir/?$ { return 301 https://customsleader.ru/contacts/vladimir; }
     location ~* ^/(moscow|vladimir|yaroslavl)/?$ { return 301 https://customsleader.ru/contacts/$1; }
 
     location / {
-        try_files $uri $uri.html $uri/ =404;
+        try_files $uri /pages$uri.html =404;
     }
 
     add_header X-Content-Type-Options "nosniff" always;

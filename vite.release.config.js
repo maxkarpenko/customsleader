@@ -1,8 +1,10 @@
-import {readFileSync, rmSync} from 'node:fs';
+import {readFileSync, rmSync, copyFileSync} from 'node:fs';
 import {defineConfig} from 'vite';
+import pages from './vite.pages.js';
 
 // Production release: the landing only (no settings page), 3D and per-browser options compiled out
-// (__HOSTING__), regular separate files with hashed names so the server can cache them for long.
+// (__HOSTING__), regular separate files with hashed names so the server can cache them for long; every page's
+// text is its own small script (vite.pages.js), so a page loads the shared code and its own text only.
 // Relative base: the folder works at a domain root or in a subfolder.
 
 // Forms post to the PHP handler that ships next to the page (api/lead.php → Bitrix24); set another address to override
@@ -29,7 +31,7 @@ Sitemap: ${SITE_URL}sitemap.xml
 const HTACCESS = `Options -Indexes
 DirectorySlash Off
 # Addresses that do not exist get the site's own 404 page (with the 404 status)
-ErrorDocument 404 /404.html
+ErrorDocument 404 /pages/404.html
 
 AddType application/manifest+json .webmanifest
 AddType image/webp .webp
@@ -41,6 +43,9 @@ AddType font/woff2 .woff2
 
 <IfModule mod_rewrite.c>
   RewriteEngine On
+  # The cPanel technical domain got into the index: every address there leads to the same one on customsleader.ru
+  RewriteCond %{HTTP_HOST} \\.cpanel\\.site$ [NC]
+  RewriteRule ^ https://customsleader.ru%{REQUEST_URI} [R=301,L]
   # One address for the site: https://customsleader.ru, without www and http
   RewriteCond %{HTTP_HOST} ^www\\.customsleader\\.ru$ [NC]
   RewriteRule ^ https://customsleader.ru%{REQUEST_URI} [R=301,L]
@@ -69,6 +74,7 @@ AddType font/woff2 .woff2
   RewriteRule ^category/nashi-proekty(/|\\.html)?$ https://%{HTTP_HOST}/cases [R=301,L,NC]
   RewriteRule ^proekty/([a-z0-9-]+)(/|\\.html)?$ https://%{HTTP_HOST}/cases/$1 [R=301,L,NC]
   RewriteRule ^category/pravoustanavlivayuschie-dokumenty(/|\\.html)?$ https://%{HTTP_HOST}/documents [R=301,L,NC]
+  RewriteRule ^category/selleram(/|\\.html)?$ https://%{HTTP_HOST}/uslugi/dostavka-dlya-sellerov [R=301,L,NC]
   RewriteRule ^otzyvy-i-rekomendacii(/|\\.html)?$ https://%{HTTP_HOST}/reviews [R=301,L,NC]
   RewriteRule ^confidentiality(/|\\.html)?$ https://%{HTTP_HOST}/policy/privacy [R=301,L,NC]
   RewriteRule ^politika-obrabotki-personalnyh-dannyh(/|\\.html)?$ https://%{HTTP_HOST}/policy/personal-data [R=301,L,NC]
@@ -80,13 +86,15 @@ AddType font/woff2 .woff2
   RewriteRule ^category/?$ https://%{HTTP_HOST}/#services [R=301,L,NE]
   # The old client area is not used any more: its addresses lead to the main page
   RewriteRule ^front/ https://%{HTTP_HOST}/ [R=301,L]
-  # Clean addresses: /about is served from about.html; /about/ and /about.html lead to /about
+  # Clean addresses: /about is served from pages/about.html; pages/ is storage, not an address, so
+  # /pages/about.html, /about/ and /about.html all lead to /about
   RewriteCond %{ENV:REDIRECT_STATUS} ^$
-  RewriteCond %{DOCUMENT_ROOT}/$1.html -f
+  RewriteRule ^pages/(.+?)(\\.html)?$ https://%{HTTP_HOST}/$1 [R=301,L]
+  RewriteCond %{ENV:REDIRECT_STATUS} ^$
+  RewriteCond %{DOCUMENT_ROOT}/pages/$1.html -f
   RewriteRule ^(.+?)(/|\\.html)$ https://%{HTTP_HOST}/$1 [R=301,L]
-  RewriteCond %{REQUEST_FILENAME} !-f
-  RewriteCond %{DOCUMENT_ROOT}/$1.html -f
-  RewriteRule ^(.+)$ $1.html [L]
+  RewriteCond %{DOCUMENT_ROOT}/pages/$1.html -f
+  RewriteRule ^(.+)$ pages/$1.html [L]
 </IfModule>
 
 <IfModule mod_headers.c>
@@ -115,32 +123,43 @@ function releaseFiles(){
         if(file.type === 'asset' && name.endsWith('.geojson') && !code.includes(name.split('/').pop())) delete bundle[name];
       this.emitFile({type:'asset', fileName:'robots.txt', source:ROBOTS});
       this.emitFile({type:'asset', fileName:'.htaccess', source:HTACCESS});
-      // Share preview and logo for search engines: fixed names, the page and its markup point to them
-      for(const name of ['og-image.jpg', 'logo.png']) this.emitFile({type:'asset', fileName:name, source:readFileSync(`seo/${name}`)});
-      // config.php with the webhook is created on the server from the example and never shipped
-      for(const [from, to] of [['lead.php', 'lead.php'], ['consent.php', 'consent.php'], ['config.example.php', 'config.example.php'], ['htaccess-api', '.htaccess']])
+      // Share preview and logo for search engines: fixed names in media/, the page and its markup point to them
+      for(const name of ['og-image.jpg', 'logo.png']) this.emitFile({type:'asset', fileName:`media/${name}`, source:readFileSync(`seo/${name}`)});
+      // config.php with the webhook is created on the server and never shipped; its sample lies next to README, not on the site
+      for(const [from, to] of [['lead.php', 'lead.php'], ['consent.php', 'consent.php'], ['htaccess-api', '.htaccess']])
         this.emitFile({type:'asset', fileName:`api/${to}`, source:readFileSync(`server/${from}`, 'utf8')});
     },
-    // A module script is blocked when index.html is opened straight from disk (file://), so the page ships
-    // a classic deferred script instead: it works from disk as well as from any server
+    // The page loads as a module script: each page's text is a separate small file next to the shared code
     transformIndexHtml:{order:'post', handler:html => html
-      .replace(/<script type="module" crossorigin src=/g, '<script defer src=')
+      .replace(/<script type="module" crossorigin src=/g, '<script type="module" src=')
       .replace(/<link rel="stylesheet" crossorigin href=/g, '<link rel="stylesheet" href=')},
     // public/ is copied as is, Finder's .DS_Store included
-    closeBundle(){ rmSync('release-candidate/site/.DS_Store', {force:true}); },
+    closeBundle(){ rmSync('release-candidate/site/.DS_Store', {force:true}); copyFileSync('server/config.example.php', 'release-candidate/config.example.php'); },
   };
 }
+
+// assets/ sorted by kind: js, css, fonts, img, docs; small images stay files too (no data: URIs in the HTML). The prerender pass uses the same names, so the static
+// HTML points to the same files as the live page
+const assetFileNames = info => {
+  const ext = (info.names?.[0] || info.name || '').split('.').pop().toLowerCase();
+  const dir = /^(png|jpe?g|webp|avif|gif|svg|ico)$/.test(ext) ? 'img' : /^(woff2?|ttf|otf)$/.test(ext) ? 'fonts' : ext === 'css' ? 'css' : ext === 'pdf' ? 'docs' : 'misc';
+  return `assets/${dir}/[name]-[hash][extname]`;
+};
 
 // Two passes: the browser build, then (--ssr) a Node build of src/entry-server.jsx that scripts/prerender.mjs
 // uses to write the page's static HTML, markup and sitemap into release-candidate/site
 export default defineConfig(({isSsrBuild}) => isSsrBuild ? {
   base:'./',
   define:{__HOSTING__:'true'},
-  build:{outDir:'.prerender', emptyOutDir:true, rollupOptions:{input:'src/entry-server.jsx', output:{entryFileNames:'entry-server.js'}}},
+  plugins:[pages()],
+  build:{outDir:'.prerender', emptyOutDir:true, assetsInlineLimit:0, rollupOptions:{input:'src/entry-server.jsx', output:{entryFileNames:'entry-server.js', assetFileNames}}},
 } : {
   base:'./',
   define:{__HOSTING__:'true'},
-  plugins:[releaseFiles()],
-  build:{outDir:'release-candidate/site', emptyOutDir:true, modulePreload:false, cssCodeSplit:false,
-    rollupOptions:{input:'index.html', output:{format:'iife', inlineDynamicImports:true}}},
+  plugins:[pages(), releaseFiles()],
+  build:{outDir:'release-candidate/site', emptyOutDir:true, assetsInlineLimit:0, modulePreload:false, cssCodeSplit:false,
+    rollupOptions:{input:'index.html', output:{format:'es',
+      entryFileNames:'assets/js/[name]-[hash].js', assetFileNames,
+      // page texts in assets/js/pages/, named after the page address
+      chunkFileNames:chunk => chunk.facadeModuleId?.startsWith('\0virtual:page-body/') ? 'assets/js/pages/[name]-[hash].js' : 'assets/js/[name]-[hash].js'}}},
 });

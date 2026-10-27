@@ -47,8 +47,8 @@ const graph = [
     name: 'КАСТОМС ЛИДЕР',
     legalName: 'ООО «КАСТОМС ЛИДЕР»',
     url: SITE,
-    logo: `${SITE}logo.png`,
-    image: `${SITE}og-image.jpg`,
+    logo: `${SITE}media/logo.png`,
+    image: `${SITE}media/og-image.jpg`,
     description,
     telephone: '+7 903 879-20-20',
     email: 'info@customsleader.ru',
@@ -62,7 +62,7 @@ const graph = [
       '@type': 'LocalBusiness',
       '@id': `${SITE}#office-${k}`,
       name: `КАСТОМС ЛИДЕР — ${OFFICES[k].city}`,
-      image: `${SITE}og-image.jpg`,
+      image: `${SITE}media/og-image.jpg`,
       telephone: '+7 903 879-20-20',
       email: 'info@customsleader.ru',
       address: postal(OFFICES[k]),
@@ -86,7 +86,7 @@ const graph = [
     worksFor: {'@id': ORG},
   },
   {'@type': 'WebSite', '@id': `${SITE}#website`, url: SITE, name: 'КАСТОМС ЛИДЕР', inLanguage: 'ru-RU', publisher: {'@id': ORG}},
-  {'@type': 'WebPage', '@id': `${SITE}#webpage`, url: SITE, name: title, description, inLanguage: 'ru-RU', isPartOf: {'@id': `${SITE}#website`}, about: {'@id': ORG}, primaryImageOfPage: `${SITE}og-image.jpg`},
+  {'@type': 'WebPage', '@id': `${SITE}#webpage`, url: SITE, name: title, description, inLanguage: 'ru-RU', isPartOf: {'@id': `${SITE}#website`}, about: {'@id': ORG}, primaryImageOfPage: `${SITE}media/og-image.jpg`},
   {
     '@type': 'FAQPage',
     '@id': `${SITE}#faq`,
@@ -104,14 +104,14 @@ const headFor = ({url, title, description, graph}) => `
     <meta property="og:url" content="${url}" />
     <meta property="og:title" content="${esc(title)}" />
     <meta property="og:description" content="${esc(description)}" />
-    <meta property="og:image" content="${SITE}og-image.jpg" />
+    <meta property="og:image" content="${SITE}media/og-image.jpg" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta property="og:image:alt" content="Горнопроходческий комплекс NORDA в цехе завода перед отгрузкой" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="${esc(title)}" />
     <meta name="twitter:description" content="${esc(description)}" />
-    <meta name="twitter:image" content="${SITE}og-image.jpg" />
+    <meta name="twitter:image" content="${SITE}media/og-image.jpg" />
     <script type="application/ld+json">${ld(graph)}</script>
   </head>`;
 
@@ -121,8 +121,21 @@ const boot = `<meta name="viewport" content="width=device-width, initial-scale=1
     <style>.prerender-wait #root[data-prerendered]{display:none}</style>
     <script>document.documentElement.classList.add('prerender-wait');setTimeout(function(){document.documentElement.classList.remove('prerender-wait')},5000)</script>`;
 
-// One HTML file per address. A page at /a/b is served from a/b.html (see .htaccess), so its relative paths
-// climb back to the site root: ./assets/… becomes ../assets/…
+// One HTML file per address. The main page is index.html; every other page lives in pages/ (a page at /a/b is
+// pages/a/b.html, see .htaccess) but is opened at its own address, so its relative paths climb back from the
+// address, not from the file: ./assets/… becomes ../assets/…
+// A page's own text (and a policy page's document) is a separate script: the page asks for it together with the
+// shared code (modulepreload) instead of after it
+const jsFiles = dir => { try { return readdirSync(`${OUT}/assets/js/${dir}`); } catch { return []; } };
+const chunkOf = (dir, name) => jsFiles(dir).find(f => f.startsWith(`${name}-`) && f.slice(name.length + 1).length === 11 && f.endsWith('.js'));
+const preloadsFor = path => {
+  const files = [];
+  const own = path !== '/' && chunkOf('pages', path.slice(1).replace(/\//g, '--'));
+  if(own) files.push(`pages/${own}`);
+  const legal = {'/policy/privacy': 'privacy-policy', '/policy/personal-data': 'personal-data-policy'}[path];
+  if(legal && chunkOf('', legal)) files.push(chunkOf('', legal));
+  return files.map(f => `    <link rel="modulepreload" href="./assets/js/${f}" />\n`).join('');
+};
 const write = ({path, title: t, description: d, content: c, graph: g, notFound = false}) => {
   const url = path === '/' ? SITE : SITE + path.slice(1);
   const depth = path === '/' ? 0 : path.split('/').length - 2;
@@ -130,7 +143,7 @@ const write = ({path, title: t, description: d, content: c, graph: g, notFound =
     .replace('<meta name="viewport" content="width=device-width, initial-scale=1.0" />', boot)
     .replace(/<title>[^<]*<\/title>/, `<title>${esc(t).replace(/&quot;/g, '"')}</title>`)
     .replace(/<meta name="description" content="[^"]*"/, `<meta name="description" content="${esc(d)}"`)
-    .replace('</head>', headFor({url, title: t, description: d, graph: g}))
+    .replace('</head>', headFor({url, title: t, description: d, graph: g}).replace('  </head>', preloadsFor(path) + '  </head>'))
     .replace('<div id="root"></div>', `<div id="root" data-prerendered>${c}</div>`);
   if(!html.includes('data-prerendered>') || !html.includes('prerender-wait')) throw new Error(`Prerender: ${path} did not get the expected shape`);
   if(depth) html = html.replace(/(src|href)="\.\//g, `$1="${'../'.repeat(depth)}`);
@@ -140,7 +153,9 @@ const write = ({path, title: t, description: d, content: c, graph: g, notFound =
     .replace('<meta charset="UTF-8" />', '<meta charset="UTF-8" />\n    <meta name="robots" content="noindex" />')
     .replace('<div id="root" data-prerendered>', '<div id="root" data-prerendered data-route="/404">')
     .replace(/\n    <link rel="canonical"[^\n]*/, '');
-  const file = path === '/' ? `${OUT}/index.html` : `${OUT}${path}.html`;
+  // Yandex Webmaster checks the main page of customsleader.ru: the verification tag goes there only
+  if(path === '/') html = html.replace('<meta charset="UTF-8" />', '<meta charset="UTF-8" />\n    <meta name="yandex-verification" content="f191c030827b730e" />');
+  const file = path === '/' ? `${OUT}/index.html` : `${OUT}/pages${path}.html`;
   mkdirSync(dirname(file), {recursive: true});
   writeFileSync(file, html);
   return url;
@@ -158,7 +173,7 @@ for(const p of routes){
   crumbs.push({name: p.kind === 'articles' ? 'Статьи' : p.crumb || p.h1, item: url});
   const page = p.kind === 'article' || p.kind === 'case'
     ? {'@type': 'Article', '@id': `${url}#article`, mainEntityOfPage: url, url, headline: p.h1, name: p.title, description: d, inLanguage: 'ru-RU',
-       datePublished: ARTICLES_PUBLISHED, dateModified: ARTICLES_PUBLISHED, author: {'@id': ORG}, publisher: {'@id': ORG}, image: `${SITE}og-image.jpg`, isPartOf: {'@id': `${SITE}#website`}}
+       datePublished: ARTICLES_PUBLISHED, dateModified: ARTICLES_PUBLISHED, author: {'@id': ORG}, publisher: {'@id': ORG}, image: `${SITE}media/og-image.jpg`, isPartOf: {'@id': `${SITE}#website`}}
     : {'@type': p.kind === 'articles' ? 'CollectionPage' : 'WebPage', '@id': `${url}#webpage`, url, name: p.title, description: d, inLanguage: 'ru-RU', isPartOf: {'@id': `${SITE}#website`}, about: {'@id': ORG}};
   // An office page describes that office as a place of its own: address, map, page; the company stays its parent
   const officeKey = office && OFFICES[office] ? office : null;
@@ -166,7 +181,7 @@ for(const p of routes){
   const mapUrl = o => o.map || `https://yandex.ru/maps/?text=${encodeURIComponent(o.address.replace(/\u00a0/g, ' ').replace(/,\s*офис\s*\S+$/, ''))}`;
   const officeNode = officeKey ? [{
     '@type': 'LocalBusiness', '@id': officeId, name: `КАСТОМС ЛИДЕР — ${OFFICES[officeKey].city}${officeKey === HEAD_OFFICE ? ', головной офис' : ''}`,
-    url, image: `${SITE}og-image.jpg`, telephone: '+7 903 879-20-20', email: 'info@customsleader.ru',
+    url, image: `${SITE}media/og-image.jpg`, telephone: '+7 903 879-20-20', email: 'info@customsleader.ru',
     address: postal(OFFICES[officeKey]), openingHoursSpecification: hours, hasMap: mapUrl(OFFICES[officeKey]), parentOrganization: {'@id': ORG},
   }] : [];
   // on an office page the company lists its offices by reference, the full node is the office's own
@@ -192,6 +207,43 @@ for(const p of routes){
   ]}));
 }
 
+// llms.txt: a short plain description of the company for AI search, with links to the pages that answer most questions
+const pageList = kinds => routes.filter(r => kinds.includes(r.kind || 'page') && r.kind !== 'notfound' && r.kind !== 'legal' && !['/policy/privacy'].includes(r.path))
+  .map(r => `- [${r.h1.trim()}](${SITE}${r.path.slice(1)}): ${(r.description || '').trim()}`).join('\n');
+const officeLines = Object.entries(OFFICES).map(([k, o]) => `- ${o.city}${k === HEAD_OFFICE ? ' (головной офис)' : ''}: ${o.address.replace(/\u00a0/g, ' ')} — ${SITE}contacts/${k}`).join('\n');
+writeFileSync(`${OUT}/llms.txt`, `# КАСТОМС ЛИДЕР
+
+> Таможенный брокер (таможенный представитель) и логистическая компания: таможенное оформление импорта и экспорта, доставка промышленного оборудования, станков, производственных линий и негабарита из Китая и других стран по России, в том числе на Крайний Север и по зимникам. ООО «КАСТОМС ЛИДЕР», ИНН 3702195282, работает с 2018 года.
+
+- Основатель — Эдуард Хасанов, 13 лет в таможенных органах.
+- Ответственность экспедитора застрахована на 16 млн руб. (СПАО «Ингосстрах»).
+- Таможенное оформление — от 2 000 ₽ за декларацию; расчёт поставки — от 1 рабочего дня.
+- Не работаем с военными грузами, продуктами питания, табаком и алкоголем, с физическими лицами.
+- Телефон, WhatsApp, Telegram: +7 903 879-20-20. Почта: info@customsleader.ru. Офисы работают ежедневно, ${OFFICE_HOURS.opens}–${OFFICE_HOURS.closes}.
+
+## Офисы
+
+${officeLines}
+
+## Услуги
+
+- [Главная: доставка и растаможка оборудования из Китая](${SITE}): услуги, кейсы, команда, частые вопросы.
+${pageList(['service', 'request'])}
+${pageList(['page']).split('\n').filter(l => /tamozhennoe-oformlenie|i-logistika|ekspedirovanie|izgotovlenie-ecp|dostavka-dlya-sellerov/.test(l)).join('\n')}
+
+## Кейсы
+
+${pageList(['case'])}
+
+## Статьи
+
+${pageList(['article'])}
+
+## О компании
+
+${pageList(['page']).split('\n').filter(l => /\/(about|clients|reviews|documents|cases)\)/.test(l)).join('\n')}
+`);
+
 const today = new Date().toISOString().slice(0, 10);
 writeFileSync(`${OUT}/sitemap.xml`, `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
@@ -206,7 +258,8 @@ rmSync(STAGING, {recursive: true, force: true});
 cpSync(OUT, STAGING, {recursive: true});
 for(const f of readdirSync(STAGING, {recursive: true}).filter(f => f.endsWith('.html'))){
   const file = `${STAGING}/${f}`;
-  writeFileSync(file, readFileSync(file, 'utf8').replace('<meta charset="UTF-8" />', '<meta charset="UTF-8" />\n    <meta name="robots" content="noindex, nofollow" />'));
+  // the test stand copy does not carry the production verification tag
+  writeFileSync(file, readFileSync(file, 'utf8').replace(/\n    <meta name="yandex-verification"[^>]*>/, '').replace('<meta charset="UTF-8" />', '<meta charset="UTF-8" />\n    <meta name="robots" content="noindex, nofollow" />'));
 }
 writeFileSync(`${STAGING}/robots.txt`, 'User-agent: *\nAllow: /\n');
 

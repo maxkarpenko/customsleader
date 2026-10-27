@@ -2,16 +2,11 @@ import React, {useEffect, useId, useLayoutEffect, useRef, useState, createContex
 import {ChevronDown, ArrowLeft, ArrowUpRight, ArrowRight, ArrowDown, ArrowUp, Sun, Moon, Check, Plus, Minus, X, ShieldCheck, PackageCheck, Route, Truck, FileCheck2, Globe2, MessageCircle, MessageSquare, UserRound, CircleCheck, Info, LoaderCircle, Send, Layers3, Settings2, SlidersHorizontal, RotateCcw, Copy, Download} from 'lucide-react';
 import {createPortal} from 'react-dom';
 import content from './content.json';
-import oldPages from './oldPages.json';
+import {OLD_PAGES,SERVICE_PAGES,loadBody} from 'virtual:page-index';
+import LEGAL_SERVER from 'virtual:legal-texts';
 import {ARTICLES,ARTICLES_INDEX,ARTICLES_PUBLISHED} from './articles.js';
-import {SERVICE_PAGES} from './servicePages.js';
 import SectionNav from './SectionNav.jsx';
 import {SCENES_MODE,SCENES_KEY,TWEAKS_CASES_KEY,TWEAKS_STILLS_KEY,TWEAKS_FOUNDER_KEY,CASES_STYLE_KEY,CASES_STYLE,THEME_KEY,THEME_SWITCHER,COOKIE_CONSENT_KEY,COOKIE_CONSENT_VERSION,YANDEX_METRIKA_ID,OFFICES,HEAD_OFFICE,OFFICE_HOURS} from './siteConfig.js';
-import privacyPolicy from './legal/privacy-policy.md?raw';
-import personalDataPolicy from './legal/personal-data-policy.md?raw';
-import consentText from './legal/consent.md?raw';
-import cookiePolicy from './legal/cookie-policy.md?raw';
-import analyticsConsent from './legal/analytics-consent.md?raw';
 import bottlingLineInstalled from './assets/media/case-1-bottling-line.webp';
 import hvacTruck from './assets/media/hvac-truck.webp';
 import refrigerationPlant from './assets/media/case-3-refrigeration.webp';
@@ -304,7 +299,16 @@ function Form({variant='short',id,chosen,setChosen,onLegal}){
 
 // Legal documents live as Markdown in src/legal/. The renderer covers what they use:
 // "##" headings, paragraphs, "- " lists, **bold**, `code` and [[placeholders]] still to be filled in.
-const LEGAL_DOCS={privacy:privacyPolicy,'personal-data':personalDataPolicy,consent:consentText,cookies:cookiePolicy,analytics:analyticsConsent};
+// Legal documents load when they are opened (a popup or a policy page); the server render has them all at once
+const LEGAL_FILES={privacy:'privacy-policy','personal-data':'personal-data-policy',consent:'consent',cookies:'cookie-policy',analytics:'analytics-consent'};
+const LEGAL_LAZY=import.meta.glob('./legal/*.md',{query:'?raw',import:'default'});
+const LEGAL_TEXTS={...LEGAL_SERVER};
+const loadLegal=async type=>LEGAL_TEXTS[type]??=await LEGAL_LAZY[`./legal/${LEGAL_FILES[type]}.md`]();
+function useLegal(type){
+  const [text,setText]=useState(()=>LEGAL_TEXTS[type]);
+  useEffect(()=>{if(type&&!text&&LEGAL_FILES[type])loadLegal(type).then(setText);},[type,text]);
+  return text;
+}
 const inlineMd=text=>text.split(/(\*\*[^*]+\*\*|`[^`]+`|\[\[[\s\S]+?\]\])/g).map((part,i)=>
   part.startsWith('**')?<strong key={i}>{part.slice(2,-2)}</strong>
   :part.startsWith('`')?<code key={i}>{part.slice(1,-1)}</code>
@@ -341,8 +345,8 @@ function Modal({type,onClose,onLegal}){
     return()=>{document.body.style.overflow=old;setThemeColor(oldColor);root.style.backgroundColor=oldBg[0];body.style.backgroundColor=oldBg[1];};
   },[]);
   const titles={hero:'Получите стоимость и сроки доставки',callback:'Заказать звонок',russia:'Нужна перевозка по России?',consent:'Согласие на обработку персональных данных',privacy:'Политика конфиденциальности','personal-data':'Политика в отношении обработки персональных данных',analytics:'Согласие на обработку данных для веб-аналитики',cookies:'Политика использования cookie'};
-  const doc=LEGAL_DOCS[type];
-  return <dialog ref={dialog} tabIndex={-1} className={`modal modal-${type}${doc?' modal-doc':''}`} onCancel={onClose} aria-labelledby={`modal-title-${type}`} onClick={e=>{if(e.target===dialog.current)onClose();}}><div className="modal-inner"><button className="close-button" onClick={onClose} aria-label="Закрыть окно"><X/></button><h2 id={`modal-title-${type}`}>{titles[type]}</h2>{type==='hero'?<Form id="hero-modal" onLegal={onLegal}/>:['callback','russia'].includes(type)?<Form variant={type} onLegal={onLegal}/>:<LegalDoc source={doc}/>}</div></dialog>;
+  const isDoc=type in LEGAL_FILES,doc=useLegal(isDoc?type:null);
+  return <dialog ref={dialog} tabIndex={-1} className={`modal modal-${type}${isDoc?' modal-doc':''}`} onCancel={onClose} aria-labelledby={`modal-title-${type}`} onClick={e=>{if(e.target===dialog.current)onClose();}}><div className="modal-inner"><button className="close-button" onClick={onClose} aria-label="Закрыть окно"><X/></button><h2 id={`modal-title-${type}`}>{titles[type]}</h2>{type==='hero'?<Form id="hero-modal" onLegal={onLegal}/>:['callback','russia'].includes(type)?<Form variant={type} onLegal={onLegal}/>:<LegalDoc source={doc||''}/>}</div></dialog>;
 }
 
 // The first screen's call to action stays on screen: once its button reaches the top edge, a copy
@@ -466,10 +470,10 @@ function CookieNotice({onClose,onPolicy,onConsent,startInSettings=false}){
 }
 
 // Client logos from customsleader.ru/clients, in the order of that page, with white backgrounds removed
-// (assets/clients/NN.png; 19 was dropped).
-const CLIENT_FILES=import.meta.glob('./assets/clients/*.png',{eager:true,import:'default'});
-const CLIENT_NAMES=[['01','Рек-Таймс'],['02','КИП Сервис'],['03','Ünteks Group'],['04','ТМ'],['05','Виват'],['06','Stellini'],['07','ПромЭксперт'],['08','Welltex'],['09','IMER Concrete'],['10','Вологодский текстильный комбинат'],['11','Национальный центр здоровья'],['12','ВДК — Владимирская дверная компания'],['13','Оптима Дорс'],['14','Импэкс, фабрика дверей'],['15','MaxDoors'],['16','Walsta'],['17','ASSTRA'],['18','ITCOM'],['20','РеалЭкспорт'],['21','Пари, страховая компания'],['22','Campanini'],['23','FESCO'],['24','Транзит'],['25','Lorus SCM'],['26','ВТП Сервис Групп']];
-const CLIENTS=CLIENT_NAMES.map(([n,name])=>({n,name,src:CLIENT_FILES[`./assets/clients/${n}.png`]}));
+// (assets/clients/logo-<company>.webp).
+const CLIENT_FILES=import.meta.glob('./assets/clients/*.webp',{eager:true,import:'default'});
+const CLIENT_NAMES=[['rek-tajms','Рек-Таймс'],['kip-servis','КИП Сервис'],['unteks-group','Ünteks Group'],['tm','ТМ'],['vivat','Виват'],['stellini','Stellini'],['promekspert','ПромЭксперт'],['welltex','Welltex'],['imer-concrete','IMER Concrete'],['vologodskij-tekstilnyj-kombinat','Вологодский текстильный комбинат'],['nacionalnyj-centr-zdorovya','Национальный центр здоровья'],['vdk','ВДК — Владимирская дверная компания'],['optima-dors','Оптима Дорс'],['impeks','Импэкс, фабрика дверей'],['maxdoors','MaxDoors'],['walsta','Walsta'],['asstra','ASSTRA'],['itcom','ITCOM'],['realeksport','РеалЭкспорт'],['pari','Пари, страховая компания'],['campanini','Campanini'],['fesco','FESCO'],['tranzit','Транзит'],['lorus-scm','Lorus SCM'],['vtp-servis-grupp','ВТП Сервис Групп']];
+const CLIENTS=CLIENT_NAMES.map(([n,name])=>({n,name,src:CLIENT_FILES[`./assets/clients/logo-${n}.webp`]}));
 function ClientLogos(){
   return <div className="clients"><h2>Наши клиенты и партнёры</h2><ul className="clients-grid">{CLIENTS.map(({n,name,src})=><li key={n} data-name={name}><img src={src} alt={name} loading="lazy" decoding="async"/></li>)}</ul></div>;
 }
@@ -621,13 +625,22 @@ const REQUEST_PAGE={"kind": "request", "path": "/request", "h1": "Расчёт �
 const NOT_FOUND={kind:'notfound',path:'/404',h1:'К сожалению, эта страница больше недоступна',title:'Страница не найдена — КАСТОМС ЛИДЕР',description:'Страница не найдена: возможно, её перенесли или удалили. Перейдите на главную страницу КАСТОМС ЛИДЕР.',blocks:[]};
 const LEGAL_PAGES=[{kind:'legal',path:POLICY_PATH,h1:'Политика обработки персональных данных',title:'Политика обработки персональных данных — КАСТОМС ЛИДЕР',description:'Политика ООО «КАСТОМС ЛИДЕР» в отношении обработки персональных данных: правовые основания, цели, сроки, меры безопасности и права субъектов персональных данных.',blocks:[]}];
 // every page besides the main one: the old site's pages, the service pages, the cases, the articles contents, the articles and the policy
-export const ROUTES=[...oldPages,...SERVICE_PAGES,...CASE_PAGES,ARTICLES_INDEX,...ARTICLES,...LEGAL_PAGES,REQUEST_PAGE,NOT_FOUND];
+export const ROUTES=[...OLD_PAGES,...SERVICE_PAGES,...CASE_PAGES,ARTICLES_INDEX,...ARTICLES,...LEGAL_PAGES,REQUEST_PAGE,NOT_FOUND];
 const PAGES=Object.fromEntries(ROUTES.map(p=>[routeKey(p.path),p]));
+// Before the first render in the browser: the open page's text (and a policy page's document) is loaded, so the
+// live page replaces the prerendered copy with the same content
+export async function preparePage(){
+  const page=pageFromPath();
+  if(!page)return;
+  await loadBody(page);
+  if(page.kind==='legal')await loadLegal('personal-data');
+  if(page.path==='/policy/privacy')await loadLegal('privacy');
+}
 const pageFromPath=()=>{if(typeof location==='undefined')return null;const forced=document.getElementById('root')?.dataset.route;return PAGES[routeKey(forced||location.pathname)]||null;};
 // Site menu: the old site's pages grouped for search engines and people. Top items with a list open it on hover
 // (desktop bar under the header) or show it as a group (phone panel); every link is in the page's HTML either way.
 export const SITE_NAV=[
-  {label:'Услуги',items:[['Доставка оборудования из Китая','/uslugi/dostavka-oborudovaniya'],['Негабаритные грузы','/uslugi/negabaritnye-gruzy'],['Доставка на Крайний Север','/uslugi/dostavka-na-krayniy-sever'],['Таможенное оформление','/tamozhennoe-oformlenie'],['Экспедирование и логистика','/i-logistika'],['Выпуск ЭЦП','/izgotovlenie-ecp'],['Селлерам','/category/selleram']]},
+  {label:'Услуги',items:[['Доставка оборудования из Китая','/uslugi/dostavka-oborudovaniya'],['Негабаритные грузы','/uslugi/negabaritnye-gruzy'],['Доставка на Крайний Север','/uslugi/dostavka-na-krayniy-sever'],['Таможенное оформление','/tamozhennoe-oformlenie'],['Экспедирование и логистика','/i-logistika'],['Выпуск ЭЦП','/izgotovlenie-ecp'],['Селлерам','/uslugi/dostavka-dlya-sellerov']]},
   {label:'Перевозки',href:'/i-logistika',items:[['Мультимодальные перевозки','/ekspedirovanie/multimodalnye-perevozki'],['Авиаперевозки','/ekspedirovanie/aviaperevozki'],['Автомобильные перевозки','/ekspedirovanie/avtomobilnye-perevozki'],['Сборные перевозки','/ekspedirovanie/sbornye-perevozki']]},
   {label:'Проекты',href:'/cases'},
   {label:'Клиенты',href:'/clients'},
@@ -748,7 +761,7 @@ function SubPage({page,office,setModal,setLegal}){
   const first=page.blocks.findIndex(b=>b.t==='p');
   const lead=page.lead?page.lead:first>-1&&first<3?plain(page.blocks[first].html):page.description;
   // "О нас": the whole text continues on the first screen, right after the introduction
-  const inline=contacts||page.path==='/about'||page.path==='/reviews'||page.path==='/documents'||page.path==='/clients'||page.path.startsWith('/ekspedirovanie/')||page.path==='/i-logistika'||page.path==='/category/selleram'||page.path==='/izgotovlenie-ecp'||page.path==='/tamozhennoe-oformlenie'||page.kind==='articles'||page.kind==='article'||page.kind==='case'||page.kind==='service'||page.kind==='request';
+  const inline=contacts||page.path==='/about'||page.path==='/reviews'||page.path==='/documents'||page.path==='/clients'||page.path.startsWith('/ekspedirovanie/')||page.path==='/i-logistika'||page.path==='/uslugi/dostavka-dlya-sellerov'||page.path==='/izgotovlenie-ecp'||page.path==='/tamozhennoe-oformlenie'||page.kind==='articles'||page.kind==='article'||page.kind==='case'||page.kind==='service'||page.kind==='request';
   const theCase=page.kind==='case'?cases[page.i]:null;
   const body=page.blocks.filter((_,i)=>i!==first||first>=3);
   const rest=inline?[]:body;
@@ -778,7 +791,7 @@ function SubPage({page,office,setModal,setLegal}){
     {page.path==='/clients'&&<section className="section clients-section page-clients" data-reveal><div className="wrap"><ClientLogos/></div></section>}
     {page.kind==='request'&&<section className="section request light" id="request"><div className="wrap"><div className="section-heading"><div><h2>Подробная заявка на расчёт</h2><p className="lead">Укажите, что уже известно. Если не определились с услугой или есть сложность, выберите консультацию, специалист поможет разобраться.</p></div></div><Form id="detailed" variant="detailed" chosen={chosen} setChosen={setChosen} onLegal={setLegal}/></div></section>}
     {(rest.length>0||doc)&&<section className={`section page-body page-body-dark${doc?' page-body-doc':''}`}><div className="wrap page-content">
-      {doc?<LegalDoc source={page.kind==='legal'?personalDataPolicy:privacyPolicy} level={2}/>:<PageBlocks blocks={rest}/>}
+      {doc?<LegalDoc source={LEGAL_TEXTS[page.kind==='legal'?'personal-data':'privacy']||''} level={2}/>:<PageBlocks blocks={rest}/>}
     </div></section>}
   </>;
 }
@@ -807,9 +820,10 @@ export default function App({office=officeFromPath(),path}){
     const onClick=e=>{const hit=goals.find(([sel])=>e.target.closest?.(sel));if(hit)track(hit[1]);};
     document.addEventListener('click',onClick);return()=>document.removeEventListener('click',onClick);
   },[]);
-  // Full-bleed hero photos extend under the header; keep its height in --header-h,
+  // Full-bleed hero photos extend under the header; keep its height in --header-h, measured before the first paint
+  // (a layout effect), so the photo is in place from the first frame instead of moving once the page is drawn;
   // together with the menu bar under it on desktop (hidden on phones)
-  useEffect(()=>{const h=document.querySelector('.header');if(!h)return;const nav=document.querySelector('.site-nav');const set=()=>{const last=nav&&nav.offsetParent?nav:h;document.documentElement.style.setProperty('--header-h',`${Math.round(last.getBoundingClientRect().bottom-h.getBoundingClientRect().top)}px`);};set();const ro=new ResizeObserver(set);ro.observe(h);if(nav)ro.observe(nav);return()=>ro.disconnect();},[]);
+  useLayoutEffect(()=>{const h=document.querySelector('.header');if(!h)return;const nav=document.querySelector('.site-nav');const set=()=>{const last=nav&&nav.offsetParent?nav:h;document.documentElement.style.setProperty('--header-h',`${Math.round(last.getBoundingClientRect().bottom-h.getBoundingClientRect().top)}px`);};set();const ro=new ResizeObserver(set);ro.observe(h);if(nav)ro.observe(nav);return()=>ro.disconnect();},[]);
   const noticeTimer=useRef(null);
   // Temporary: picking how the cases are separated from each other
   // Case style is picked on the settings page (/3d.html); the site only reads it

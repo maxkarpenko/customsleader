@@ -231,26 +231,26 @@
    },
    {
     "t": "img",
-    "src": "00577d79acd4.jpg",
+    "src": "svidetelstvo-nalogovyj-uchet-thumb.webp",
     "alt": "Свидетельство о постановке ООО «КАСТОМС ЛИДЕР» на учёт в налоговом органе",
-    "full": "3b60d0ad928b.jpg"
+    "full": "svidetelstvo-nalogovyj-uchet.webp"
    },
    {
     "t": "img",
-    "src": "strahovanie-2026-1-thumb.webp",
-    "full": "strahovanie-2026-1.webp",
+    "src": "dogovor-strahovaniya-2026-1-thumb.webp",
+    "full": "dogovor-strahovaniya-2026-1.webp",
     "alt": "Договор страхования ответственности экспедитора с «Ингосстрахом» на 2026–2027 годы, страница 1: стороны, период и территория страхования"
    },
    {
     "t": "img",
-    "src": "strahovanie-2026-2-thumb.webp",
-    "full": "strahovanie-2026-2.webp",
+    "src": "dogovor-strahovaniya-2026-2-thumb.webp",
+    "full": "dogovor-strahovaniya-2026-2.webp",
     "alt": "Договор страхования ответственности экспедитора с «Ингосстрахом» на 2026–2027 годы, страница 2: застрахованные грузы"
    },
    {
     "t": "img",
-    "src": "strahovanie-2026-3-thumb.webp",
-    "full": "strahovanie-2026-3.webp",
+    "src": "dogovor-strahovaniya-2026-3-thumb.webp",
+    "full": "dogovor-strahovaniya-2026-3.webp",
     "alt": "Договор страхования ответственности экспедитора с «Ингосстрахом» на 2026–2027 годы, страница 3: лимит 16 млн руб."
    }
   ]
@@ -361,7 +361,7 @@
    },
    {
     "t": "p",
-    "html": "Ещё по теме: <a href=\"/tamozhennoe-oformlenie\">таможенное оформление</a> · <a href=\"/ekspedirovanie/aviaperevozki\">авиаперевозки</a> · <a href=\"/category/selleram\">доставка для селлеров</a>."
+    "html": "Ещё по теме: <a href=\"/tamozhennoe-oformlenie\">таможенное оформление</a> · <a href=\"/ekspedirovanie/aviaperevozki\">авиаперевозки</a> · <a href=\"/uslugi/dostavka-dlya-sellerov\">доставка для селлеров</a>."
    }
   ],
   "crumb": "Таможенное оформление в Москве"
@@ -739,8 +739,8 @@
     "t": "reviews",
     "items": [
      {
-      "src": "056f2d0471af.jpg",
-      "full": "075f3bcaaf7c.jpg",
+      "src": "otzyv-promekspert-thumb.webp",
+      "full": "otzyv-promekspert.webp",
       "alt": "Благодарственное письмо ООО «ПромЭксперт», Иваново",
       "company": "ПромЭксперт",
       "city": "Иваново",
@@ -750,8 +750,8 @@
       "signer": "Ю. С. Смирнова, генеральный директор"
      },
      {
-      "src": "efb1de4c66a5.jpg",
-      "full": "0030e3cad05b.jpg",
+      "src": "otzyv-tranzit-thumb.webp",
+      "full": "otzyv-tranzit.webp",
       "alt": "Рекомендательное письмо ООО «Транзит», Владивосток",
       "company": "Транзит",
       "city": "Владивосток",
@@ -761,8 +761,8 @@
       "signer": "Д. С. Суриков, заместитель директора"
      },
      {
-      "src": "a82692c12d2a.jpeg",
-      "full": "b47dae79df61.jpeg",
+      "src": "otzyv-karbon-eksport-thumb.webp",
+      "full": "otzyv-karbon-eksport.webp",
       "alt": "Рекомендательное письмо ООО «Карбон-Экспорт», Иваново",
       "company": "Карбон-Экспорт",
       "city": "Иваново",
@@ -773,8 +773,8 @@
       "date": "10.03.2020"
      },
      {
-      "src": "2360b4e06394.jpg",
-      "full": "d93f34d56159.jpg",
+      "src": "otzyv-medimpeks-thumb.webp",
+      "full": "otzyv-medimpeks.webp",
       "alt": "Благодарственное письмо ООО «Медимпэкс», Москва",
       "company": "Медимпэкс",
       "city": "Москва",
@@ -1180,7 +1180,7 @@
   ]
  },
  {
-  "path": "/category/selleram",
+  "path": "/uslugi/dostavka-dlya-sellerov",
   "title": "Доставка товаров из Китая для селлеров маркетплейсов",
   "description": "Доставка товаров из Китая, Турции и Европы для селлеров Wildberries и Ozon: способы и сроки перевозки, сборные грузы, документы и таможня.",
   "keywords": "доставка товаров из Китая, грузоперевозки для селлеров, логистика для маркетплейсов, доставка на Wildberries, доставка на Ozon",

@@ -8,28 +8,33 @@
 
 ```
 site/
-├── index.html            страница сайта
-├── about.html, tamozhennoe-oformlenie.html, …   страницы старого сайта на старых адресах (/about и т. д.)
-├── contacts/, ekspedirovanie/, category/         такие же страницы во вложенных адресах
-├── articles.html, articles/                       статьи (/articles и /articles/<адрес>)
-├── assets/               скрипт, стили, шрифты, фото, PDF договора страхования
-│                         (имена с хэшем: при изменениях меняется имя, кэш не мешает)
-├── favicon-16x16.png
-├── favicon-32x32.png
-├── apple-touch-icon.png
-├── safari-pinned-tab.svg
+├── index.html            главная
+├── pages/                все остальные страницы: pages/about.html открывается по адресу /about,
+│                         pages/contacts/moscow.html — по /contacts/moscow, pages/404.html — для несуществующих адресов
+├── assets/               файлы с хэшем в имени (при изменениях меняется имя, кэш не мешает)
+│   ├── js/               общий скрипт сайта; js/pages/ — текст каждой страницы отдельным файлом
+│   │                     (страница загружает только свой), рядом — юридические документы для окон
+│   ├── css/, fonts/      стили и шрифты
+│   ├── img/              фото, сканы, логотипы
+│   └── docs/             PDF договора страхования
+├── media/                og-image.jpg (превью ссылок) и logo.png (логотип для поисковиков)
+├── icons/                значки сайта для браузеров и iPhone
+├── favicon.ico           значок для вкладки и выдачи Яндекса (должен лежать в корне)
 ├── api/
 │   ├── lead.php          приём заявок → Bitrix24
 │   ├── consent.php       журнал согласий из уведомления о cookie
-│   ├── config.example.php образец настроек (config.php создаётся на сервере)
 │   └── .htaccess         закрывает настройки от доступа извне
-├── og-image.jpg, logo.png картинка для превью ссылок и логотип для поисковиков
-├── sitemap.xml           карта сайта (одна страница, дата сборки)
+├── sitemap.xml           карта сайта (все страницы)
 ├── robots.txt            индексация разрешена, Clean-param для UTM-меток, ссылка на sitemap
-└── .htaccess             кэш и сжатие для Apache (скрытый файл, не забудьте скопировать)
+├── llms.txt              короткое описание компании и страниц для ИИ-поиска
+└── .htaccess             редиректы, адреса страниц, кэш (скрытый файл, не забудьте скопировать)
 ```
 
-Сайт работает и в корне домена, и в подпапке: все пути относительные. `index.html` можно открыть и прямо с диска двойным кликом, чтобы посмотреть перед выкладкой (страницы офисов — `moscow.html` и т. д.). Локальный сервер, который, как хостинг, открывает `/moscow` без `.html`: `python3 scripts/serve-release.py` → http://localhost:4190/moscow.
+Рядом с `site/` лежит `config.example.php` — образец настроек приёма заявок. На сервер он не выкладывается.
+
+Рядом с `site/` лежит `config.example.php` — образец настроек приёма заявок. На сервер он не выкладывается.
+
+Сайт рассчитан на корень домена. Смотреть его перед выкладкой — через локальный сервер, который, как хостинг, открывает `/about` из `pages/about.html`: `python3 scripts/serve-release.py` → http://localhost:4190/about. С диска двойным кликом страницы не открываются: браузер не загружает скрипты-модули из файлов (для этого есть сборка в один файл `docs/index.html`).
 
 ## Сервер
 
@@ -45,7 +50,7 @@ site/
 Один раз после первой выкладки:
 
 1. В Bitrix24: **Разработчикам → Другое → Входящий вебхук**, права **CRM (crm)**. Скопируйте адрес вида `https://ваша-компания.bitrix24.ru/rest/1/abc123…/`.
-2. В cPanel → **Диспетчер файлов** откройте `public_html/api/`, скопируйте `config.example.php` в `config.php`.
+2. В cPanel → **Диспетчер файлов** откройте `public_html/api/`, создайте там `config.php` с содержимым `config.example.php` (лежит рядом с этой инструкцией).
 3. В `config.php` вставьте адрес вебхука в `bitrix24_webhook` и сохраните.
 4. Отправьте тестовую заявку с сайта: в Bitrix24 появится лид «Заявка с сайта: …».
 
@@ -60,10 +65,9 @@ site/
 - **Текст страницы есть в HTML.** Роботы, которые не выполняют JavaScript (ИИ-краулеры, часть ботов Яндекса), видят всю страницу. Посетителям эта копия не показывается: её сразу заменяет живая страница.
 - **Индексируется только https://customsleader.ru.** На любом другом адресе (тестовый домен и т. п.) сервер отдаёт заголовок `X-Robots-Tag: noindex`. Копия на GitHub Pages закрыта мета-тегом `noindex`.
 - **Один адрес:** `www.customsleader.ru` и `http://` перенаправляются на `https://customsleader.ru` (301).
-- **Старые страницы** перенаправляются (301) на нужный блок новой: `/tamozhennoe-oformlenie`, `/i-logistika`, `/ekspedirovanie/*` → услуги; `/clients`, `/otzyvy-i-rekomendacii` → клиенты; `/about`, `/category/pravoustanavlivayuschie-dokumenty` → главная. `/form` → форма на главной, `/front/login` → главная, папки `/contacts`, `/ekspedirovanie`, `/category` → блоки главной.
-- **Страницы старого сайта** (18 адресов: `/about`, `/tamozhennoe-oformlenie`, `/ekspedirovanie/…`, `/contacts/moscow` и др.) живут на прежних адресах с прежними title и текстом, оформлены как первый экран главной. Так при замене сайта поисковики сохранят их вес. У каждой свой canonical, все они в sitemap. Тексты и SEO-данные старого сайта сохранены в `content/old-site/*.md`.
-- **Офисы:** `/contacts/moscow`, `/contacts/vladimir`, `/contacts/yaroslavl`, `/contacts/ivanovo` — в подвале адрес своего офиса. Адреса только строчными: старые `/contacts/Moscow`, `/contacts/Vladimir` и короткие `/moscow` и т. д. перенаправляются (301).
-- **Статьи:** `/articles` (оглавление) и `/articles/<адрес>` — 10 статей из `articles/seo/*.md`. Правка `.md` попадает на сайт при следующей сборке. Эти ссылки удобно ставить в карточках офисов в Яндекс Бизнесе и 2ГИС.
+- **Старые адреса** живут на прежних местах (`/tamozhennoe-oformlenie`, `/i-logistika`, `/ekspedirovanie/…`, `/contacts/…`, `/about`, `/clients`, `/izgotovlenie-ecp`). Переехали с 301: `/category/nashi-proekty` → `/cases`, `/category/pravoustanavlivayuschie-dokumenty` → `/documents`, `/otzyvy-i-rekomendacii` → `/reviews`, `/confidentiality` → `/policy/privacy`, `/category/selleram` → `/uslugi/dostavka-dlya-sellerov`, `/form` → `/request`, `/ekspedirovanie` → `/i-logistika`, `/front/…` → главная. Технический домен `*.cpanel.site` целиком ведёт на customsleader.ru.
+- **Офисы:** `/contacts/moscow`, `/contacts/vladimir`, `/contacts/yaroslavl`, `/contacts/ivanovo`, у каждого своя разметка организации. Адреса только строчными: старые `/contacts/Moscow`, `/contacts/Vladimir` и короткие `/moscow` и т. д. перенаправляются (301).
+- **Статьи:** `/articles` (оглавление) и `/articles/<адрес>` из `articles/seo/*.md`. Правка `.md` попадает на сайт при следующей сборке.
 - **При переносе на customsleader.ru** старый `.htaccess` WordPress заменяется новым. Перед заменой сохраните копию старого сайта.
 
 ## Тестовый стенд
