@@ -55,6 +55,7 @@ $forms = [
   'hero' => 'Расчёт стоимости (первый экран)',
   'hero-modal' => 'Расчёт стоимости (кнопка «Получить расчёт»)',
   'detailed' => 'Подробный расчёт',
+  'request' => 'Расчёт поставки (страница /request)',
   'final' => 'Расчёт стоимости (внизу страницы)',
   'callback' => 'Обратный звонок',
   'russia' => 'Перевозка по России',
@@ -70,8 +71,8 @@ if(!isset($in['consent']) || $in['consent'] !== 'on') reply(400, ['ok' => false,
 $name = clean(isset($in['name']) ? $in['name'] : '', 200);
 $email = clean(isset($in['email']) ? $in['email'] : '', 200);
 if($email !== '' && !filter_var($email, FILTER_VALIDATE_EMAIL)) $email = '';
-if(in_array($form, ['detailed', 'callback', 'russia'], true) && $name === '') reply(400, ['ok' => false, 'error' => 'name']);
-if($form === 'detailed' && $email === '') reply(400, ['ok' => false, 'error' => 'email']);
+if(in_array($form, ['detailed', 'request', 'callback', 'russia'], true) && $name === '') reply(400, ['ok' => false, 'error' => 'name']);
+if(in_array($form, ['detailed', 'request'], true) && $email === '') reply(400, ['ok' => false, 'error' => 'email']);
 
 $labels = [
   'services' => 'Услуга',

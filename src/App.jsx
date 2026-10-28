@@ -269,7 +269,7 @@ function Form({variant='short',id,chosen,setChosen,onLegal}){
     const endpoint=import.meta.env.VITE_LEAD_ENDPOINT;
     if(!endpoint){setStatus('demo');return;}
     setStatus('sending');
-    try{const r=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});if(!r.ok)throw new Error();const data=await r.json();if(data.ok!==true)throw new Error();setStatus('success');track('lead_success',{form:payload.form});track(`lead_${payload.form.replace(/-/g,'_')}`);window.dispatchEvent(new CustomEvent('lead:success',{detail:{form:payload.form}}));}
+    try{const r=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});if(!r.ok)throw new Error();const data=await r.json();if(data.ok!==true)throw new Error();setStatus('success');const where={form:payload.form,page:location.pathname};track('lead_success',where);track(`lead_${payload.form.replace(/-/g,'_')}`,where);window.dispatchEvent(new CustomEvent('lead:success',{detail:{form:payload.form}}));}
     catch{setStatus('idle');track('form_error',{form:payload.form});setError('Не удалось отправить заявку. Попробуйте ещё раз или позвоните: +7 (903) 879-20-20.');}
   }
   if(status==='success')return <div className="success" role="status"><CircleCheck size={44}/><h3>Спасибо! Заявка отправлена</h3><p>Менеджер свяжется с вами в течение 1 часа</p></div>;
@@ -697,6 +697,7 @@ const plain=html=>(html||'').replace(/<br>/g,' ').replace(/<[^>]+>/g,'').replace
 // Scans as thumbnails, or (cards) one card per letter: thumbnail, who wrote it, a quote and the signature
 function Gallery({items,cards=false}){
   const [at,setAt]=useState(-1);const open=at>-1;
+  useEffect(()=>{if(open)track('open_scan',{page:location.pathname});},[open]);
   useEffect(()=>{
     if(!open)return;
     const key=e=>{if(e.key==='Escape')setAt(-1);else if(e.key==='ArrowRight')setAt(i=>(i+1)%items.length);else if(e.key==='ArrowLeft')setAt(i=>(i-1+items.length)%items.length);};
@@ -741,6 +742,7 @@ function PageBlocks({blocks}){
 }
 // 404: a short message over a full-screen photo
 function NotFound({page}){
+  useEffect(()=>{const t=setTimeout(()=>track('page_404',{url:location.pathname}));return()=>clearTimeout(t);},[]);
   return <section className="nf">
     <div className="nf-photos"><img src={nfDesertHaze} alt="Пустой контейнер в пустыне под тёмным небом" width="1672" height="941" fetchPriority="high" decoding="async"/></div>
     <div className="wrap nf-inner">
@@ -789,7 +791,7 @@ function SubPage({page,office,setModal,setLegal}){
     </section>
     {/* the same logo block as on the landing page, right after the text */}
     {page.path==='/clients'&&<section className="section clients-section page-clients" data-reveal><div className="wrap"><ClientLogos/></div></section>}
-    {page.kind==='request'&&<section className="section request light" id="request"><div className="wrap"><div className="section-heading"><div><h2>Подробная заявка на расчёт</h2><p className="lead">Укажите, что уже известно. Если не определились с услугой или есть сложность, выберите консультацию, специалист поможет разобраться.</p></div></div><Form id="detailed" variant="detailed" chosen={chosen} setChosen={setChosen} onLegal={setLegal}/></div></section>}
+    {page.kind==='request'&&<section className="section request light" id="request"><div className="wrap"><div className="section-heading"><div><h2>Подробная заявка на расчёт</h2><p className="lead">Укажите, что уже известно. Если не определились с услугой или есть сложность, выберите консультацию, специалист поможет разобраться.</p></div></div><Form id="request" variant="detailed" chosen={chosen} setChosen={setChosen} onLegal={setLegal}/></div></section>}
     {(rest.length>0||doc)&&<section className={`section page-body page-body-dark${doc?' page-body-doc':''}`}><div className="wrap page-content">
       {doc?<LegalDoc source={LEGAL_TEXTS[page.kind==='legal'?'personal-data':'privacy']||''} level={2}/>:<PageBlocks blocks={rest}/>}
     </div></section>}
@@ -814,9 +816,9 @@ export default function App({office=officeFromPath(),path}){
   const imageFrames=useImageFrames();
   const [cookieOpen,setCookieOpen]=useState(()=>!readCookieConsent());
   useEffect(()=>{try{localStorage.removeItem('customs-cookie-choice');}catch{}if(readCookieConsent()?.analytics)loadAnalytics();},[]);
-  // Contact and document goals, caught once for the whole page
+  // Contact, map and document goals, caught once for the whole page
   useEffect(()=>{
-    const goals=[['a[href^="tel:"]','click_phone'],['a[href^="mailto:"]','click_email'],['a[href*="wa.me/"]','click_whatsapp'],['a[href*="t.me/"]','click_telegram'],['.messenger-max','click_max'],['.insurance-doc-page,.insurance-doc-download','open_insurance']];
+    const goals=[['a[href^="tel:"]','click_phone'],['a[href^="mailto:"]','click_email'],['a[href*="wa.me/"]','click_whatsapp'],['a[href*="t.me/"]','click_telegram'],['.messenger-max','click_max'],['.insurance-doc-page,.insurance-doc-download','open_insurance'],['a[href*="yandex.ru/maps"]','click_map']];
     const onClick=e=>{const hit=goals.find(([sel])=>e.target.closest?.(sel));if(hit)track(hit[1]);};
     document.addEventListener('click',onClick);return()=>document.removeEventListener('click',onClick);
   },[]);
