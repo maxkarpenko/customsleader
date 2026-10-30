@@ -13,7 +13,9 @@ server {
         try_files $uri =404;
     }
 
+    # /index.html ведёт на главную; проверка по $request_uri, потому что nginx сам открывает этот файл для /
     location = /index.html {
+        if ($request_uri ~* ^/index\.html(\?|$)) { return 301 /$is_args$args; }
         add_header Cache-Control "no-cache";
     }
 
@@ -25,6 +27,8 @@ server {
     location ~* ^/(moscow|vladimir|yaroslavl)/?$ { return 301 https://customsleader.ru/contacts/$1; }
 
     location / {
+        # один адрес у страницы: без слэша на конце (кроме главной и настоящих папок)
+        if (!-d $request_filename) { rewrite ^/(.+)/$ /$1 permanent; }
         try_files $uri /pages$uri.html =404;
     }
 

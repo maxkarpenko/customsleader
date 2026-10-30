@@ -398,10 +398,10 @@ function Journey({onRequest}){
   },[active]);
   return <section className="section journey" data-reveal><div className="wrap"><h2>{clean(sourceTitle(6))}</h2><div className="tabs" role="tablist" aria-label="Этапы поставки" style={{'--active':active}}><span className="tab-indicator" aria-hidden="true"/>{tabs.map((tab,i)=><button key={tab.label} role="tab" id={`tab-${i}`} aria-controls={`panel-${i}`} aria-selected={active===i} tabIndex={active===i?0:-1} onClick={()=>setActive(i)} onKeyDown={e=>{let n=i;if(e.key==='ArrowRight')n=(i+1)%4;else if(e.key==='ArrowLeft')n=(i+3)%4;else if(e.key==='Home')n=0;else if(e.key==='End')n=3;else return;e.preventDefault();setActive(n);document.getElementById(`tab-${n}`).focus();}}><span className="tab-dot"/>{tab.label}<ArrowRight size={18}/></button>)}</div><div className="journey-panel" id={`panel-${active}`} role="tabpanel" aria-labelledby={`tab-${active}`} tabIndex={0}><div key={active} className="journey-copy"><p className="journey-title">{item.title}</p><p>{item.text}</p><Bullets items={item.list}/><p className="note"><Info size={19}/>{item.note}</p><Button className="cta-quote" onClick={onRequest}>{shortCTA}</Button></div><div className="journey-visual"><Scene key={active} kind={['container','winter','hvac','turbine'][active]}/><div className="route-stops" ref={stops}><span className="route-fill" aria-hidden="true"/>{tabs.map((t,i)=><span key={i} className={i<=active?'passed':''}><i/>{t.label}</span>)}</div></div></div>
     {/* Phones: the four stages as swipeable text cards, each headed by its stage name; the CTA sticks to the screen bottom */}
-    <div className="journey-cards" role="list" aria-label="Этапы поставки">{tabs.map((tab,i)=><article className="journey-card" role="listitem" key={tab.label}>
+    <ul className="journey-cards" aria-label="Этапы поставки">{tabs.map((tab,i)=><li className="journey-card" key={tab.label}>
       <p className="journey-stage"><span className="journey-stage-step">{i+1} / {tabs.length}</span><span className="journey-stage-name">{tab.label}</span></p>
       <h3>{tab.title}</h3><p>{tab.text}</p><Bullets items={tab.list}/><p className="note"><Info size={19}/>{tab.note}</p>
-    </article>)}</div>
+    </li>)}</ul>
   </div></section>;
 }
 

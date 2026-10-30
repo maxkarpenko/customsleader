@@ -32,8 +32,6 @@ site/
 
 Рядом с `site/` лежит `config.example.php` — образец настроек приёма заявок. На сервер он не выкладывается.
 
-Рядом с `site/` лежит `config.example.php` — образец настроек приёма заявок. На сервер он не выкладывается.
-
 Сайт рассчитан на корень домена. Смотреть его перед выкладкой — через локальный сервер, который, как хостинг, открывает `/about` из `pages/about.html`: `python3 scripts/serve-release.py` → http://localhost:4190/about. С диска двойным кликом страницы не открываются: браузер не загружает скрипты-модули из файлов (для этого есть сборка в один файл `docs/index.html`).
 
 ## Сервер
@@ -64,7 +62,7 @@ site/
 
 - **Текст страницы есть в HTML.** Роботы, которые не выполняют JavaScript (ИИ-краулеры, часть ботов Яндекса), видят всю страницу. Посетителям эта копия не показывается: её сразу заменяет живая страница.
 - **Индексируется только https://customsleader.ru.** На любом другом адресе (тестовый домен и т. п.) сервер отдаёт заголовок `X-Robots-Tag: noindex`. Копия на GitHub Pages закрыта мета-тегом `noindex`.
-- **Один адрес:** `www.customsleader.ru` и `http://` перенаправляются на `https://customsleader.ru` (301).
+- **Один адрес:** `www.customsleader.ru`, `http://` и `/index.html` перенаправляются на `https://customsleader.ru/` (301). Адреса без слэша на конце: `/about/` → `/about` (301), кроме главной `/` и настоящих папок.
 - **Старые адреса** живут на прежних местах (`/tamozhennoe-oformlenie`, `/i-logistika`, `/ekspedirovanie/…`, `/contacts/…`, `/about`, `/clients`, `/izgotovlenie-ecp`). Переехали с 301: `/category/nashi-proekty` → `/cases`, `/category/pravoustanavlivayuschie-dokumenty` → `/documents`, `/otzyvy-i-rekomendacii` → `/reviews`, `/confidentiality` → `/policy/privacy`, `/category/selleram` → `/uslugi/dostavka-dlya-sellerov`, `/form` → `/request`, `/ekspedirovanie` → `/i-logistika`, `/front/…` → главная. Технический домен `*.cpanel.site` целиком ведёт на customsleader.ru.
 - **Офисы:** `/contacts/moscow`, `/contacts/vladimir`, `/contacts/yaroslavl`, `/contacts/ivanovo`, у каждого своя разметка организации. Адреса только строчными: старые `/contacts/Moscow`, `/contacts/Vladimir` и короткие `/moscow` и т. д. перенаправляются (301).
 - **Статьи:** `/articles` (оглавление) и `/articles/<адрес>` из `articles/seo/*.md`. Правка `.md` попадает на сайт при следующей сборке.

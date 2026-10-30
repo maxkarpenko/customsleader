@@ -21,6 +21,23 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             return page
         return local
 
+    def do_GET(self):
+        # /index.html leads to the main page, as on the hosting
+        path, _, query = self.path.partition('?')
+        target = None
+        if path.lower() == '/index.html':
+            target = '/'
+        # no slash at the end, except the main page and real folders
+        elif len(path) > 1 and path.endswith('/') and not os.path.isdir(super().translate_path(path)):
+            target = path.rstrip('/')
+        if target:
+            self.send_response(301)
+            self.send_header('Location', target + ('?' + query if query else ''))
+            self.send_header('Content-Length', '0')
+            self.end_headers()
+            return
+        super().do_GET()
+
     def send_error(self, code, message=None, explain=None):
         page = os.path.join(ROOT, 'pages', '404.html')
         if code != 404 or not os.path.exists(page):

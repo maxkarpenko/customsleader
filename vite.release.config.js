@@ -53,6 +53,10 @@ AddType font/woff2 .woff2
   RewriteCond %{HTTPS} off
   RewriteCond %{HTTP:X-Forwarded-Proto} !https
   RewriteRule ^ https://customsleader.ru%{REQUEST_URI} [R=301,L]
+  # The main page has one address: /index.html leads to /. THE_REQUEST is what was asked for from outside,
+  # so the server opening index.html for / itself does not loop
+  RewriteCond %{THE_REQUEST} ^[A-Z]+\\s/index\\.html[?\\s] [NC]
+  RewriteRule ^index\\.html$ https://%{HTTP_HOST}/ [R=301,L,NC]
   # Pages of the old site live on at their old addresses (src/oldPages.json), so their search weight stays.
   # Addresses are lower case: the old site's /contacts/Moscow, /contacts/Vladimir (and any other letter case
   # of an office page) lead to /contacts/moscow etc.
@@ -93,6 +97,10 @@ AddType font/woff2 .woff2
   RewriteCond %{ENV:REDIRECT_STATUS} ^$
   RewriteCond %{DOCUMENT_ROOT}/pages/$1.html -f
   RewriteRule ^(.+?)(/|\\.html)$ https://%{HTTP_HOST}/$1 [R=301,L]
+  # One address per page: no slash at the end, for any address except the main page and real folders
+  RewriteCond %{ENV:REDIRECT_STATUS} ^$
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule ^(.+)/$ https://%{HTTP_HOST}/$1 [R=301,L]
   RewriteCond %{DOCUMENT_ROOT}/pages/$1.html -f
   RewriteRule ^(.+)$ pages/$1.html [L]
 </IfModule>

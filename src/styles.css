@@ -327,7 +327,7 @@
 .cargo-toggle{display:none}
 
 /* Journey cards and sticky CTA exist only on phones */
-.journey-cards{display:none}
+.journey-cards{display:none;list-style:none}
 
 @media(max-width:650px){
   /* 2 · "О грузе и маршруте" collapses behind "+ Раскрыть" */

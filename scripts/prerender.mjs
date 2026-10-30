@@ -96,6 +96,8 @@ const graph = [
 const ld = g => JSON.stringify({'@context': 'https://schema.org', '@graph': g}).replace(/</g, '\\u003c');
 
 const esc = s => s.replace(/&/g, '&amp;').replace(/"/g, '&quot;');
+// The slash in <img ... /> means nothing in HTML and validators note it: the final pages go out without it, scripts and styles untouched
+const plainVoidTags = html => html.replace(/<(script|style)\b[\s\S]*?<\/\1>|<(area|base|br|col|embed|hr|img|input|link|meta|source|track|wbr)\b([^<>]*?)\s*\/>/g, (m, block, tag, attrs) => tag ? `<${tag}${attrs}>` : m);
 const headFor = ({url, title, description, graph}) => `
     <link rel="canonical" href="${url}" />
     <meta property="og:type" content="website" />
@@ -157,7 +159,7 @@ const write = ({path, title: t, description: d, content: c, graph: g, notFound =
   if(path === '/') html = html.replace('<meta charset="UTF-8" />', '<meta charset="UTF-8" />\n    <meta name="yandex-verification" content="f191c030827b730e" />');
   const file = path === '/' ? `${OUT}/index.html` : `${OUT}/pages${path}.html`;
   mkdirSync(dirname(file), {recursive: true});
-  writeFileSync(file, html);
+  writeFileSync(file, plainVoidTags(html));
   return url;
 };
 const urls = [write({path: '/', title, description, content: body, graph})];
@@ -259,7 +261,7 @@ cpSync(OUT, STAGING, {recursive: true});
 for(const f of readdirSync(STAGING, {recursive: true}).filter(f => f.endsWith('.html'))){
   const file = `${STAGING}/${f}`;
   // the test stand copy does not carry the production verification tag
-  writeFileSync(file, readFileSync(file, 'utf8').replace(/\n    <meta name="yandex-verification"[^>]*>/, '').replace('<meta charset="UTF-8" />', '<meta charset="UTF-8" />\n    <meta name="robots" content="noindex, nofollow" />'));
+  writeFileSync(file, readFileSync(file, 'utf8').replace(/\n    <meta name="yandex-verification"[^>]*>/, '').replace('<meta charset="UTF-8">', '<meta charset="UTF-8">\n    <meta name="robots" content="noindex, nofollow">'));
 }
 writeFileSync(`${STAGING}/robots.txt`, 'User-agent: *\nAllow: /\n');
 
